@@ -4,6 +4,8 @@
 
 A cozy pixel-art life sim with dress-up and romance, playable in 中文 / English / 日本語. Every sprite is drawn by code; there are no image or audio files.
 
+**▶ 在线试玩 · Play online · オンラインで遊ぶ：<https://aubreykuang.github.io/HomeLove/>**
+
 [中文](#中文) · [English](#english) · [日本語](#日本語) · [项目结构 / Project layout](#项目结构--project-layout)
 
 ![小屋和院子：玩家和花店店员林小满在池塘边，咖啡师顾言在一旁散步](docs/screenshots/yard.png)
