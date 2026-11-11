@@ -47,6 +47,21 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 - **金手指**：院子角落藏着一个闪闪发光的道具。用了以后，顾言、陆星野、江屿、白夜的好感度直接满格，当天还会全都跑来找你、跟着你转。捡到后可以马上用，也可以收进背包，之后在日记里点「使用」。
 - **音乐和音效**：轻柔的八音盒背景音乐，晚上会变得更慢、更安静；走路、对话、采集、钓鱼、宠物叫声、好感上升都有音效。全部由浏览器现场合成，没有音频文件。按 M 或右上角 🔊 可以静音。
 
+### 同居后的一天
+
+邀请恋人搬进来以后，TA 会自己按时间表过日子，不用你操作。新厨房和健身角在客厅右边，穿过右墙的门洞就到了。
+
+| 时间 | 恋人在做什么 | 你可以 |
+|---|---|---|
+| 07:00–08:30 | 在灶台前做早饭 | 帮忙一起做；8:30 做好后去小圆桌吃（饱腹 +50） |
+| 09:30–11:00 | 拿着扫帚打扫屋子 | 帮忙打扫；扫完你心情 +5 |
+| 14:00–15:30 | 在健身角举哑铃 | 一起练 |
+| 17:30–19:00 | 做晚饭 | 19:00 后去小圆桌吃 |
+| 其他时间 | 在家里和院子里走走，你走近时会转过来看你 | 聊天、依偎在一起 |
+| 21:00 以后 | 在家陪你 | 「今晚一起睡」 |
+
+每件家务都有 TA 专属的台词，干活时去跟 TA 说话就能听到。
+
 ### 修罗场
 
 有了恋人之后，如果当着恋人的面撩别人、牵别人的手、约别人出去，被看到就会吃醋，好感 -6。每个人吃醋的样子都不一样：
@@ -121,6 +136,21 @@ You live in a small cottage with a pond, a strawberry patch and a flower garden.
 - **Golden Charm**: something shiny is hidden in a corner of the yard. Use it and Gu Yan, Lu Xingye, Jiang Yu and Bai Ye all jump to max affection and come find you for the rest of the day. Use it on the spot or keep it in your bag and use it later from the diary.
 - **Music and sound**: a soft music-box soundtrack that slows down and quiets at night, plus sounds for footsteps, dialogue, gathering, fishing, pets and rising affection. All of it is synthesized live in the browser; there are no audio files. Press M or the 🔊 button to mute.
 
+### A day living together
+
+Once your partner moves in, they run their own day on a schedule; you don't have to do anything. The new kitchen and workout corner are to the right of the living room, through the doorway in the right wall.
+
+| Time | What your partner does | What you can do |
+|---|---|---|
+| 07:00–08:30 | Cooks breakfast at the stove | Help; after 8:30 eat it at the round table (fullness +50) |
+| 09:30–11:00 | Sweeps the house with a broom | Help; when they finish, your mood +5 |
+| 14:00–15:30 | Lifts dumbbells in the workout corner | Work out together |
+| 17:30–19:00 | Cooks dinner | Eat it at the round table after 19:00 |
+| Other times | Wanders the house and yard, turns to face you when you come close | Chat, cuddle up |
+| After 21:00 | Stays home with you | Spend the night together |
+
+Every chore comes with that character's own lines; talk to them while they work to hear them.
+
 ### Jealousy
 
 Once you have a partner, flirting with, holding hands with or dating someone else in front of them makes them jealous (affection -6). Everyone takes it differently:
@@ -174,6 +204,21 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 - **同居生活**：小屋が増築され、キッチン（冷蔵庫・コンロ・カウンター）とトレーニングコーナー、ダブルベッドができました。10♥ で恋人が引っ越してくると、毎日の時間割どおりに暮らします。朝 7 時と夕方 5 時半に料理（丸テーブルの手料理を食べると満腹と気分が回復）、午前は掃除、午後はトレーニング。家事を手伝ったり、寄り添ったり、21 時以降は「今夜は一緒に」を選ぶと画面が暗転し、翌朝その人だけのおはようの台詞が聞けます。自分でもコンロで料理、トレーニングコーナーで運動ができ、恋人が家にいれば一緒に手伝ってくれます。
 - **ゴールデンチャーム**：庭の隅にキラキラ光るアイテムが隠れています。使うと顧言・陸星野・江嶼・白夜の好感度が一気に最大になり、その日はみんながあなたに会いに来て、ずっとそばにいてくれます。拾ってすぐ使っても、カバンにしまって後から日記で「使う」を押してもOK。
 - **BGMと効果音**：やさしいオルゴールのBGM（夜はゆっくり静かに）と、足音・会話・採集・釣り・ペットの鳴き声・好感度アップなどの効果音。すべてブラウザでその場で合成していて、音声ファイルはありません。M キーか右上の 🔊 でミュートできます。
+
+### 同居後の一日
+
+恋人が引っ越してくると、時間割どおりに自分で暮らします。あなたは何もしなくて大丈夫。新しいキッチンとトレーニングコーナーはリビングの右側、右の壁の出入り口の先にあります。
+
+| 時間 | 恋人がしていること | あなたができること |
+|---|---|---|
+| 07:00–08:30 | コンロで朝ごはんを作る | 手伝う。8:30 以降は丸テーブルで食べられる（満腹 +50） |
+| 09:30–11:00 | ほうきで家を掃除 | 手伝う。終わると気分 +5 |
+| 14:00–15:30 | トレーニングコーナーでダンベル | 一緒にトレーニング |
+| 17:30–19:00 | 晩ごはんを作る | 19:00 以降に丸テーブルで食べる |
+| それ以外 | 家や庭を歩き回り、近づくとこちらを向く | おしゃべり、寄り添う |
+| 21:00 以降 | 家であなたのそばにいる | 「今夜は一緒に」 |
+
+家事にはそれぞれキャラクター専用の台詞があります。作業中に話しかけてみてください。
 
 ### 修羅場
 
