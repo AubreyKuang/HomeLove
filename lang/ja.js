@@ -12,7 +12,7 @@ window.HL_LANG.ja = {
     kMove: '移動（WASDでもOK）',
     kAct: '調べる・会話を進める・竿を上げる',
     kChoose: '選択肢を選ぶ',
-    kMenus: 'クローゼット／日記を開く',
+    kMenus: 'クローゼット／日記／言語切り替え',
     kTouch: 'スマホでは左下の方向キーと右下のAボタンで操作',
     space: 'スペース',
     start: '小屋に入る',

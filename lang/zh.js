@@ -12,7 +12,7 @@ window.HL_LANG.zh = {
     kMove: '走路（WASD 也可以）',
     kAct: '互动、继续对话、钓鱼收竿',
     kChoose: '选择对话选项',
-    kMenus: '打开衣柜 / 日记',
+    kMenus: '打开衣柜 / 日记 / 切换语言',
     kTouch: '手机上用左下方向键和右下 A 键',
     space: '空格',
     start: '进入小屋',
