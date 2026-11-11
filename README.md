@@ -18,6 +18,8 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 | 衣柜，♥ 表示有人喜欢（中文）<br>The wardrobe; ♥ marks what someone likes | 日记里的关系和攻略笔记（English）<br>The diary: affection and notes |
 | ![用了金手指之后，四位男生围到玩家身边，头顶冒出爱心](docs/screenshots/summon.png) | ![宠物领养站的菜单：小猫、小狗、小鸟、小兔](docs/screenshots/adopt.png) |
 | 金手指：所有男生好感全满，全都跑来找你（中文）<br>The Golden Charm brings every guy running | 在领养站领养宠物（日本語）<br>Adopting a pet at the hut |
+| ![修罗场：恋人陆星野撞见你和江屿说话，吃醋地说「那家伙是谁？」](docs/screenshots/jealous.png) | ![扩建后的小屋：卧室、厨房和健身角，陆星野在灶台做早饭](docs/screenshots/home.png) |
+| 修罗场：恋人吃醋了（中文）<br>Jealousy: caught by your partner | 同居生活：恋人在厨房做早饭（English）<br>Living together: breakfast in the new kitchen |
 
 ![开始界面，可以选择中文、English、日本語](docs/screenshots/start.png)
 
@@ -39,10 +41,27 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
   - 每个人吃的那一套都不一样：喜欢的颜色、衣服、礼物、话题、活动和约会地点各不相同。穿上对方喜欢的风格再去聊天，好感涨得更多。
   - 试过的东西会记进日记的「攻略笔记」，用 😍😊🙂😐😣 表示对方的反应。
   - 好感进度：2♥ 解锁一起做事，4♥ 撩一下，6♥ 约会，7♥ 牵手，8♥ 告白（心情要在 40 以上），恋人 9♥ 亲亲，10♥ 邀请同居。
-  - 有了恋人还去撩别人、约别人，被恋人看到会吃醋扣好感。
+  - 有了恋人还去撩别人、约别人，被恋人看到会吃醋扣好感（见下面的「修罗场」）。
 - **宠物**：小路边的领养站可以领养小猫、小狗、小鸟、小兔（每种 3 种毛色，最多养 3 只），从候选名字里给它取名。宠物会跟着你走，也可以让它在原地等你。每天可以摸摸、喂它爱吃的东西、陪它玩；亲密度高了，早上会叼礼物回来。每位居民也有偏爱的小动物，带着对的宠物去聊天会额外加好感。
+- **同居生活**：小屋扩建了，右边多了厨房（冰箱、灶台、台面）和健身角，卧室换成了双人床。好感满 10♥ 邀请恋人搬进来后，TA 会按时间表过日子：早上 7 点和傍晚 5 点半做饭（做好的饭放在小圆桌上，去吃就能回饱腹和心情），上午扫地，下午在健身角锻炼。TA 干活时可以过去帮忙，平时可以依偎在一起；晚上 9 点以后可以「今晚一起睡」，画面淡出，第二天早上会有专属的晨间对白。你自己也可以用灶台做菜、在健身角运动，恋人在家会一起帮忙。
 - **金手指**：院子角落藏着一个闪闪发光的道具。用了以后，顾言、陆星野、江屿、白夜的好感度直接满格，当天还会全都跑来找你、跟着你转。捡到后可以马上用，也可以收进背包，之后在日记里点「使用」。
 - **音乐和音效**：轻柔的八音盒背景音乐，晚上会变得更慢、更安静；走路、对话、采集、钓鱼、宠物叫声、好感上升都有音效。全部由浏览器现场合成，没有音频文件。按 M 或右上角 🔊 可以静音。
+
+### 修罗场
+
+有了恋人之后，如果当着恋人的面撩别人、牵别人的手、约别人出去，被看到就会吃醋，好感 -6。每个人吃醋的样子都不一样：
+
+| 恋人 | 吃醋时说 |
+|---|---|
+| 顾言 | ……刚才那位，你们很熟吗？我只是好奇。 |
+| 林小满 | ……刚才那个人是谁呀？我、我才没有在意呢。 |
+| 陆星野 | ……那家伙是谁？我、我也可以对你更好的！ |
+| 江屿 | ……刚才那人谁啊？我没生气，就是问问。 |
+| 白夜 | ……你和那个人，聊得挺开心啊。 |
+
+![修罗场：恋人陆星野撞见你和江屿说话](docs/screenshots/jealous.png)
+
+用了金手指之后，四位男生会同时围在你身边，修罗场就更热闹了。
 
 ### 五位居民
 
@@ -96,10 +115,23 @@ You live in a small cottage with a pond, a strawberry patch and a flower garden.
   - Everyone has their own taste in colors, clothes, gifts, topics, activities and date spots. Dress the way they like before you chat and affection grows faster.
   - Whatever you try is recorded in the diary's Notes as 😍😊🙂😐😣.
   - Milestones: 2♥ activities, 4♥ flirt, 6♥ dates, 7♥ hold hands, 8♥ confess (mood 40+), 9♥ kiss as a couple, 10♥ move in together.
-  - Flirt with someone else while your partner is watching and they'll get jealous.
+  - Flirt with someone else while your partner is watching and they'll get jealous (see Jealousy below).
 - **Pets**: adopt a kitten, puppy, bird or bunny at the hut by the path (3 coat colors each, up to 3 pets) and pick a name. Pets follow you around or wait where you leave them. Pet, feed and play with them every day; with a strong bond they bring you presents in the morning. Each neighbor has a favorite animal, and chatting with the right pet nearby earns bonus affection.
+- **Living together**: the cottage now has a kitchen (fridge, stove, counter), a workout corner and a double bed. Once your partner moves in (10♥), they follow a daily routine: cooking at 7:00 and 17:30 (the meal waits on the round table for fullness and mood), sweeping in the morning and working out in the afternoon. Help them with chores, cuddle up, and after 21:00 choose to spend the night together; the screen fades out and they greet you with their own good-morning line. You can also cook at the stove and work out yourself, and your partner pitches in.
 - **Golden Charm**: something shiny is hidden in a corner of the yard. Use it and Gu Yan, Lu Xingye, Jiang Yu and Bai Ye all jump to max affection and come find you for the rest of the day. Use it on the spot or keep it in your bag and use it later from the diary.
 - **Music and sound**: a soft music-box soundtrack that slows down and quiets at night, plus sounds for footsteps, dialogue, gathering, fishing, pets and rising affection. All of it is synthesized live in the browser; there are no audio files. Press M or the 🔊 button to mute.
+
+### Jealousy
+
+Once you have a partner, flirting with, holding hands with or dating someone else in front of them makes them jealous (affection -6). Everyone takes it differently:
+
+| Partner | What they say |
+|---|---|
+| Gu Yan | …That person just now. Are you two close? Just curious. |
+| Lin Xiaoman | …Who was that just now? N-not that I care or anything. |
+| Lu Xingye | …Who was that? I-I can treat you way better! |
+| Jiang Yu | …Who was that? I'm not mad. Just asking. |
+| Bai Ye | …You and that person looked like you were having fun. |
 
 ### The neighbors
 
@@ -137,10 +169,23 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
   - 好きな色、服、プレゼント、話題、遊び、デート先は人それぞれ。相手好みの服で話しかけると好感度が上がりやすくなります。
   - 試した反応は日記の「攻略メモ」に 😍😊🙂😐😣 で記録されます。
   - 目安：2♥ 一緒に過ごす、4♥ ドキッとさせる、6♥ デート、7♥ 手をつなぐ、8♥ 告白（気分 40 以上）、恋人で 9♥ キス、10♥ 同居。
-  - 恋人の目の前で他の人を口説くと、やきもちを焼かれます。
+  - 恋人の目の前で他の人を口説くと、やきもちを焼かれます（下の「修羅場」参照）。
 - **ペット**：小道のそばの里親小屋で、子ネコ・子イヌ・小鳥・子ウサギを迎えられます（毛色は各 3 種類、3 匹まで）。名前は候補から選べます。ペットはあなたについて来るほか、その場で待たせることも。毎日なでて、好物をあげて、遊んであげましょう。なつき度が上がると朝にプレゼントを持ってきます。住人にはそれぞれ好きな動物がいて、その子を連れて話しかけると好感度にボーナスがつきます。
+- **同居生活**：小屋が増築され、キッチン（冷蔵庫・コンロ・カウンター）とトレーニングコーナー、ダブルベッドができました。10♥ で恋人が引っ越してくると、毎日の時間割どおりに暮らします。朝 7 時と夕方 5 時半に料理（丸テーブルの手料理を食べると満腹と気分が回復）、午前は掃除、午後はトレーニング。家事を手伝ったり、寄り添ったり、21 時以降は「今夜は一緒に」を選ぶと画面が暗転し、翌朝その人だけのおはようの台詞が聞けます。自分でもコンロで料理、トレーニングコーナーで運動ができ、恋人が家にいれば一緒に手伝ってくれます。
 - **ゴールデンチャーム**：庭の隅にキラキラ光るアイテムが隠れています。使うと顧言・陸星野・江嶼・白夜の好感度が一気に最大になり、その日はみんながあなたに会いに来て、ずっとそばにいてくれます。拾ってすぐ使っても、カバンにしまって後から日記で「使う」を押してもOK。
 - **BGMと効果音**：やさしいオルゴールのBGM（夜はゆっくり静かに）と、足音・会話・採集・釣り・ペットの鳴き声・好感度アップなどの効果音。すべてブラウザでその場で合成していて、音声ファイルはありません。M キーか右上の 🔊 でミュートできます。
+
+### 修羅場
+
+恋人ができたあと、恋人の目の前で他の人を口説いたり、手をつないだり、デートに誘ったりすると、やきもちを焼かれて好感度 -6。やきもちの焼き方は人それぞれ：
+
+| 恋人 | やきもちの台詞 |
+|---|---|
+| 顧言 | ……さっきの人とは、仲がいいんですか？ ただ気になっただけですよ。 |
+| 林小満 | ……さっきの人、誰？ べ、別に気にしてないもん。 |
+| 陸星野 | ……あいつ誰だよ？ お、俺だって、お前にもっと優しくできるし！ |
+| 江嶼 | ……さっきのやつ誰だ？ 怒ってない。聞いただけ。 |
+| 白夜 | ……あいつとは、ずいぶん楽しそうに話してたな。 |
 
 ### 住人たち
 

@@ -469,3 +469,14 @@ window.HL_LANG.zh.npcs.by.summon = "别误会，我只是刚好路过。……�
 
 /* Music and sound. */
 Object.assign(window.HL_LANG.zh.ui, {"sound": "音乐和音效", "soundOn": "🔊 音乐已打开", "soundOff": "🔇 已静音", "kSound": "打开或关闭音乐和音效"});
+
+/* Home life. */
+Object.assign(window.HL_LANG.zh.ui, {"stoveQ": "灶台上的小锅擦得锃亮。做点什么？", "cookFish": "做香煎鱼（用 1 条鱼，饱腹 +60）", "cookCake": "做草莓松饼（用 2 颗草莓，心情 +10）", "cookDone": "做好了，香喷喷的！", "cookWith": "{n}在旁边帮你打下手，厨房里热热闹闹的。", "gymDone": "练了半小时，出了一身汗，神清气爽。", "gymWith": "{n}也跟着一起练，还在旁边给你数数。", "gymTired": "太累了，今天先别练了。", "counterLine": "厨房台面擦得亮晶晶的。", "mealOpt": "吃{n}做的{m}（饱腹 +50）", "breakfast": "早餐", "dinner": "晚餐", "mealAte": "和{n}面对面坐着吃{m}，幸福得冒泡。", "choreCook": "🍳 {n}做好了{m}，放在小圆桌上了", "choreSweep": "🧹 {n}把家里打扫得干干净净，心情 +5", "choreGym": "💪 {n}练完了，满头大汗地冲你笑", "task_cook": "做饭", "task_sweep": "打扫", "task_gym": "健身", "optHelp": "帮{n}一起{x}", "helpDone": "你和{n}一起忙了一会儿，配合得刚刚好。", "optCuddle": "依偎在一起", "optNight": "💞 今晚一起睡", "nightFade": "（灯光暗了下来……）", "bedTogether": "和{n}一起睡"});
+Object.assign(window.HL_LANG.zh.objects, {"fridge": {"name": "冰箱", "verb": "打开冰箱"}, "stove": {"name": "灶台", "verb": "做饭"}, "counter": {"name": "厨房台面", "verb": "看看台面"}, "gym": {"name": "健身角", "verb": "健身"}});
+window.HL_LANG.zh.fridgeLines = ["冰箱里整整齐齐码着牛奶和鸡蛋。", "冰箱门上贴着一张便利贴：「记得吃早饭」。", "冷冻室里藏着一盒冰淇淋。"];
+window.HL_LANG.zh.tips.push(...["🏠 同居之后，恋人会按时做饭、打扫、在健身角锻炼。去小圆桌吃TA做的饭，晚上还能一起度过。厨房的灶台可以自己做菜，健身角可以运动。"]);
+Object.assign(window.HL_LANG.zh.npcs.gy, {"cook": "在煎蛋，你的要单面还是双面？", "sweep": "我在给书架除尘，顺便把你的书也排好了。", "gym": "……我在做拉伸。别笑，是你说我该多运动的。", "cuddle": "顾言把你揽进怀里，下巴轻轻抵着你的发顶：「就这样待一会儿。」", "night": "「今晚不看书了。」顾言摘下眼镜，放在床头。", "morningAfter": "顾言端着两杯拿铁走进来：「早安。昨晚……睡得好吗？」"});
+Object.assign(window.HL_LANG.zh.npcs.xm, {"cook": "我在烤小饼干！一会儿第一块给你～", "sweep": "我在擦窗台，顺便给花浇了水。", "gym": "我、我在做瑜伽……这个动作好难呀！", "cuddle": "小满靠在你肩上，小声哼起了歌。", "night": "小满红着脸拉了拉你的袖子：「今晚……可以一起吗？」", "morningAfter": "小满窝在被子里冲你笑：「早安……我还想再赖一会儿床。」"});
+Object.assign(window.HL_LANG.zh.npcs.xy, {"cook": "我在做超大份的蛋炒饭！保证你吃饱！", "sweep": "拖地也是一种训练！看我的速度！", "gym": "九十八、九十九、一百！你要不要也来几组？", "cuddle": "星野一把把你圈进怀里：「充电中，请勿打扰！」", "night": "星野挠了挠头，耳朵通红：「那个……今晚我能不能……一直抱着你睡？」", "morningAfter": "星野已经晨跑回来了，头发还湿着：「早！我买了你最爱吃的早餐！」"});
+Object.assign(window.HL_LANG.zh.npcs.jy, {"cook": "在煮面。别指望太多，但能吃。", "sweep": "……吸尘器声音太大，我顺便录了段采样。", "gym": "做几个俯卧撑，弹琴也要手臂有劲。", "cuddle": "江屿靠着你，随手拨着吉他，弹的是只为你写的那首歌。", "night": "江屿把吉他放到一边：「今晚不弹了。……过来。」", "morningAfter": "江屿还没睡醒，迷迷糊糊地把你往怀里带：「再睡五分钟。」"});
+Object.assign(window.HL_LANG.zh.npcs.by, {"cook": "……别看，我在学做饭。焦了的那块是我的。", "sweep": "我把颜料收拾好了。地板也擦了，虽然是被你念叨的。", "gym": "画画也要体力。……别一直盯着我看。", "cuddle": "白夜把你裹进围巾里，一句话也没说，但抱得很紧。", "night": "白夜关掉了画室的灯：「今晚的星星，不看也罢。」", "morningAfter": "白夜难得早起，正对着你的睡脸画速写：「……别动，还没画完。」"});
