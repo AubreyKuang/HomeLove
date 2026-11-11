@@ -8,7 +8,7 @@ window.HL_LANG.zh = {
   ui: {
     title: '像素小屋',
     intro1: '在小屋里过日子：吃饭、睡觉、种草莓、钓鱼、换装。一天里会有五位居民轮流来院子：清晨的咖啡师顾言、上午的花店店员林小满、中午的篮球少年陆星野、傍晚的吉他手江屿、深夜的画星人白夜。',
-    intro2: '每个人喜欢的穿搭、礼物、聊天方式、约会地点都不一样。多试试，把发现记在日记的「攻略笔记」里。好感到了还能约会、告白，甚至搬来一起住。',
+    intro2: '每个人喜欢的穿搭、礼物、聊天方式、约会地点都不一样。多试试，把发现记在日记的「攻略笔记」里。好感到了还能约会、告白，甚至搬来一起住。还能在小路边的领养站领养小猫小狗。',
     kMove: '走路（WASD 也可以）',
     kAct: '互动、继续对话、钓鱼收竿',
     kChoose: '选择对话选项',
@@ -455,3 +455,17 @@ window.HL_LANG.zh = {
     }
   }
 };
+
+/* Pets and the Golden Charm. */
+Object.assign(window.HL_LANG.zh.ui, {"goldWho": "金手指", "goldVerb": "捡起闪闪发光的东西", "goldFound": "是传说中的「金手指」！用了以后，所有男生的好感度都会直接满格，还会全都跑来找你。现在就用吗？", "goldUse": "现在就用", "goldKeep": "先收进背包", "goldKept": "收好了。想用的时候，在日记的背包里点「使用」。", "goldUsed": "✨ 金手指生效！所有男生的好感度都满了", "goldCall": "远处传来一阵急促的脚步声……", "quoteLine": "{n}：「{s}」", "useItem": "使用", "adoptQ": "这里有几只等待新家的小动物。要领养哪一只？", "adoptFull": "你家已经很热闹啦，最多养 3 只宠物。", "adoptOpt": "{c}{k}", "adoptName": "给这只{k}取个名字吧：", "adoptDone": "🐾 {p}成为了你的家人！", "petVerb": "和{p}玩", "petPet": "摸摸{p}", "petFeed": "喂{f}（你有 {x} 个）", "petPlay": "一起玩（30 分钟）", "petStay": "在这里等我", "petFollow": "跟着我", "petBye": "走开", "petMood0": "{p}好奇地看着你。", "petMood1": "{p}在你脚边蹭来蹭去。", "petMood2": "{p}一看到你就扑了过来！", "petPetDone": "{p}舒服地眯起了眼睛。", "petFed": "{p}吃得津津有味。", "petPlayDone": "你和{p}玩了好一会儿，累并快乐着。", "petStayDone": "{p}乖乖坐下，看着你。", "petFollowDone": "{p}开心地跟了上来。", "petGift": "{p}叼来了一个{i}！", "petLiked": "{n}蹲下来摸了摸{p}：「好可爱！」", "bondToast": "🐾 {p} 亲密度 {x}/5", "secPets": "宠物", "petsEmpty": "还没有宠物。小路边的领养站里，有小动物在等新家。", "petFood": "爱吃", "petModeFollow": "跟着你", "petModeStay": "在原地等你", "bondAria": "亲密度 {x}/5", "tPet": "摸摸", "tFeed": "喂食", "tPlay": "玩耍"});
+window.HL_LANG.zh.objects.adopt = {"name": "宠物领养站", "verb": "领养宠物"};
+window.HL_LANG.zh.items.gold = {"name": "金手指", "desc": "传说中的道具。用了以后，所有男生的好感度直接满格，当天还会全都跑来找你。"};
+window.HL_LANG.zh.pets = {"kinds": {"cat": {"name": "小猫", "sound": "喵～"}, "dog": {"name": "小狗", "sound": "汪汪！"}, "bird": {"name": "小鸟", "sound": "啾啾！"}, "rabbit": {"name": "小兔", "sound": "（耳朵抖了抖）"}}, "colors": {"cat": ["灰色", "黑色", "白色"], "dog": ["棕色", "柴犬色", "白色"], "bird": ["蓝色", "黄色", "粉色"], "rabbit": ["白色", "棕色", "灰色"]}, "names": ["团子", "布丁", "可乐", "年糕", "豆豆", "奶茶", "芝麻", "汤圆", "小米", "栗子", "雪球", "麻薯"]};
+window.HL_LANG.zh.tips.push(...["🐾 小路边的宠物领养站可以领养小猫、小狗、小鸟和小兔，最多 3 只。每天摸摸、喂食、陪它玩，亲密度高了它会叼礼物回来。有的人也特别喜欢某种小动物。", "✨ 听说院子的某个角落里，藏着闪闪发光的东西……"]);
+window.HL_LANG.zh.npcs.gy.summon = "听说你在找我？……好吧，其实是我一直在找你。";
+window.HL_LANG.zh.npcs.xy.summon = "我来啦！！一路跑过来的！";
+window.HL_LANG.zh.npcs.jy.summon = "……不知道为什么，突然很想见你。";
+window.HL_LANG.zh.npcs.by.summon = "别误会，我只是刚好路过。……才怪。";
+
+/* Music and sound. */
+Object.assign(window.HL_LANG.zh.ui, {"sound": "音乐和音效", "soundOn": "🔊 音乐已打开", "soundOff": "🔇 已静音", "kSound": "打开或关闭音乐和音效"});

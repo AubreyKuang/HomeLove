@@ -8,7 +8,7 @@ window.HL_LANG.en = {
   ui: {
     title: "Pixel Cottage",
     intro1: "Live your little cottage life: eat, sleep, grow strawberries, go fishing, play dress-up. Five neighbors drop by the yard over the day: Gu Yan the barista at dawn, Lin Xiaoman from the flower shop in the morning, basketball boy Lu Xingye at noon, guitarist Jiang Yu at dusk, and Bai Ye, who paints the stars, late at night.",
-    intro2: "Everyone has their own taste in outfits, gifts, small talk and date spots. Experiment, and jot down what you learn in the “Notes” in your diary. Win enough hearts and you can go on dates, confess, even move in together.",
+    intro2: "Everyone has their own taste in outfits, gifts, small talk and date spots. Experiment, and jot down what you learn in the “Notes” in your diary. Win enough hearts and you can go on dates, confess, even move in together. You can even adopt a pet at the hut by the path.",
     kMove: "Walk (WASD works too)",
     kAct: "Interact, continue, reel in",
     kChoose: "Pick a dialogue option",
@@ -455,3 +455,17 @@ window.HL_LANG.en = {
     }
   }
 };
+
+/* Pets and the Golden Charm. */
+Object.assign(window.HL_LANG.en.ui, {"goldWho": "Golden Charm", "goldVerb": "Pick up the shiny thing", "goldFound": "It’s the legendary Golden Charm! Use it and every guy’s affection maxes out instantly, and they’ll all come looking for you. Use it now?", "goldUse": "Use it now", "goldKeep": "Keep it for later", "goldKept": "Tucked away. To use it later, open the bag in your diary and press “Use”.", "goldUsed": "✨ Golden Charm activated! Every guy’s affection is maxed", "goldCall": "Hurried footsteps echo from down the path…", "quoteLine": "{n}: “{s}”", "useItem": "Use", "adoptQ": "A few little animals are waiting for a home here. Which one will you adopt?", "adoptFull": "Your home’s lively enough already. You can keep up to 3 pets.", "adoptOpt": "{c} {k}", "adoptName": "Pick a name for your {k}:", "adoptDone": "🐾 {p} is part of the family now!", "petVerb": "Play with {p}", "petPet": "Pet {p}", "petFeed": "Feed {f} (you have {x})", "petPlay": "Play together (30 min)", "petStay": "Wait here", "petFollow": "Follow me", "petBye": "Leave", "petMood0": "{p} watches you curiously.", "petMood1": "{p} rubs against your ankles.", "petMood2": "{p} bounds over the moment they see you!", "petPetDone": "{p} closes their eyes, blissful.", "petFed": "{p} gobbles it up happily.", "petPlayDone": "You and {p} play for ages. Tired, but happy.", "petStayDone": "{p} sits down and watches you.", "petFollowDone": "{p} happily trots after you.", "petGift": "{p} brought you a {i}!", "petLiked": "{n} crouches down to pet {p}. “So cute!”", "bondToast": "🐾 {p} bond {x}/5", "secPets": "Pets", "petsEmpty": "No pets yet. Little animals are waiting at the adoption hut by the path.", "petFood": "Loves", "petModeFollow": "Following you", "petModeStay": "Waiting here", "bondAria": "Bond {x}/5", "tPet": "Pet", "tFeed": "Feed", "tPlay": "Play"});
+window.HL_LANG.en.objects.adopt = {"name": "Pet Adoption Hut", "verb": "Adopt a pet"};
+window.HL_LANG.en.items.gold = {"name": "Golden Charm", "desc": "A legendary cheat item. Use it and every guy’s affection maxes out, and they all come find you that day."};
+window.HL_LANG.en.pets = {"kinds": {"cat": {"name": "kitten", "sound": "Meow~"}, "dog": {"name": "puppy", "sound": "Woof woof!"}, "bird": {"name": "bird", "sound": "Tweet tweet!"}, "rabbit": {"name": "bunny", "sound": "(Ears twitch.)"}}, "colors": {"cat": ["Gray", "Black", "White"], "dog": ["Brown", "Shiba", "White"], "bird": ["Blue", "Yellow", "Pink"], "rabbit": ["White", "Brown", "Gray"]}, "names": ["Mochi", "Pudding", "Cola", "Bean", "Biscuit", "Pepper", "Maple", "Snowball", "Peanut", "Muffin", "Sesame", "Nugget"]};
+window.HL_LANG.en.tips.push(...["🐾 Adopt a kitten, puppy, bird or bunny at the hut by the path (up to 3). Pet, feed and play with them every day; with a strong bond they’ll bring you presents. Some people adore certain animals, too.", "✨ Rumor has it something shiny is hidden in a corner of the yard…"]);
+window.HL_LANG.en.npcs.gy.summon = "I heard you were looking for me? …Fine. I’m the one who’s been looking for you.";
+window.HL_LANG.en.npcs.xy.summon = "I’m here!! I ran the whole way!";
+window.HL_LANG.en.npcs.jy.summon = "…No idea why. I just really wanted to see you.";
+window.HL_LANG.en.npcs.by.summon = "Don’t get the wrong idea. I was just passing by. …Not.";
+
+/* Music and sound. */
+Object.assign(window.HL_LANG.en.ui, {"sound": "Music and sound", "soundOn": "🔊 Sound on", "soundOff": "🔇 Sound off", "kSound": "Turn music and sound on or off"});
