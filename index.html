@@ -919,7 +919,6 @@ const npcs=NPCS.map(d=>Object.assign({},d,{x:-100,y:-100,dir:'down',state:'away'
 function blocked(x,y){
   const x0=Math.floor((x-4)/16),x1=Math.floor((x+3)/16),y0=Math.floor((y-4)/16),y1=Math.floor((y-1)/16);
   for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++){if(tx<0||ty<0||tx>=MW||ty>=MH||solid[ty*MW+tx])return true;}
-  for(const n of npcs){if(n.state==='away')continue;const dn=Math.hypot(x-n.x,y-n.y);if(dn<9&&dn<Math.hypot(P.x-n.x,P.y-n.y))return true;}
   return false;
 }
 function tryMove(nx,ny){if(!blocked(nx,ny)){P.x=nx;P.y=ny;return true;}return false;}
@@ -979,18 +978,18 @@ function updNpc(n,dt){
   if(n.path&&n.path.length){
     const [tx,ty]=n.path[0],gx=tx*16+8,gy=ty*16+12,dx=gx-n.x,dy=gy-n.y,d=Math.hypot(dx,dy),sp=38*dt;
     const nx=d<=sp?gx:n.x+dx/d*sp,ny=d<=sp?gy:n.y+dy/d*sp,dNew=Math.hypot(nx-P.x,ny-P.y);
-    if(dNew<10&&dNew<Math.hypot(n.x-P.x,n.y-P.y)){n.moving=false;return;}
+    if(!summoned(n)&&dNew<10&&dNew<Math.hypot(n.x-P.x,n.y-P.y)){n.moving=false;return;}
     n.x=nx;n.y=ny;n.moving=true;n.anim+=dt;
     if(Math.abs(dx)>Math.abs(dy))n.dir=dx<0?'left':'right';else if(d>0)n.dir=dy<0?'up':'down';
     if(d<=sp)n.path.shift();
-    if(summoned(n)&&n.path.length){n.rp=(n.rp||0)-dt;if(n.rp<=0){n.rp=1.2;const e=n.path[n.path.length-1];if(Math.hypot(e[0]*16+8-P.x,e[1]*16+12-P.y)>40){const s=pick(npcSpots(n));npcGo(n,s[0],s[1]);if(!n.path)n.path=[];}}}
+    if(summoned(n)&&n.path.length){n.rp=(n.rp||0)-dt;if(n.rp<=0){n.rp=1.2;const e=n.path[n.path.length-1];if(Math.hypot(e[0]*16+8-P.x,e[1]*16+12-P.y)>60){const s=pick(npcSpots(n));npcGo(n,s[0],s[1]);if(!n.path)n.path=[];}}}
     if(!n.path.length){n.path=null;if(n.leaving){n.state='away';n.leaving=false;n.x=n.y=-100;}}
   } else {
     n.moving=false;n.anim=0;n.path=null;
     const dx=P.x-n.x,dy=P.y-n.y,dp=Math.hypot(dx,dy);
-    if(dp<30)n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
+    if(dp<(summoned(n)?70:30))n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
     n.idle-=dt*TIME_RATE;
-    if(n.idle<=0&&dp>=30){const s=pick(npcSpots(n));npcGo(n,s[0],s[1]);n.idle=summoned(n)?2:25+Math.random()*35;}
+    if(n.idle<=0&&dp>=(summoned(n)?60:30)){const s=pick(npcSpots(n));npcGo(n,s[0],s[1]);n.idle=summoned(n)?2:25+Math.random()*35;}
   }
 }
 const parts=[];
@@ -1108,9 +1107,13 @@ function petAt(fx,fy){return state.pets.find(p=>Math.hypot(p.x-fx,p.y-4-fy)<12);
 function petSeenBy(n){return state.pets.find(p=>p.kind===NPC_PET[n.id]&&Math.hypot(p.x-n.x,p.y-n.y)<56);}
 const summoned=n=>state.summon===state.day&&MEN.includes(n.id);
 function nearPlayerTiles(){
-  const px=Math.floor(P.x/16),py=Math.floor((P.y-2)/16),out=[];
-  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++){if(!dx&&!dy)continue;const x=px+dx,y=py+dy;if(npcPassable(x,y,true))out.push([x,y,Math.abs(dx)+Math.abs(dy)]);}
-  out.sort((a,b)=>a[2]-b[2]);return out.slice(0,8);
+  /* a loose ring 2-3 tiles out, skipping spots other people are standing on or heading to */
+  const px=Math.floor(P.x/16),py=Math.floor((P.y-2)/16),taken=new Set();
+  for(const m of npcs){if(m.state==='away')continue;taken.add(Math.floor(m.x/16)+','+Math.floor((m.y-2)/16));if(m.path&&m.path.length){const e=m.path[m.path.length-1];taken.add(e[0]+','+e[1]);}}
+  const ring=[],near=[];
+  for(let dy=-3;dy<=3;dy++)for(let dx=-3;dx<=3;dx++){const d=Math.abs(dx)+Math.abs(dy);if(d<1||d>3)continue;const x=px+dx,y=py+dy;if(!npcPassable(x,y,true))continue;
+    if(d>=2&&!taken.has(x+','+y))ring.push([x,y]);else if(d>=2)near.push([x,y]);}
+  return ring.length?ring:near;
 }
 function pickGold(){
   state.goldFound=true;state.inv.gold=(state.inv.gold||0)+1;updateHud();save();
