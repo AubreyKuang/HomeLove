@@ -6,6 +6,8 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 
 **▶ 在线试玩 · Play online · オンラインで遊ぶ：<https://aubreykuang.github.io/HomeLove/>**
 
+🛠 测试模式（金手指、数值拉满）· Test mode · テストモード：<https://aubreykuang.github.io/HomeLove/dev.html>
+
 [中文](#中文) · [English](#english) · [日本語](#日本語) · [项目结构 / Project layout](#项目结构--project-layout)
 
 ![小屋和院子：玩家和花店店员林小满在池塘边，咖啡师顾言在一旁散步](docs/screenshots/yard.png)
@@ -114,6 +116,8 @@ python3 -m http.server 8000
 
 然后打开 http://localhost:8000 。进度和语言选择都保存在浏览器里。
 
+**测试模式**：打开 `dev.html`（[在线版](https://aubreykuang.github.io/HomeLove/dev.html)），左上角有测试面板：直接拿金手指或立刻使用、所有数值拉满、状态锁满、重置今天的次数、跳到指定时间、清空测试存档。测试模式的存档和正常游戏分开，互不影响。改完 `index.html` 后运行 `python3 dev/make-dev.py` 重新生成 `dev.html`。
+
 ---
 
 ## English
@@ -182,6 +186,8 @@ Arrow keys or WASD to walk · E / Space to interact, continue and reel in · 1 2
 ### Running it
 
 Open `index.html` in a browser; it works offline (the pixel fonts load when online). Or serve the folder with `python3 -m http.server 8000` and visit http://localhost:8000. Progress and language are saved in the browser.
+
+**Test mode**: open `dev.html` ([online](https://aubreykuang.github.io/HomeLove/dev.html)) for a panel in the top-left: get or use the Golden Charm right away, max out every stat, lock needs at full, reset today's limits, jump to a time of day, or wipe the test save. It keeps its own save, separate from the normal game. After editing `index.html`, run `python3 dev/make-dev.py` to rebuild `dev.html`.
 
 ---
 
@@ -252,6 +258,8 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 
 `index.html` をブラウザで開くだけで遊べます（オフライン可。オンライン時はピクセルフォントを読み込みます）。`python3 -m http.server 8000` で起動して http://localhost:8000 を開いても OK。進行状況と言語はブラウザに保存されます。
 
+**テストモード**：`dev.html`（[オンライン版](https://aubreykuang.github.io/HomeLove/dev.html)）を開くと左上にテストパネルが出ます。ゴールデンチャームをすぐ入手・使用、全ステータス最大、ステータス固定、今日の回数リセット、時刻ジャンプ、テスト用セーブの削除ができます。セーブは通常のゲームとは別です。`index.html` を変更したら `python3 dev/make-dev.py` で `dev.html` を作り直してください。
+
 ---
 
 ## 项目结构 / Project layout
@@ -262,6 +270,8 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 | `lang/zh.js` | 简体中文文本（源语言）/ Simplified Chinese text (source) |
 | `lang/en.js` | 英文文本 / English text |
 | `lang/ja.js` | 日文文本 / Japanese text |
+| `dev.html` | 测试模式（游戏本体 + 测试面板）/ Test mode (the game plus a test panel) |
+| `dev/make-dev.py` | 由 `index.html` 生成 `dev.html` / Builds `dev.html` from `index.html` |
 | `tools/check-lang.js` | 检查语言包和 `zh.js` 是否一致 / Checks a language pack against `zh.js` |
 | `docs/screenshots/` | README 里的截图 / Screenshots used in this README |
 
