@@ -111,8 +111,10 @@ if(dollhouse) {
     const state={day:1,time:480,inv:{cookie:2},need:{mood:50}};
     const relation={done:{},notes:{}},n={id:'alice',x:1,y:2,gifts:{cookie:15}};
     const ctx=runtime({state,D:{},rel:()=>relation,note:()=>{},advanceTime:n=>state.time+=n,updateHud:()=>{},nt:()=>({giftLines:['Thanks {i}']}),tierOf:()=>0,itemLabel:k=>k,talk:(n,t,o,cb)=>cb(),nm:()=> 'Alice',addPts:()=>{},clampN:n=>n,milestone:()=>{}});
+    vm.runInContext(html.match(/^const FISHING_INVITE=.*$/m)[0],ctx);
     loadFunction(ctx,html,'rememberPlayer','function addPts(');
     loadFunction(ctx,html,'give','function ');
+    ctx.give(n,'cookie');
     ctx.give(n,'cookie');
     assert.equal(state.inv.cookie,1);
     assert.equal(relation.done.gift,true);
