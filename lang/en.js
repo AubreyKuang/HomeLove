@@ -566,3 +566,35 @@ Object.assign(window.HL_LANG.en.clothes, {
   "peacockGown": "Gilded Peacock Gown"
 });
 window.HL_LANG.en.objects.capsule = {"name": "Dress Capsule Machine", "verb": "Use the dress capsule machine"};
+
+// Neighbor letters
+Object.assign(window.HL_LANG.en.ui, {
+  "requestMailPrompt": "Read the letter in the mailbox",
+  "requestAccept": "Take the request",
+  "requestDecline": "Skip this one",
+  "requestAdded": "Added {name}’s letter to your diary.",
+  "requestTerms": "Bring {items}, whichever you can spare, by {day}. I’ve set aside {reward} for you.",
+  "requestOr": " or ",
+  "requestHandIn": "Deliver a request",
+  "requestBring": "Which did you bring today?",
+  "requestDeliver": "Hand over {item} ×{count} ({owned} owned)",
+  "requestReward": "Received {item} ×2 and gained 6 affection.",
+  "requestKeepsake": "First Favor",
+  "requestJournal": "Letters from Neighbors",
+  "requestJournalEntry": "{name} · {items} (choose one) · Due {day}",
+  "requestLetter_gy": "I’m trying a new coffee pairing. Strawberries would make a good jam, or I could serve a cookie. Would you be my first taster?",
+  "requestThanks_gy": "I’ll save yours by the window. It gets the sun.",
+  "requestRecall_gy": "I kept a spot on the menu for the pairing you helped me make with {item}.",
+  "requestLetter_xm": "I want a little corner of autumn in the flower shop. Carrot tops would look nice in a vase, and a pumpkin would suit the doorstep.",
+  "requestThanks_xm": "I arranged it with the daisies. Take a look if you pass by!",
+  "requestRecall_xm": "Remember the {item} you brought? A customer asked about the display.",
+  "requestLetter_xy": "Practice left us all starving. I’m making fish soup for the team. Two little fish or one carp would do.",
+  "requestThanks_xy": "Once I get the recipe right, the next pot’s on me!",
+  "requestRecall_xy": "We made soup with the {item} you brought. Even our pickiest teammate wanted seconds.",
+  "requestLetter_jy": "I need something for my new track’s cover. A flower or a shell would work for a photo of the yard.",
+  "requestThanks_jy": "I’ve just thought of a title. You can hear the first take when it’s done.",
+  "requestRecall_jy": "The {item} you brought ended up on the cover after all.",
+  "requestLetter_by": "I’m painting the pond at night. I’d like to look at a moonfish’s scales or see how a star stone looks under the lamp.",
+  "requestThanks_by": "I’ll show you the painting once the paint dries.",
+  "requestRecall_by": "The {item} you brought helped me find the color of the water that night."
+});

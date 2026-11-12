@@ -566,3 +566,35 @@ Object.assign(window.HL_LANG.ja.clothes, {
   "peacockGown": "孔雀の金刺繍ドレス"
 });
 window.HL_LANG.ja.objects.capsule = {"name": "ドレスガチャ", "verb": "ドレスガチャを回す"};
+
+// Neighbor letters
+Object.assign(window.HL_LANG.ja.ui, {
+  "requestMailPrompt": "郵便受けの手紙を読む",
+  "requestAccept": "お願いを引き受ける",
+  "requestDecline": "今回は見送る",
+  "requestAdded": "{name}の手紙を日記に記録した。",
+  "requestTerms": "{items}のどちらかを{day}までに届けてね。お礼は{reward}。",
+  "requestOr": " または ",
+  "requestHandIn": "お願いの品を届ける",
+  "requestBring": "今日はどちらを持ってきた？",
+  "requestDeliver": "{item} ×{count}を渡す（所持 {owned}）",
+  "requestReward": "{item} ×2を受け取り、好感度が6上がった。",
+  "requestKeepsake": "初めてのお手伝い",
+  "requestJournal": "ご近所からの手紙",
+  "requestJournalEntry": "{name} · {items}（どちらか一つ）· 期限 {day}",
+  "requestLetter_gy": "コーヒーに合うおやつを考えてる。イチゴならジャムに、クッキーならそのまま出せる。最初に味見してくれる？",
+  "requestThanks_gy": "窓辺に君の分を取っておくよ。日が当たる席だ。",
+  "requestRecall_gy": "君が届けてくれた{item}を使った組み合わせ、メニューに載せたよ。",
+  "requestLetter_xm": "お店に小さな秋を飾りたいな。ニンジンの葉は花瓶に、小さなカボチャは入口に置きたいの。",
+  "requestThanks_xm": "デイジーと一緒に飾ったよ。通りかかったら見てね！",
+  "requestRecall_xm": "あの{item}の飾り、お客さんが気に入ってくれたんだ。",
+  "requestLetter_xy": "練習で腹ぺこだ。チームのみんなに魚のスープを作るよ。小魚2匹かコイ1匹があれば足りる。",
+  "requestThanks_xy": "上手に作れるようになったら、次は君にごちそうする！",
+  "requestRecall_xy": "あの{item}で作ったスープ、好き嫌いが多い仲間までおかわりしたよ。",
+  "requestLetter_jy": "新曲のジャケットが決まらなくてさ。庭で写真を撮りたい。花か貝殻があるといいんだけど。",
+  "requestThanks_jy": "今、曲名が決まった。録れたら一番に聴かせるよ。",
+  "requestRecall_jy": "君が持ってきた{item}、結局ジャケットに使ったよ。",
+  "requestLetter_by": "夜の池を描いてる。月光魚のうろこか、ランプに照らした星の石の色を見たい。",
+  "requestThanks_by": "……絵の具が乾いたら見せるよ。",
+  "requestRecall_by": "あの{item}のおかげで、あの晩の水面の色が描けた。"
+});
