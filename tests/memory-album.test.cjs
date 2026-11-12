@@ -44,7 +44,7 @@ test('overnight delivery rotates familiar residents and stays unique across relo
     CottageActivities: {grow() {}}, rememberMissedOccasions() {},
     objName: id => id, nm: n => n.id, tr: (key, args) => args?.n ?? key,
     talk(_name, lines, options) { assert.equal(lines[0], 'gy'); choices = options; },
-    openAlbum(tab) { opened = tab; }, checkNeighborMail() {},
+    openAlbum(tab) { opened = tab; }, checkNeighborMail() {}, bondsNewDay() {},
   });
   state.album = context.album.load();
   for (const [start, end] of [['function newDay(', 'function wakeAtBed('],

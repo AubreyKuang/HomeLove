@@ -8,6 +8,8 @@ const read = name => readFileSync(join(__dirname, '..', name), 'utf8');
 const html = read('index.html');
 
 function game(context = {}) {
+  // Trust and morning bookkeeping live in cottage-bonds tests; here they are no-ops.
+  for (const name of ['trustNpc', 'courtNpc', 'bondsNewDay']) context[name] ??= () => {};
   const runtime = vm.createContext(context);
   vm.runInContext(read('cottage-activities.js'), runtime);
   runtime.activities = vm.runInContext('CottageActivities', runtime);

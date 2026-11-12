@@ -13,6 +13,7 @@ const memorySource = palace
   ? html.slice(html.indexOf('const NPCMemory ='), html.indexOf(end) + end.length)
   : read(dollhouse ? 'js/npc-memory.js' : 'npc-memory.js');
 function runtime(extra = {}) {
+  for (const name of ['trustNpc', 'courtNpc', 'bondsNewDay']) extra[name] ??= () => {};
   const context = vm.createContext(extra);
   vm.runInContext(memorySource, context);
   context.memory = vm.runInContext('NPCMemory', context);
