@@ -292,6 +292,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 </div>
 <div id="fade"></div>
 
+<script src="npc-memory.js"></script>
 <script src="lang/zh.js" charset="utf-8"></script>
 <script src="lang/en.js" charset="utf-8"></script>
 <script src="lang/ja.js" charset="utf-8"></script>
@@ -688,6 +689,7 @@ function snapshot(){return JSON.parse(JSON.stringify(state));}
 function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
 function applySave(s){
   if(!s||typeof s!=='object')return;
+  state.npcMemory=s.npcMemory;
   if(s.o&&typeof s.o==='object')Object.assign(state.o,s.o);
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
@@ -1404,6 +1406,13 @@ function outfitScore(n){
   ['topColor'].concat(dress?[]:['bottomColor']).forEach(k=>{if(n.likeColors.includes(o[k]))s++;});
   return s;
 }
+function rememberPlayer(n,type,outcome,emotion,impact,object){
+  NPCMemory.record(state,{
+    type,time:(state.day-1)*1440+state.time,location:{x:n.x,y:n.y},
+    participants:['player',n.id],outcome,object
+  },[{person:n.id,subject:'player',emotion,impact,
+    interpretation:{type,outcome,object,perspective:'recipient'}}]);
+}
 function addPts(n,d){
   const r=rel(n),before=hearts(r);r.pts=Math.max(0,Math.min(100,r.pts+d));
   if(r.pts>=20)r.knowGift=true;if(r.pts>=40)r.knowStyle=true;
@@ -1445,7 +1454,7 @@ function chat(n){
   const r=rel(n),T=nt(n);D.npc=n;
   if(r.done.chat){talk(nm(n),[T.tired],null,()=>npcMenu(n,true));return;}
   r.done.chat=true;advanceTime(15);
-  const lines=[];let gain=6;const sc=outfitScore(n);
+  const lines=[];let gain=6+Math.round(NPCMemory.influence(state,n.id,'player'));const sc=outfitScore(n);
   if(sc>=4){lines.push(T.outfitHi);gain+=8;r.knowStyle=true;}else if(sc>=2){lines.push(T.outfitMid);gain+=4;}
   if(state.need.mood<25){lines.push(tr('tiredMood',{n:nm(n)}));gain-=3;}
   const pet=petSeenBy(n);if(pet){lines.push(tr('petLiked',{n:nm(n),p:pet.name}));gain+=4;note(n,'pet_'+pet.kind,12);}
@@ -1490,7 +1499,7 @@ function giftMenu(n){
 }
 function give(n,k){
   const r=rel(n),d=n.gifts[k];state.inv[k]--;r.done.gift=true;if(d>=15)r.knowGift=true;note(n,'gift_'+k,d);advanceTime(5);updateHud();D.npc=n;
-  talk(nm(n),[nt(n).giftLines[tierOf(d)].replace('{i}',itemLabel(k))],null,()=>{addPts(n,d);state.need.mood=clampN(state.need.mood+3);milestone(n);});
+  talk(nm(n),[nt(n).giftLines[tierOf(d)].replace('{i}',itemLabel(k))],null,()=>{rememberPlayer(n,'gift',d>=15?'liked':d<0?'disliked':'received',Math.max(-1,Math.min(1,d/15)),65,k);addPts(n,d);state.need.mood=clampN(state.need.mood+3);milestone(n);});
 }
 function actMenu(n){
   const dark=darkness()>0.5,r=rel(n);D.npc=n;
@@ -1517,16 +1526,16 @@ function dateWith(n,loc){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];r.done.date=true;D.npc=n;
   busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
-      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
+      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
 function confess(n){
   const r=rel(n);D.npc=n;r.done.confess=true;
   talk(tr('you'),[tr('confessStart')],null,()=>{
     D.npc=n;
-    if(state.need.mood<40){talk(nm(n),[tr('confessFail1',{n:nm(n)}),tr('confessFail2')],null,()=>addPts(n,-3));return;}
+    if(state.need.mood<40){talk(nm(n),[tr('confessFail1',{n:nm(n)}),tr('confessFail2')],null,()=>{rememberPlayer(n,'confession','rejected',-.5,85);addPts(n,-3);});return;}
     r.couple=true;state.need.mood=clampN(state.need.mood+25);
     for(let i=0;i<8;i++)setTimeout(()=>heart(n.x+(Math.random()*20-10),n.y-20-Math.random()*8),i*100);
-    talk(nm(n),nt(n).confess,null,()=>{addPts(n,5);updateHud();notify(tr('becameCouple',{n:nm(n)}));});
+    talk(nm(n),nt(n).confess,null,()=>{rememberPlayer(n,'confession','accepted',1,100);addPts(n,5);updateHud();notify(tr('becameCouple',{n:nm(n)}));});
   });
 }
 function moveIn(n){const r=rel(n);D.npc=n;talk(nm(n),nt(n).moveIn,null,()=>{r.livesIn=true;n.path=null;n.idle=5;save();notify(tr('movedIn',{n:nm(n)}));});}
