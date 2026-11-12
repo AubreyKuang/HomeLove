@@ -1013,3 +1013,36 @@ Object.assign(window.HL_LANG.en.ui, {
   "capsuleAgain": "Draw again",
   "capsuleNoMore": "Collection complete"
 });
+
+Object.assign(window.HL_LANG.en.ui, {
+  "worldTitle_snowRace": "First Snow at the Pond",
+  "worldTitle_snowDinner": "Fish Soup for Three",
+  "snowKnock": "Two knocks. Lu Xingye is holding two rods, with snow on his cap. “The pond froze. I’m going to beat you at ice fishing today!”",
+  "snowReturn": "“Both holes are still there. How do you want to fish today?”",
+  "snowRace": "Race to the first catch",
+  "snowRematch": "Race again",
+  "snowCoop": "Catch dinner for Gu Yan together",
+  "snowLater": "Come back another day",
+  "snowRecords": "See both ice fishing records",
+  "snowRaceStart": "“One hole each. First fish wins!” Press {k} when you see a bite.",
+  "snowCoopStart": "“One fish each. That should be enough for Gu Yan’s soup.” Press {k} when you see a bite.",
+  "snowYourCatch": "You caught a fish and put it in the bucket.",
+  "snowRivalCatch": "Xingye reeled in first. You can still fish to record your time.",
+  "snowRivalIngredient": "Xingye caught one. He crouches by the ice and waits for you.",
+  "snowRecast": "It got away. Cast again and wait for a bite before pressing {k}.",
+  "snowStop": "“Let’s pack up. Our hands are freezing. Find me if you want to try again.”",
+  "snowRace_won": "“You won!” Xingye looks at his fish, then at you. “I’m switching holes next time.”",
+  "snowRace_lost": "“Mine came up first!” Xingye nudges the bucket toward you. “Again sometime?”",
+  "snowRace_tie": "Both fish come up almost at once. Xingye laughs. “All right, a tie.”",
+  "snowRaceTimes": "This race · You {player} | Xingye {rival}",
+  "snowRaceTotals": "Total · {won} wins / {lost} losses / {tie} ties",
+  "snowRaceBest": "Best times · You {player} | Xingye {rival}",
+  "snowSeconds": "{seconds}s",
+  "snowNoCatch": "No catch",
+  "snowDinnerReady": "There are two fish in the bucket. “Let’s show Gu Yan. Dinner at the cottage tonight!”",
+  "snowGoDinner": "Wait for supper and share the soup",
+  "snowDinnerLater": "Do something else and come to the table later",
+  "snowDinnerMeal": "Gu Yan fills three bowls and slides the hottest to Xingye. “You’ve been cold all the way home. Sip slowly.”",
+  "snowDinnerConfession": "Xingye lowers his head over the bowl. “When I knocked that morning, it was my first time ice fishing. I’d just borrowed both rods. I’m glad you came with me.”",
+  "snowDinnerToast": "Gu Yan laughs and pours more soup. “Then this first pot is for today.” Snow falls outside. None of you hurries to get up."
+});
