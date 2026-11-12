@@ -552,7 +552,7 @@ Object.assign(window.HL_LANG.en.ui, {
   "capsuleIntro": "Dress capsules fill the glass globe. Collected {owned}/{total}. Every turn gives you a new design.",
   "capsuleFree": "Turn the knob (first capsule is free)",
   "capsuleTrade": "Trade {cost} × {item} for a capsule ({count} owned)",
-  "capsuleComplete": "You have all four gowns. Find them in your wardrobe.",
+  "capsuleComplete": "You have collected every gown. Find them in your wardrobe.",
   "capsuleWon": "The capsule popped open! {dress} has been added to your wardrobe.",
   "capsuleTry": "Try it on",
   "capsuleKeep": "Save it for later",
@@ -564,6 +564,12 @@ Object.assign(window.HL_LANG.en.clothes, {
   "moonGown": "Starlit Train Gown",
   "lilyGown": "Lily Pearl Gown",
   "peacockGown": "Gilded Peacock Gown"
+});
+Object.assign(window.HL_LANG.en.clothes, {
+  "seaSailorDress": "Sea Salt Sailor Dress",
+  "dawnButterflyGown": "Dawn Butterfly Gown",
+  "deepSeaGown": "Deep Sea Mermaid Gown",
+  "snowCapeDress": "Snow Velvet Cape Dress"
 });
 window.HL_LANG.en.objects.capsule = {"name": "Dress Capsule Machine", "verb": "Use the dress capsule machine"};
 
