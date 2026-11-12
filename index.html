@@ -1671,9 +1671,13 @@ function drawCapsule(pool,payment){
   ],null,preview);
 }
 function tryCapsuleItem(pool,item){
-  openCapsuleWardrobe(pool);
+  const outfitChanged=state.o[pool.slot]!==item.id||state.o[pool.colorKey]!==item.color;
   state.o[pool.slot]=item.id;state.o[pool.colorKey]=item.color;
-  changed();
+  if(outfitChanged)rewardNewLook();
+  save();
+  sfx('pop');
+  const name=itemName(item.id);
+  say(objName('capsule'),lifeText(`已换上「${name}」！`,`Now wearing ${name}!`,`「${name}」に替えたよ！`));
 }
 function openCapsuleWardrobe(pool){curCat=pool.tab;openDress();}
 function checkMail(){
@@ -2314,10 +2318,16 @@ function renderLooks(){
   });
 }
 function changed(){sfx('pop');renderPicker();drawPreview();pv.classList.remove('pop');void pv.offsetWidth;pv.classList.add('pop');save();}
+function rewardNewLook(){
+  if(state.changedToday)return;
+  state.changedToday=true;
+  state.need.mood=clampN(state.need.mood+8);
+  updateHud();notify(tr('newLook'));
+}
 function openDress(){if(dressOpen||diaryOpen||busy||startOpen||D.modal||FISH.on)return;sfx('whoosh');dressOpen=true;dressStartKey=outfitKey(state.o);keys.clear();touchKeys.clear();$('#dress').classList.remove('hidden');renderPicker();renderLooks();drawPreview();$('#dClose').focus();}
 function closeDress(){
   sfx('whoosh');dressOpen=false;$('#dress').classList.add('hidden');cv.focus({preventScroll:true});
-  if(outfitKey(state.o)!==dressStartKey&&!state.changedToday){state.changedToday=true;state.need.mood=clampN(state.need.mood+8);updateHud();save();notify(tr('newLook'));}
+  if(outfitKey(state.o)!==dressStartKey){rewardNewLook();save();}
   say(objName('mirror'),mirrorLine());
 }
 $('#dClose').addEventListener('click',closeDress);
