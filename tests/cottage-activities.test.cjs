@@ -229,13 +229,13 @@ test('first moonfish gift schedules a night invitation, retry, and one shared ca
 
 test('capsule draws grant new gowns once and charge only accepted game items', () => {
   const state = {capsuleDresses: [], inv: {shell: 2, flower: 6}, o: {top: 'tee'}};
-  let options, preview;
+  let options, preview, canSave=true;
   const runtime = game({
     state, D: {}, pick: choices => choices[0], unlocked: dress => state.capsuleDresses.includes(dress.id),
     tr: key => key, itemLabel: key => key, itemName: key => key, objName: key => key,
     talk(_speaker, _lines, choices, _onEnd, art) { options = choices; preview = art; },
     el: () => ({setAttribute() {}, append() {}}), mk: () => ({getContext() {}}), blitChar() {},
-    openDress() {}, changed() {}, save() {}, updateHud() {}, sfx() {}
+    lifeText: zh=>zh, openDress() {}, changed() {}, save(){return canSave;}, updateHud() {}, sfx() {}
   });
   runSection(runtime,'const CAPSULE_DRESSES=','const TOPS=');
   runSection(runtime,'const CAPSULE_COST=','function checkMail(');
@@ -247,16 +247,47 @@ test('capsule draws grant new gowns once and charge only accepted game items', (
   options[0].fn();
   assert.equal(state.o.top,'roseGown');
   assert.equal(state.o.topColor,9);
+  assert.equal(vm.runInContext('curCat',runtime),'capsule');
   runtime.drawCapsule('star');
   assert.equal(state.capsuleDresses.length,1);
+  canSave=false;
+  runtime.drawCapsule('shell');
+  assert.equal(state.inv.shell,2);
+  assert.equal(state.capsuleDresses.length,1);
+  canSave=true;
   runtime.drawCapsule('shell');
   runtime.drawCapsule('shell');
   assert.equal(state.inv.shell,0);
   assert.equal(state.capsuleDresses.length,2);
   runtime.drawCapsule('flower');
   runtime.drawCapsule('flower');
-  state.inv.flower=3;
+  state.inv.flower=15;
+  for(let i=0;i<4;i++)runtime.drawCapsule('flower');
   runtime.drawCapsule('flower');
   assert.equal(state.inv.flower,3);
-  assert.equal(new Set(state.capsuleDresses).size,4);
+  assert.equal(new Set(state.capsuleDresses).size,8);
+  assert.ok(state.capsuleDresses.includes('snowCapeDress'));
+});
+
+test('click route goes around an obstacle, rejects blocked targets, and stops on arrival', () => {
+  const width=5,height=5;
+  const solid=new Uint8Array(width*height);
+  for(let y=1;y<=3;y++)solid[y*width+2]=1;
+  const P={x:24,y:44,dir:'right'};
+  const runtime=game({MW:width,MH:height,solid,P,FLOOR:1,DOOR:2,map:new Uint8Array(width*height),
+    at:()=>0,walkRoute:[]});
+  runSection(runtime,'function blocked(','function moveBy(');
+  runSection(runtime,'function npcPassable(','function lifeOf(');
+  assert.equal(runtime.setWalkDestination(40,42),false);
+  assert.equal(runtime.setWalkDestination(-5,42),false);
+  assert.equal(runtime.setWalkDestination(55,41),true);
+  assert.ok(runtime.walkRoute.some(([,y])=>y===12||y===76));
+  for(let i=0;i<100&&runtime.walkRoute.length;i++){
+    runtime.followWalkRoute(3.2);
+    assert.equal(runtime.blocked(P.x,P.y),false);
+  }
+  assert.equal(P.x,55);
+  assert.equal(P.y,43);
+  assert.equal(runtime.walkRoute.length,0);
+  assert.equal(runtime.followWalkRoute(3.2),false);
 });
