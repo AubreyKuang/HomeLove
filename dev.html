@@ -732,7 +732,7 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],
+  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],neighborRequest:null,
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()]))
 };
@@ -758,6 +758,7 @@ function applySave(s){
   if(Array.isArray(s.picked))state.picked=s.picked.filter(n=>typeof n==='number');
   state.garden=CottageActivities.loadGarden(s.garden,s.plots);
   state.fishLog=CottageActivities.loadFishLog(s.fishLog);
+  state.neighborRequest=CottageActivities.loadRequest(s.neighborRequest);
   if(Array.isArray(s.capsuleDresses))state.capsuleDresses=CAPSULE_DRESSES
     .filter(dress=>s.capsuleDresses.includes(dress.id)).map(dress=>dress.id);
   if(s.meal==='breakfast'||s.meal==='dinner')state.meal=s.meal;if(s.chores&&typeof s.chores==='object')state.chores=s.chores;
@@ -1525,8 +1526,65 @@ function tryCapsuleDress(dress){
   changed();
 }
 function checkMail(){
+  const current=CottageActivities.openRequest(state.neighborRequest,state.day);
+  const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
+  if(request){
+    if(!current){state.neighborRequest=request;save();}
+    readNeighborRequest(request);
+    return;
+  }
   const fans=npcs.filter(n=>hearts(rel(n))>=5&&!rel(n).livesIn);
   if(fans.length&&Math.random()<.6)say(objName('mailbox'),nt(pick(fans)).mail);else say(objName('mailbox'),pick(Lp.letters));
+}
+function hasNeighborMail(){
+  return CottageActivities.openRequest(state.neighborRequest,state.day)?.status==='offered'||
+    !!CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
+}
+function neighborRequestItems(request){
+  const {items}=CottageActivities.requests[request.resident];
+  return Object.entries(items).map(([item,count])=>`${ITEM_ICONS[item]} ${itemLabel(item)} ×${count}`);
+}
+function readNeighborRequest(request){
+  const n=npcs.find(n=>n.id===request.resident);
+  const {reward}=CottageActivities.requests[request.resident];
+  const lines=[tr('requestLetter_'+n.id),tr('requestTerms',{
+    items:neighborRequestItems(request).join(tr('requestOr')),
+    reward:`${ITEM_ICONS[reward]} ${itemLabel(reward)} ×2`,
+    day:tr('day',{d:request.day+2})
+  })];
+  const options=request.status==='offered'?[
+    {label:tr('requestAccept'),fn:()=>{
+      request.status='accepted';save();
+      say(objName('mailbox'),tr('requestAdded',{name:nm(n)}));
+    }},
+    {label:tr('requestDecline'),fn:()=>{
+      request.status='declined';request.closedDay=state.day;save();
+    }}
+  ]:[];
+  talk(nm(n),lines,options.concat({label:tr('walkAway'),fn:null}));
+}
+function acceptedNeighborRequest(n){
+  const request=CottageActivities.openRequest(state.neighborRequest,state.day);
+  return request?.status==='accepted'&&request.resident===n.id?request:null;
+}
+function offerNeighborDelivery(n,request){
+  const {items}=CottageActivities.requests[n.id];
+  const options=Object.entries(items).map(([item,count])=>({
+    label:tr('requestDeliver',{item:itemLabel(item),count,owned:state.inv[item]}),
+    disabled:state.inv[item]<count,fn:()=>deliverNeighborRequest(n,request,item)
+  }));
+  D.npc=n;
+  talk(nm(n),[tr('requestBring')],options.concat({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)}));
+}
+function deliverNeighborRequest(n,request,item){
+  if(request!==state.neighborRequest)return;
+  const reward=CottageActivities.fulfillRequest(request,n.id,state.day,state.inv,item);
+  if(!reward)return;
+  lifeOf(n).cards.neighborRequest ||= state.day;
+  rememberPlayer(n,'neighborRequest','fulfilled',.9,90,item);
+  addPts(n,6);updateHud();
+  D.npc=n;
+  talk(nm(n),[tr('requestThanks_'+n.id),tr('requestReward',{item:`${ITEM_ICONS[reward]} ${itemLabel(reward)}`})],null,()=>milestone(n));
 }
 function petCat(){
   sfx('cat');
@@ -1730,6 +1788,7 @@ function rememberPlayer(n,type,outcome,emotion,impact,object){
 function memoryLine(n,entry){
   const data=entry.interpretation;
   if(!data||typeof data!=='object')return '';
+  if(data.type==='neighborRequest')return tr('requestRecall_'+n.id,{item:itemLabel(data.object)});
   if(data.type==='sharedFishing')return tr('sharedFishingRecall',{
     fish:itemLabel(data.object.kind),size:data.object.size
   });
@@ -1800,6 +1859,8 @@ function npcMenu(n,back){
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
   if(fishingInvitationReady(n))opts.unshift({label:tr('sharedFishingTalk'),fn:()=>offerFishingInvitation(n)});
+  const request=acceptedNeighborRequest(n);
+  if(request)opts.unshift({label:tr('requestHandIn'),fn:()=>offerNeighborDelivery(n,request)});
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
   if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
@@ -1820,7 +1881,7 @@ function chat(n){
   if(r.done.chat){talk(nm(n),[T.tired],null,()=>npcMenu(n,true));return;}
   r.done.chat=true;advanceTime(15);
   const first=state.life?.[n.id]?.firstDate;
-  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing'].includes(e.type));
+  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest'].includes(e.type));
   const lines=[];
   if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
   else if(recalled&&Math.random()<.4){const line=memoryLine(n,recalled);if(line)lines.push(line);}
@@ -1928,7 +1989,8 @@ function findTarget(){
   for(const [ax,ay] of [[tx,ty],[mx,my]]){const pi=plotIndex(ax,ay);if(pi>=0)return {kind:'plot',i:pi,verb:plotVerb(state.garden[pi]),x:ax*16+8,y:ay*16+2};}
   if(!state.goldFound&&[[tx,ty],[mx,my]].some(([a,b])=>a===GOLD_TILE[0]&&b===GOLD_TILE[1]))return {kind:'gold',verb:tr('goldVerb'),x:GOLD_TILE[0]*16+8,y:GOLD_TILE[1]*16-4};
   const o=objAt(tx,ty);
-  if(o)return {kind:'obj',o,verb:Lp.objects[o.id].verb,x:(o.tx+o.tw/2)*16,y:o.py-5};
+  if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
+    x:(o.tx+o.tw/2)*16,y:o.py-5};
   const wx=Math.floor((P.x+d[0]*16)/16),wy=Math.floor((P.y-3+d[1]*16)/16);
   if(at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
   return null;
@@ -2155,7 +2217,7 @@ function renderDiary(){
       el('div','rline',today),el('div','rline',tr('favGift')+giftTxt),el('div','rline',tr('favStyle')+styleTxt),nl,el('div','rnext',nextHint(n)));
     if(r.met){
       const life=state.life[n.id],cards=life?.cards||{};
-      const labels={birthday:lifeText('生日快乐','Birthday','誕生日'),visitSick:lifeText('病中探望','A visit','お見舞い'),firstDate:lifeText('初次约会','First date','初デート'),rareDate:lifeText('难忘约会','Rare date','忘れられないデート')};
+      const labels={birthday:lifeText('生日快乐','Birthday','誕生日'),visitSick:lifeText('病中探望','A visit','お見舞い'),firstDate:lifeText('初次约会','First date','初デート'),rareDate:lifeText('难忘约会','Rare date','忘れられないデート'),neighborRequest:tr('requestKeepsake')};
       info.append(el('div','rline',lifeText('生日：每个周期第 ','Birthday: day ','誕生日：周期の ')+birthdayOf(n)+lifeText(' 天',' of each cycle',' 日目')));
       const keepsakes=el('div','keepsakes');
       for(const [key,day] of Object.entries(cards)){
@@ -2203,6 +2265,14 @@ function renderDiary(){
     caught.append(card);
   }
   pondLog.append(caught);
+  const request=CottageActivities.openRequest(state.neighborRequest,state.day);
+  if(request?.status==='accepted'){
+    const section=el('section','dsec'),n=npcs.find(person=>person.id===request.resident);
+    section.append(el('h3',null,tr('requestJournal')),el('div','rline',tr('requestJournalEntry',{
+      name:nm(n),items:neighborRequestItems(request).join(tr('requestOr')),day:tr('day',{d:request.day+2})
+    })));
+    b.append(section);
+  }
   b.append(s1,s4,s2,pondLog,s3);
 }
 function openDiary(){if(dressOpen||diaryOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
@@ -2283,6 +2353,13 @@ function render(time){
     if(cat.dir<0){g.save();g.translate(x+9,y-14);g.scale(-1,1);g.drawImage(s,0,0);g.restore();}else g.drawImage(s,x-9,y-14);
   }});
   ents.sort((a,b)=>a.key-b.key);for(const e of ents)e.draw(ctx);
+  if(hasNeighborMail()){
+    const x=7*16+4,y=10*16-16+(Math.sin(time*4)>0?1:0);
+    ctx.fillStyle='#714c48';ctx.fillRect(x-1,y-1,10,8);
+    ctx.fillStyle='#fff1cd';ctx.fillRect(x,y,8,6);
+    ctx.fillStyle='#d1917f';ctx.fillRect(x+1,y+1,2,1);ctx.fillRect(x+5,y+1,2,1);
+    ctx.fillRect(x+3,y+2,2,2);
+  }
   drawPuffs(ctx);
   for(const p of parts)drawHeart(ctx,p.x,p.y-p.t*14,Math.max(0,1-p.t/1.2));
   if(target&&!busy&&!dressOpen&&!diaryOpen&&!startOpen&&!D.modal&&!FISH.on)drawArrow(ctx,target.x,target.y+(Math.sin(time*6)>0?-1:0));

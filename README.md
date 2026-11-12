@@ -44,6 +44,7 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 - **种田**：到院子右侧菜地按 E 播种或照料。胡萝卜、草莓和南瓜分别需要 1、2、3 个浇过水的夜晚。草莓收过后，再浇水过一晚还能结果。一天没浇水，作物会等着你。种得多时可以一次浇完所有缺水的菜地。
 - **钓鱼**：面朝池塘按 E 选钓法。西侧芦苇边常见小鱼，东侧开阔水面更容易钓到金鳞鲤或月光鱼。白天找金鳞鲤，天黑再来找月光鱼。草莓鱼饵能缩短等待、延长收竿时间，也更容易钓到这两种鱼。看到「！」后趁进度条走完前收竿，鱼的首次钓获日期和最长尺寸会记进日记。
 - **月下同钓**：第一次送白夜月光鱼后，过两天晚上 19:00–23:30 到院子里。他会走过来邀请你去池塘。可以改天再去，鱼跑了也可以再抛一竿。一起钓到的第一条鱼会留下像素纪念卡，写着时间、鱼名和尺寸，白夜后来还可能在聊天时提起它。
+- **邻里来信**：认识居民后，门口信箱会出现带像素信封标记的委托。接下后去日记看期限，再找写信的人交付两种备选物品中的任意一种。交付会获得花或贝壳与 6 点好感。每位居民的第一次委托会留下纪念卡，日后聊天也可能提起你带过的东西。来信保留三天，跳过或过期不扣好感。
 - **恋爱和攻略**：
   - 每天可以和每个人聊天（有问答）、互动（夸奖、开玩笑、撩一下、牵手、拥抱、亲亲）、送礼物、一起做事（散步、钓鱼、看书、运动、看星星），以及约会（池塘、花园、星空野餐、在家做饭）。
   - 每个人吃的那一套都不一样：喜欢的颜色、衣服、礼物、话题、活动和约会地点各不相同。穿上对方喜欢的风格再去聊天，好感涨得更多。
@@ -138,6 +139,7 @@ You live in a small cottage with a pond, a strawberry patch and a flower garden.
 - **Garden and pond**: plant, water, and harvest strawberries, carrots, and pumpkins. Fish the reed bank or the open water by day or night, optionally using a strawberry as bait. Reel in when “!” appears. The diary keeps your first catch date and best size for each species. Give your harvest away or try it at the stove.
 - **Dress capsules**: the machine beside the mailbox gives you a free first draw. Later draws cost two shells or three flowers. Collect four distinct gowns, try them on, and recolor them in the wardrobe.
 - **Fishing by moonlight**: give Bai Ye a moonfish. Starting two days later, he can come find you in the yard between 19:00 and 23:30. Your first catch together earns a dated keepsake with the species and size.
+- **Neighbor letters**: check the mailbox after meeting a resident. Accept a favor, choose one of two items to deliver within three days, and earn flowers or shells plus affection. The diary tracks accepted favors and keeps a card for the first one you complete for each neighbor.
 - **Romance**:
   - Each day you can chat (with questions), interact (compliment, joke, flirt, hold hands, hug, kiss), give a gift, do an activity together (walk, fish, read, sport, stargaze) and go on a date (pond, garden, starlit picnic, cooking at home).
   - Everyone has their own taste in colors, clothes, gifts, topics, activities and date spots. Dress the way they like before you chat and affection grows faster.
@@ -211,6 +213,7 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 - **畑と釣り**：イチゴ、ニンジン、カボチャを植え、水やりして収穫。昼夜で釣れる魚が変わり、イチゴをエサにもできる。「！」が出たら竿を上げよう。初めて釣れた日と最大サイズは日記に残る。収穫物や魚は料理や贈り物に使える。
 - **ドレスガチャ**：郵便受けのそばにあるガチャは初回無料。次からは貝殻2個か花3本で回せる。4着のドレスが重複せずに手に入り、試着や色替えもできる。
 - **月夜のふたり釣り**：白夜に月光魚を贈ると、2日後から19:00〜23:30に庭へ釣りに誘いに来ることがある。一緒に釣った最初の魚は、日付や魚の名前、大きさとともに記念カードに残る。
+- **ご近所からの手紙**：住人と知り合ったら郵便受けを確認。お願いを引き受け、3日以内に指定の品をどちらか一つ届けると、花や貝殻と好感度がもらえる。日記で期限を確認でき、住人ごとの初回のお手伝いは記念カードに残る。
 - **恋愛**：
   - 毎日、おしゃべり（質問つき）、ふれあい（褒める、冗談、ドキッとさせる、手をつなぐ、ハグ、キス）、プレゼント、一緒に過ごす（散歩、釣り、読書、運動、星空観察）、デート（池、花壇、星空ピクニック、おうち料理）ができます。
   - 好きな色、服、プレゼント、話題、遊び、デート先は人それぞれ。相手好みの服で話しかけると好感度が上がりやすくなります。
@@ -338,7 +341,7 @@ node --test tests/*.test.cjs
 
 ### 本次测试
 
-- 12 项 Node 回归通过，覆盖旧存档迁移、作物生长、鱼饵与钓获、礼裙扭蛋抽取、白夜邀约、纪念卡和 NPC 记忆。英语和日语语言包检查通过。
+- 14 项 Node 回归通过，覆盖旧存档迁移、作物生长、鱼饵与钓获、礼裙扭蛋抽取、白夜邀约、纪念卡、NPC 记忆，以及邻里来信的接取、交付和奖励。英语和日语语言包检查通过。
 - 使用固定随机值调用主分支的游戏函数，验证后续约会保留第一次约会地点、聊天能提起该地点、稀有卡可触发、近处恋人才会目击，以及换装后有点评。
 - 在 Chrome 在线测试版完成池塘约会，确认攻略笔记出现。主分支新版界面的浏览器测试尚未完成。
 

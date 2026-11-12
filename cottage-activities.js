@@ -84,5 +84,48 @@ const CottageActivities = (() => {
     return {size, record};
   }
 
-  return {crops, fish, seed, ripe, loadGarden, grow, pickCrop, rollCatch, loadFishLog, logFish};
+  const requests = {
+    gy: {items: {berry: 2, cookie: 1}, reward: 'flower'},
+    xm: {items: {carrot: 2, pumpkin: 1}, reward: 'shell'},
+    xy: {items: {fish: 2, carp: 1}, reward: 'shell'},
+    jy: {items: {flower: 2, shell: 1}, reward: 'flower'},
+    by: {items: {moonfish: 1, star: 1}, reward: 'shell'}
+  };
+
+  function loadRequest(request) {
+    if (!request || !Object.hasOwn(requests, request.resident) ||
+        !Number.isInteger(request.day) || request.day < 1 ||
+        !['offered', 'accepted', 'delivered', 'declined'].includes(request.status)) return null;
+    const closedDay = Number.isInteger(request.closedDay) && request.closedDay >= request.day
+      ? request.closedDay : request.day;
+    return {resident: request.resident, day: request.day, status: request.status, closedDay};
+  }
+
+  function openRequest(request, day) {
+    return request && day >= request.day && day <= request.day + 2 &&
+      (request.status === 'offered' || request.status === 'accepted') ? request : null;
+  }
+
+  function nextRequest(day, previous, relations) {
+    if (openRequest(previous, day) || previous?.day >= day || previous?.closedDay >= day) return null;
+    const residents = Object.keys(requests).filter(id => relations[id]?.met);
+    if (!residents.length) return null;
+    const last = residents.indexOf(previous?.resident);
+    const index = last < 0 ? (day - 1) % residents.length : (last + 1) % residents.length;
+    return {resident: residents[index], day, status: 'offered'};
+  }
+
+  function fulfillRequest(request, resident, day, inventory, item) {
+    if (!openRequest(request, day) || request.status !== 'accepted' || request.resident !== resident) return null;
+    const {items, reward} = requests[resident];
+    if (!Object.hasOwn(items, item) || !(inventory[item] >= items[item])) return null;
+    inventory[item] -= items[item];
+    inventory[reward] += 2;
+    request.status = 'delivered';
+    request.closedDay = day;
+    return reward;
+  }
+
+  return {crops, fish, seed, ripe, loadGarden, grow, pickCrop, rollCatch, loadFishLog, logFish,
+    requests, loadRequest, openRequest, nextRequest, fulfillRequest};
 })();

@@ -566,3 +566,35 @@ Object.assign(window.HL_LANG.zh.clothes, {
   "peacockGown": "孔雀金纹礼裙"
 });
 window.HL_LANG.zh.objects.capsule = {"name": "礼裙扭蛋机", "verb": "转动礼裙扭蛋机"};
+
+// Neighbor letters
+Object.assign(window.HL_LANG.zh.ui, {
+  "requestMailPrompt": "信箱里有邻里来信",
+  "requestAccept": "接下委托",
+  "requestDecline": "这次先不接",
+  "requestAdded": "已记进日记：{name}的来信。",
+  "requestTerms": "带来 {items}，任选一样。最晚 {day} 交给我。我给你留了 {reward}。",
+  "requestOr": " 或 ",
+  "requestHandIn": "交付邻里委托",
+  "requestBring": "今天带了哪一样？",
+  "requestDeliver": "交付 {item} ×{count}（已有 {owned}）",
+  "requestReward": "收到 {item} ×2，好感 +6。",
+  "requestKeepsake": "第一次帮忙",
+  "requestJournal": "邻里来信",
+  "requestJournalEntry": "{name} · {items}（任选一样）· 截止 {day}",
+  "requestLetter_gy": "想试一份新的咖啡搭配。草莓能熬酱，饼干也合适。你愿意当我的第一位试吃客吗？",
+  "requestThanks_gy": "我会把你的那一份留在窗边。那儿有太阳。",
+  "requestRecall_gy": "上次你送来{item}，我后来还给那份菜单留了个位置。",
+  "requestLetter_xm": "我想给花店窗边加一小块秋天。萝卜的叶子能插瓶，小南瓜放在门口也好看。",
+  "requestThanks_xm": "我把它和小雏菊摆在一起了，路过可以看看！",
+  "requestRecall_xm": "我还记得你带来的{item}，有客人特地问过那个摆设呢。",
+  "requestLetter_xy": "练完球饿得厉害，想给队友做一锅鱼汤。两条小鱼或一条鲤鱼就够。",
+  "requestThanks_xy": "等我练会这道菜，下一锅请你吃！",
+  "requestRecall_xy": "上次的{item}煮成了汤，连最挑食的队友都添了一碗。",
+  "requestLetter_jy": "新曲的封面还差点东西。想拍一张院子的照片，花或者一枚贝壳都行。",
+  "requestThanks_jy": "刚才想好了曲名。等录完，第一遍给你听。",
+  "requestRecall_jy": "那次你带来的{item}，后来真成了新曲的封面。",
+  "requestLetter_by": "在画池塘的夜色。想看看月光鱼的银鳞，也想看看星星石在灯下是什么颜色。",
+  "requestThanks_by": "……等颜料干了，我给你看这幅画。",
+  "requestRecall_by": "你带来的{item}让我找到了那晚水面的颜色。"
+});
