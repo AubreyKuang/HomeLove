@@ -67,6 +67,21 @@ Once you have a partner, flirting with someone else, holding their hand, or goin
 
 Turn on the test mode and all four guys crowd around you at once — the 修罗场 gets even livelier.
 
+### A day living together
+
+Once your partner moves in, they run their own day on a schedule; you don't have to do anything. The new kitchen and workout corner are to the right of the living room, through the doorway in the right wall.
+
+| Time | What your partner does | What you can do |
+|---|---|---|
+| 07:00–08:30 | Cooks breakfast at the stove | Help; after 8:30 eat it at the round table (fullness +50) |
+| 09:30–11:00 | Sweeps the house with a broom | Help; when they finish, your mood +5 |
+| 14:00–15:30 | Lifts dumbbells in the workout corner | Work out together |
+| 17:30–19:00 | Cooks dinner | Eat it at the round table after 19:00 |
+| Other times | Wanders the house and yard, turns to face you when you come close | Chat, cuddle up |
+| After 21:00 | Stays home with you | Spend the night together |
+
+Every chore comes with that character's own lines; talk to them while they work to hear them.
+
 ## Screenshots
 
 | | |
