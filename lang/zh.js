@@ -6,6 +6,82 @@ window.HL_LANG.zh = {
   meta: { code: 'zh', label: '中文', htmlLang: 'zh-CN' },
 
   ui: {
+    trustLabel: "信任",
+    trustHigh: "很信任你",
+    trustMid: "信任你",
+    trustNone: "还在观望",
+    trustWary: "有点防备",
+    trustLow: "不太信任你",
+    jealousyLine: "醋意 {x}",
+    confrontQ: "「听说你最近也常和 {r} 在一起……是真的吗？」",
+    confrontHonest: "老实说，我也在和 {r} 约会",
+    confrontSoothe: "只是普通朋友，别多想",
+    confrontAvoid: "岔开话题",
+    confrontHonestReply: "……谢谢你没有骗我。让我想一想。",
+    confrontSootheReply: "……好吧，我愿意相信你。",
+    confrontSootheDoubt: "你每次都这么说。",
+    confrontAvoidReply: "你连解释都不想解释吗？",
+    chatJealous: "{n} 的语气有点冷淡，好像还在介意什么。",
+    chatTrusted: "{n} 小声跟你说了一件没告诉过别人的事。",
+    dropInArrive: "🚪 {n} 突然来找你了！",
+    dropIn_missYou: "没什么事，就是……突然很想见你。",
+    dropIn_gift: "路过的时候看到这个，就想到你了。",
+    dropIn_help: "能帮我个小忙吗？篱笆被风吹歪了，一个人扶不住。",
+    dropIn_news: "跟你说个好消息！池塘边开了今年第一朵睡莲。",
+    dropIn_jealous: "我想了一晚上，还是想当面问问你。",
+    dropIn_apology: "上次的事……我想跟你道个歉。",
+    dropInGift: "{n} 送给你 {i}。",
+    dropInHelp: "你帮 {n} 扶好了篱笆。",
+    dropInNote: "📝 {n} 来找过你，门口留了一张字条：「来找你，你不在。我改天再来。」",
+    recapTitle: "昨日小记",
+    recapNone: "昨天平平淡淡地过去了。",
+    recapUp: "{n} 对你的好感 +{d}",
+    recapDown: "{n} 对你的好感 {d}",
+    recapJealous: "{n} 听说了你和 {r} 的事。",
+    recapNote: "{n} 来找过你，留了字条。",
+    albumBadges: "成就",
+    badgeCount: "已收集 {x} / {y} 枚。带 ★ 的是稀有成就，只在小概率时出现。",
+    badgeLocked: "★ ？？？",
+    badgeLockedText: "稀有成就，还没遇见过。",
+    badgeSave: "保存纪念卡",
+    albumSave: "保存为纪念卡",
+    badgeToast: "🏅 成就解锁：{x}",
+    rareToast: "🌟 稀有成就：{x}",
+    badgeDay: "第 {d} 天解锁",
+    badge_firstDate: "初次约会",
+    badgeText_firstDate: "和一位居民去约会。",
+    badge_birthday: "记得生日",
+    badgeText_birthday: "在居民生日当天送上祝福。",
+    badge_visitSick: "病中探望",
+    badgeText_visitSick: "居民生病时去看了 TA。",
+    badge_couple: "心意相通",
+    badgeText_couple: "告白成功。",
+    badge_movedIn: "一起生活",
+    badgeText_movedIn: "恋人搬进了小屋。",
+    badge_dropIn: "不速之客",
+    badgeText_dropIn: "接待了一位突然来访的居民。",
+    badge_honest: "坦白",
+    badgeText_honest: "被追问时，说了实话。",
+    badge_trusted: "被信任的人",
+    badgeText_trusted: "有居民非常信任你。",
+    badge_heartbreak: "打翻醋坛",
+    badgeText_heartbreak: "有居民为你吃了很大的醋。",
+    badge_week: "一周的小屋",
+    badgeText_week: "在小屋生活满 7 天。",
+    badge_rareDate: "难忘的约会",
+    badgeText_rareDate: "稀有：一次让人难忘的约会。",
+    badge_clover: "四叶草",
+    badgeText_clover: "稀有：在花丛里找到四叶草。",
+    badge_shootingStar: "流星",
+    badgeText_shootingStar: "稀有：夜里在户外看见流星。",
+    cloverFound: "🍀 花丛里藏着一株四叶草！",
+    shootingStar: "☄ 一颗流星划过夜空。你悄悄许了个愿。",
+    offlineBack: "你不在的 {h} 小时里，小镇照常过日子。",
+    rewindTitle: "时光回溯",
+    rewindHint: "每天早上会留一份快照，最多保留 4 天。回到那天早上以后，之后的事会重新发生。",
+    rewindBtn: "回到第 {d} 天早上",
+    rewindConfirm: "回到第 {d} 天早上？之后发生的事会被改写。",
+    rewindDone: "回到了第 {d} 天早上。",
     spring: "春天",
     summer: "夏天",
     autumn: "秋天",
@@ -750,4 +826,170 @@ Object.assign(window.HL_LANG.zh.clothes, {
   "waterfallWaves": "瀑布长卷发",
   "highPonytail": "金扣高马尾",
   "curlyPixie": "精灵卷短发"
+});
+
+// Resident story chapters and capsule wardrobe expansion.
+window.HL_LANG.zh.residentStories = {
+  "gy": [
+    [
+      "第一杯苦咖啡",
+      "顾言带来两杯试做的咖啡。杯垫背面写着「店里的最后一批豆子」。他问你愿不愿意尝一口。",
+      [
+        "照原样喝一口",
+        "加点奶再尝"
+      ],
+      "「苦味很直接，对吧？以前我爸就爱这么喝。」他把杯垫翻了过来。",
+      "「好主意。其实我小时候就是偷偷加奶的。」他把自己的杯子也递了过来。"
+    ],
+    [
+      "没寄出的辞职信",
+      "顾言在杯套里夹了一封辞职信。旧店要关门了，新店愿意留他，但他想试着自己摆摊。",
+      [
+        "先试摆一天",
+        "先和店主谈谈"
+      ],
+      "他在信封背面写下试营业的日期。「如果只有一个客人，我也想知道自己会泡哪一杯。」",
+      "他把信收回去。「我一直在猜他会怎么说。也许该直接问他。」"
+    ],
+    [
+      "窗边新菜单",
+      "顾言把一张手写菜单摊在窗边。第一行空着，他把笔推到你面前。",
+      [
+        "写「清晨那杯」",
+        "写「慢慢来」"
+      ],
+      "他在名字下面加了一行小字。「第一杯留给最早陪我试喝的人。」",
+      "他念了一遍，把菜单贴上窗。「这也是我该给自己的提醒。」"
+    ]
+  ],
+  "xy": [
+    [
+      "空场上的投篮",
+      "陆星野把球投偏，捡球时故意说没瞄准。他手上的护腕松了。",
+      [
+        "捡球陪他投",
+        "在边上歇会儿"
+      ],
+      "你把球传回去。第三次终于进了，他没喊，只转头冲你笑。",
+      "他坐下重新系好护腕。「原来有人看见我投不进，也没那么糟。」"
+    ],
+    [
+      "名单上的空位",
+      "他把训练表递给你。替补名单上没有他的名字。他不知道该问教练，还是先把基本功练回来。",
+      [
+        "陪他重练基本功",
+        "鼓励他问教练"
+      ],
+      "他在表上给自己留了三格。「每次练完，我就划掉一格。你也可以来监督。」",
+      "他把训练表折好。「我最怕听到答案。可我更想知道下一步能做什么。」"
+    ],
+    [
+      "终场后的加练",
+      "终场后，他带回一只磨旧的球。「今天我只上了两分钟。最后一球，想留在这里投。」",
+      [
+        "把球传给他",
+        "问他能不能教你投"
+      ],
+      "他投完给你让出位置。「下次赢不赢都来吧。我想给自己留一点喜欢篮球的时间。」",
+      "他认真给你比了个手势。「先别管进不进。球离手的那个感觉，很好玩。」"
+    ]
+  ],
+  "jy": [
+    [
+      "没有副歌的歌",
+      "江屿拨了两下琴弦，停在同一个地方。「再往下我每次都写不出来。」",
+      [
+        "哼一小段试试",
+        "和他听一会儿水声"
+      ],
+      "他跟着你哼的调子弹了一遍，笑着在纸上画了个很大的圈。",
+      "安静了一会儿，他把这一小节留空。「也许这里可以让人喘口气。」"
+    ],
+    [
+      "要不要上台",
+      "镇上小演出空出一个位置。他本来想报名，听见要唱原创，就把名字擦了。",
+      [
+        "陪他试唱一次",
+        "先把歌录下来"
+      ],
+      "唱到第二遍，他没再停。「台下要是有人和你一样耐心，就好了。」",
+      "录音里多了一声踩碎枯叶的响动。他特意没剪掉。「听着就知道这是哪儿。」"
+    ],
+    [
+      "把歌送回池塘",
+      "江屿把最后一页谱子交给你。完成的歌只有一处还没决定，结尾要不要有人跟着唱。",
+      [
+        "跟他一起唱尾句",
+        "请他独唱给你听"
+      ],
+      "两人的声音落在同一个音上。他把谱角折起来。「这份给你，现场版只有这一份。」",
+      "他唱完，慢慢按住琴弦。「谢谢你听到最后。以前我总是唱到一半就想解释。」"
+    ]
+  ],
+  "by": [
+    [
+      "画布留白",
+      "白夜把未完成的画靠在池边。画上只有水，岸边的位置是空的。",
+      [
+        "说说你看到的倒影",
+        "陪他看光线慢慢变"
+      ],
+      "他用指尖比出倒影的边界。「我一直盯着画，差点忘了抬头看看真的池塘。」",
+      "天暗了一点。他把灰色和蓝色调在一起，说这几分钟的颜色最难等。"
+    ],
+    [
+      "背面有旧地址",
+      "他把画转过来，背面有个旧地址。「以前老师说，画不满意就翻过去。可我最近连旧画都不敢看。」",
+      [
+        "陪他翻看一张旧画",
+        "陪他重新拉一张画布"
+      ],
+      "你们找到一张没落款的练习画。他看了很久。「那时候笔很笨，但我真想画下来。」",
+      "白夜把画布慢慢拉平。「新的一张，我想从我现在看到的地方画起。」"
+    ],
+    [
+      "留一盏灯",
+      "画布终于有了岸，岸上是一扇开着的窗。白夜问你，画里要不要留一盏灯。",
+      [
+        "给窗里点一盏暖灯",
+        "让月光照进窗里"
+      ],
+      "他在窗下添了两点暖色。「我想让经过的人知道，这里可以停一下。」",
+      "他把窗边的蓝留得很浅。「好。这里有人，也可以安安静静的。」"
+    ]
+  ]
+};
+Object.assign(window.HL_LANG.zh.ui, {
+  "capsuleChoosePool": "想抽哪一池？每个池子独立收集。",
+  "capsulePool_top": "上衣池 {owned}/{total}",
+  "capsulePool_bottom": "半裙池 {owned}/{total}",
+  "capsuleTopTab": "扭蛋上衣",
+  "capsuleBottomTab": "扭蛋半裙",
+  "residentStoryOpen": "专属故事 · {chapter}",
+  "residentStoryReady": "这位居民有一段新故事。见面时可以聊聊。",
+  "residentRecall_gy_0": "那天说好先试摆一天，我把日期还留在信封上。",
+  "residentRecall_gy_1": "你劝我先开口。真的和店主谈过之后，我终于睡了个好觉。",
+  "residentRecall_xy_0": "训练表上的三格，我真的都划掉了。",
+  "residentRecall_xy_1": "我去找教练问了。他给了我两个可以自己练的动作。",
+  "residentRecall_jy_0": "你陪我试唱时，第二遍我就知道该怎么往下唱了。",
+  "residentRecall_jy_1": "那段录音里枯叶的声音，我还留着。",
+  "residentRecall_by_0": "那张没有落款的旧画，我后来补上了名字。",
+  "residentRecall_by_1": "我们一起拉平的那块画布，就是我后来用的这张。"
+});
+Object.assign(window.HL_LANG.zh.clothes, {
+  "sideSweep": "侧分短发",
+  "silkLowBun": "缎带低发髻",
+  "twinBraids": "花结双辫",
+  "shaggyWolf": "层次狼尾",
+  "lavenderPinafore": "薰衣草背带裙",
+  "emberQipao": "绛红盘扣旗袍",
+  "wisteriaTeaDress": "紫藤碎花裙",
+  "starlightTulle": "星砂薄纱裙",
+  "apricotCardigan": "杏糖针织开衫",
+  "embroideredBlouse": "花边刺绣衬衫",
+  "denimJacket": "浅靛牛仔外套",
+  "cloudSweater": "白云图案毛衣",
+  "plaidPleats": "莓红格纹百褶裙",
+  "pearlMidi": "珍珠扣中长裙",
+  "petalWrap": "花瓣裹身半裙"
 });

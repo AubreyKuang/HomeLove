@@ -6,6 +6,82 @@ window.HL_LANG.en = {
   meta: { code: 'en', label: 'English', htmlLang: 'en' },
 
   ui: {
+    trustLabel: "Trust",
+    trustHigh: "trusts you deeply",
+    trustMid: "trusts you",
+    trustNone: "still deciding",
+    trustWary: "a little wary",
+    trustLow: "doesn't trust you",
+    jealousyLine: "Jealousy {x}",
+    confrontQ: "\"I heard you've been spending a lot of time with {r}... Is it true?\"",
+    confrontHonest: "Honestly, I've been dating {r} too",
+    confrontSoothe: "We're just friends, don't worry",
+    confrontAvoid: "Change the subject",
+    confrontHonestReply: "...Thank you for not lying to me. Let me think about it.",
+    confrontSootheReply: "...Okay. I'll believe you.",
+    confrontSootheDoubt: "You always say that.",
+    confrontAvoidReply: "You won't even explain?",
+    chatJealous: "{n} sounds a little cold, as if something still bothers them.",
+    chatTrusted: "{n} quietly tells you something they've never told anyone.",
+    dropInArrive: "🚪 {n} dropped by to see you!",
+    dropIn_missYou: "No reason, really... I just wanted to see you.",
+    dropIn_gift: "I saw this on my way and thought of you.",
+    dropIn_help: "Could you help me? The wind knocked my fence over and I can't hold it alone.",
+    dropIn_news: "Good news! The first water lily of the year opened by the pond.",
+    dropIn_jealous: "I thought about it all night. I want to ask you in person.",
+    dropIn_apology: "About last time... I wanted to say sorry.",
+    dropInGift: "{n} gives you {i}.",
+    dropInHelp: "You helped {n} set the fence straight.",
+    dropInNote: "📝 {n} came by and left a note at the door: \"You weren't home. I'll come again.\"",
+    recapTitle: "Yesterday",
+    recapNone: "Yesterday passed quietly.",
+    recapUp: "{n} likes you more (+{d})",
+    recapDown: "{n} likes you less ({d})",
+    recapJealous: "{n} heard about you and {r}.",
+    recapNote: "{n} came by and left a note.",
+    albumBadges: "Achievements",
+    badgeCount: "{x} / {y} collected. Ones marked ★ are rare and only turn up by chance.",
+    badgeLocked: "★ ???",
+    badgeLockedText: "A rare achievement you haven't found yet.",
+    badgeSave: "Save card",
+    albumSave: "Save as keepsake card",
+    badgeToast: "🏅 Achievement: {x}",
+    rareToast: "🌟 Rare achievement: {x}",
+    badgeDay: "Unlocked on day {d}",
+    badge_firstDate: "First Date",
+    badgeText_firstDate: "Go on a date with a neighbour.",
+    badge_birthday: "Remembered",
+    badgeText_birthday: "Wish a neighbour happy birthday on the day.",
+    badge_visitSick: "Get Well",
+    badgeText_visitSick: "Visit a neighbour who was sick.",
+    badge_couple: "Sweethearts",
+    badgeText_couple: "Your confession was accepted.",
+    badge_movedIn: "Living Together",
+    badgeText_movedIn: "Your partner moved into the cottage.",
+    badge_dropIn: "Surprise Visit",
+    badgeText_dropIn: "Welcome a neighbour who dropped by unannounced.",
+    badge_honest: "Honest",
+    badgeText_honest: "Tell the truth when you're asked.",
+    badge_trusted: "Trusted",
+    badgeText_trusted: "A neighbour trusts you deeply.",
+    badge_heartbreak: "Green-Eyed",
+    badgeText_heartbreak: "Someone got very jealous over you.",
+    badge_week: "One Week",
+    badgeText_week: "Live at the cottage for 7 days.",
+    badge_rareDate: "Unforgettable Date",
+    badgeText_rareDate: "Rare: a date nobody will forget.",
+    badge_clover: "Four-Leaf Clover",
+    badgeText_clover: "Rare: find a four-leaf clover among the flowers.",
+    badge_shootingStar: "Shooting Star",
+    badgeText_shootingStar: "Rare: see a shooting star while outdoors at night.",
+    cloverFound: "🍀 A four-leaf clover was hiding among the flowers!",
+    shootingStar: "☄ A shooting star crosses the sky. You quietly make a wish.",
+    offlineBack: "While you were away for {h} hours, the village went on as usual.",
+    rewindTitle: "Turn back time",
+    rewindHint: "A snapshot is kept every morning, for up to 4 days. Go back to that morning and what came after happens again.",
+    rewindBtn: "Back to the morning of day {d}",
+    rewindConfirm: "Go back to the morning of day {d}? What happened afterwards will be rewritten.",
+    rewindDone: "Back to the morning of day {d}.",
     spring: "Spring",
     summer: "Summer",
     autumn: "Autumn",
@@ -750,4 +826,170 @@ Object.assign(window.HL_LANG.en.clothes, {
   "waterfallWaves": "Waterfall Waves",
   "highPonytail": "High Ponytail",
   "curlyPixie": "Curly Pixie"
+});
+
+// Resident story chapters and capsule wardrobe expansion.
+window.HL_LANG.en.residentStories = {
+  "gy": [
+    [
+      "The Bitter First Cup",
+      "Gu Yan brings two trial coffees. On a coaster he wrote “the shop’s last batch.” He asks you to taste one.",
+      [
+        "Taste it as it is",
+        "Try it with milk"
+      ],
+      "“Bitter, right? My dad liked it that way.” He turns the coaster over.",
+      "“Good call. I used to sneak milk into mine as a kid.” He hands you his cup too."
+    ],
+    [
+      "The Unsent Resignation",
+      "Gu Yan slips a resignation letter into a sleeve. The old café is closing. Its successor offered him a job, but he wants to try a stall.",
+      [
+        "Try the stall for one day",
+        "Talk it through with the owner"
+      ],
+      "He writes a trial date on the envelope. “Even with one customer, I want to find out what I’d serve.”",
+      "He pockets the letter. “I keep guessing what he’d say. Maybe I should just ask.”"
+    ],
+    [
+      "A New Window Menu",
+      "Gu Yan spreads a handwritten menu by the window. The first line is blank. He slides you the pen.",
+      [
+        "Write “Early Morning”",
+        "Write “Take Your Time”"
+      ],
+      "He adds a tiny line under the name. “First cup reserved for my earliest taste tester.”",
+      "He reads it out and tapes the menu to the window. “A reminder for myself, too.”"
+    ]
+  ],
+  "xy": [
+    [
+      "Shots on an Empty Court",
+      "Lu Xingye misses and claims he wasn’t aiming. His wristband is loose.",
+      [
+        "Pass him the ball",
+        "Take a break on the side"
+      ],
+      "You pass it back. The third shot goes in. He just turns and grins at you.",
+      "He sits and reties his wristband. “Having someone see me miss isn’t so bad after all.”"
+    ],
+    [
+      "The Empty Spot on the Roster",
+      "He shows you the training sheet. He’s off the reserve roster and torn between asking the coach and working on fundamentals.",
+      [
+        "Practice fundamentals together",
+        "Encourage him to ask the coach"
+      ],
+      "He marks three boxes. “One for each practice. You can keep me honest.”",
+      "He folds the sheet. “I’m scared of the answer, but I want to know what I can do next.”"
+    ],
+    [
+      "After the Final Whistle",
+      "He brings a worn ball after the game. “I only played two minutes. I want to take the last shot here.”",
+      [
+        "Pass him the ball",
+        "Ask him to teach you"
+      ],
+      "He takes the shot and makes room for you. “Come again, win or lose. I want time just to enjoy playing.”",
+      "He shows you the motion. “Forget the score. The feeling when the ball leaves your hands is the fun part.”"
+    ]
+  ],
+  "jy": [
+    [
+      "A Song Without a Chorus",
+      "Jiang Yu strums twice and stops at the same spot. “I never get any further.”",
+      [
+        "Hum a few notes",
+        "Listen to the water together"
+      ],
+      "He plays your notes back and draws an enormous circle on the page.",
+      "After a pause, he leaves the bar blank. “Maybe this is where people get to breathe.”"
+    ],
+    [
+      "Whether to Go Onstage",
+      "There’s an opening at a local show. He erased his name when he heard they wanted an original song.",
+      [
+        "Rehearse with him",
+        "Make a recording first"
+      ],
+      "On the second pass, he doesn’t stop. “I hope someone out there is as patient as you.”",
+      "A leaf crunches in the recording. He keeps it in. “Now you can hear where we were.”"
+    ],
+    [
+      "Bring the Song Back to the Pond",
+      "Jiang Yu hands you the last page. One thing is undecided: whether anyone should sing along at the end.",
+      [
+        "Sing the last line with him",
+        "Listen to him sing it alone"
+      ],
+      "Your voices land on the same note. He folds a corner. “This copy is yours. It’s the only live version.”",
+      "He mutes the strings. “Thanks for listening to the end. I used to stop halfway to explain myself.”"
+    ]
+  ],
+  "by": [
+    [
+      "Space on the Canvas",
+      "Bai Ye props an unfinished painting by the pond. There’s water on it, but the bank is empty.",
+      [
+        "Describe the reflection you see",
+        "Watch the light change with him"
+      ],
+      "He traces the edge with a finger. “I was looking at the painting so hard I forgot to look at the pond.”",
+      "The sky dims. He mixes gray into blue. This, he says, is the color that takes patience."
+    ],
+    [
+      "An Old Address on the Back",
+      "He turns it over. There’s an old address. “My teacher said to turn the canvas over when it felt wrong. Lately I can’t even look at the old paintings.”",
+      [
+        "Look at an old painting together",
+        "Stretch a fresh canvas together"
+      ],
+      "You find an unsigned study. He looks for a long time. “I was clumsy, but I really wanted to paint it.”",
+      "Bai Ye smooths the cloth. “For this one, I’ll start with where I am now.”"
+    ],
+    [
+      "Leave a Light On",
+      "The canvas finally has a bank, with an open window. Bai Ye asks if you’d leave a light on inside.",
+      [
+        "Leave a warm light in the window",
+        "Let moonlight fill the window"
+      ],
+      "He adds two warm marks. “I want anyone passing by to know they can stop here for a while.”",
+      "He keeps the blue pale. “Good. Someone can be there, and it can still be quiet.”"
+    ]
+  ]
+};
+Object.assign(window.HL_LANG.en.ui, {
+  "capsuleChoosePool": "Which pool? Each has its own collection.",
+  "capsulePool_top": "Tops {owned}/{total}",
+  "capsulePool_bottom": "Skirts {owned}/{total}",
+  "capsuleTopTab": "Capsule tops",
+  "capsuleBottomTab": "Capsule skirts",
+  "residentStoryOpen": "Personal story · {chapter}",
+  "residentStoryReady": "A new personal story is available when you meet.",
+  "residentRecall_gy_0": "I kept the trial date we agreed on written on the envelope.",
+  "residentRecall_gy_1": "You told me to talk to the owner. After I did, I finally got a good night’s sleep.",
+  "residentRecall_xy_0": "I really did cross off all three practice boxes.",
+  "residentRecall_xy_1": "I asked the coach. He gave me two drills I could do on my own.",
+  "residentRecall_jy_0": "When you rehearsed with me, the second pass was when I knew how to keep singing.",
+  "residentRecall_jy_1": "I still have that leaf crunch in the recording.",
+  "residentRecall_by_0": "I put my name on that old unsigned study after all.",
+  "residentRecall_by_1": "This is the canvas we stretched together."
+});
+Object.assign(window.HL_LANG.en.clothes, {
+  "sideSweep": "Side-swept Crop",
+  "silkLowBun": "Silk Ribbon Chignon",
+  "twinBraids": "Flower-tie Braids",
+  "shaggyWolf": "Layered Wolf Cut",
+  "lavenderPinafore": "Lavender Pinafore",
+  "emberQipao": "Ember Qipao",
+  "wisteriaTeaDress": "Wisteria Tea Dress",
+  "starlightTulle": "Starlight Tulle Dress",
+  "apricotCardigan": "Apricot Cardigan",
+  "embroideredBlouse": "Embroidered Blouse",
+  "denimJacket": "Pale Indigo Jacket",
+  "cloudSweater": "Cloud Sweater",
+  "plaidPleats": "Berry Plaid Pleats",
+  "pearlMidi": "Pearl Midi Skirt",
+  "petalWrap": "Petal Wrap Skirt"
 });

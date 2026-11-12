@@ -8,6 +8,8 @@ const read = name => readFileSync(join(__dirname, '..', name), 'utf8');
 const html = read('index.html');
 
 function game(context = {}) {
+  // Trust and morning bookkeeping live in cottage-bonds tests; here they are no-ops.
+  for (const name of ['trustNpc', 'courtNpc', 'bondsNewDay']) context[name] ??= () => {};
   const runtime = vm.createContext(context);
   vm.runInContext(read('cottage-activities.js'), runtime);
   runtime.activities = vm.runInContext('CottageActivities', runtime);
@@ -228,18 +230,19 @@ test('first moonfish gift schedules a night invitation, retry, and one shared ca
 });
 
 test('capsule pools share the free draw, grant new items, and refund failed saves', () => {
-  const state = {capsuleDresses: [], capsuleHairs: [], inv: {shell: 2, flower: 6}, o: {top: 'tee'}};
+  const state = {capsuleDresses: [], capsuleHairs: [], capsuleTops: [], capsuleBottoms: [], inv: {shell: 2, flower: 6}, o: {top: 'tee'}};
   let options, preview, canSave=true, wardrobeOpens=0;
   const runtime = game({
     state, D: {}, HAIRS: [], pick: choices => choices[0],
-    unlocked: item => [...state.capsuleDresses,...state.capsuleHairs].includes(item.id),
+    unlocked: item => [...state.capsuleDresses,...state.capsuleHairs,...state.capsuleTops,...state.capsuleBottoms].includes(item.id),
+    byId: (list,id) => list.find(item=>item.id===id),
     tr: key => key, itemLabel: key => key, itemName: key => key, objName: key => key,
     talk(_speaker, _lines, choices, _onEnd, art) { options = choices; preview = art; },
     el: () => ({setAttribute() {}, append() {}}), mk: () => ({getContext() {}}), blitChar() {},
     lifeText: zh=>zh, openDress(){wardrobeOpens++;}, rewardNewLook(){}, say(){},
     save(){return canSave;}, updateHud() {}, sfx() {}
   });
-  runSection(runtime,'const CAPSULE_DRESSES=','const TOPS=');
+  runSection(runtime,'const CAPSULE_DRESSES=','const BOTTOMS=');
   runSection(runtime,'const CAPSULE_HAIRS=','function torso(');
   runSection(runtime,'const CAPSULE_POOLS=','const CATS=');
   const pools=vm.runInContext('CAPSULE_POOLS',runtime);
@@ -267,11 +270,11 @@ test('capsule pools share the free draw, grant new items, and refund failed save
   assert.equal(state.capsuleDresses.length,2);
   runtime.drawCapsule(pools.dress,'flower');
   runtime.drawCapsule(pools.dress,'flower');
-  state.inv.flower=15;
-  for(let i=0;i<4;i++)runtime.drawCapsule(pools.dress,'flower');
+  state.inv.flower=(pools.dress.items.length-state.capsuleDresses.length)*3+3;
+  for(let i=state.capsuleDresses.length;i<pools.dress.items.length;i++)runtime.drawCapsule(pools.dress,'flower');
   runtime.drawCapsule(pools.dress,'flower');
   assert.equal(state.inv.flower,3);
-  assert.equal(new Set(state.capsuleDresses).size,8);
+  assert.equal(new Set(state.capsuleDresses).size,12);
   assert.ok(state.capsuleDresses.includes('snowCapeDress'));
   runtime.capsuleMenu();
   options[1].fn();
@@ -288,10 +291,19 @@ test('capsule pools share the free draw, grant new items, and refund failed save
   options[1].fn();
   assert.equal(wardrobeOpens,1);
   assert.equal(vm.runInContext('curCat',runtime),'capsuleHair');
-  state.inv.flower=18;
-  for(let i=0;i<6;i++)runtime.drawCapsule(pools.hair,'flower');
-  assert.equal(new Set(state.capsuleHairs).size,6);
+  state.inv.flower=pools.hair.items.length*3;
+  for(let i=0;i<pools.hair.items.length;i++)runtime.drawCapsule(pools.hair,'flower');
+  assert.equal(new Set(state.capsuleHairs).size,10);
   assert.equal(state.inv.flower,3);
+  runtime.drawCapsule(pools.bottom,'flower');
+  options[0].fn();
+  assert.equal(state.o.bottom,'plaidPleats');
+  assert.equal(state.o.top,'tee');
+  state.inv.shell=2;
+  runtime.drawCapsule(pools.top,'shell');
+  options[0].fn();
+  assert.equal(state.o.top,'apricotCardigan');
+  assert.equal(state.o.bottom,'plaidPleats');
 });
 
 test('click route goes around an obstacle, rejects blocked targets, and stops on arrival', () => {

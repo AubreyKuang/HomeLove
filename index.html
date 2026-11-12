@@ -146,6 +146,15 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .album-card[data-kind="rareDate"]{border-color:#b48537}
 .album-card canvas,.album-page canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #ac8063}
 .album-card small,.album-page small{color:#75594a}
+.album-page>.pbtn{margin-top:8px}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,128px),1fr));gap:10px;margin-top:8px}
+.badge{display:grid;justify-items:center;gap:4px;text-align:center;background:#fff5df;border:2px solid #b48667;color:#513b33;padding:8px;box-shadow:2px 3px #d7b595}
+.badge canvas{width:48px;height:48px;image-rendering:pixelated}
+.badge small{color:#75594a;font-size:11px}
+.badge.locked{opacity:.6}
+.badge.rare:not(.locked){background:linear-gradient(160deg,#fff4d2,#f1d9a8);border-color:#c9a258}
+.badge .pbtn{font-size:12px;padding:3px 8px}
+.rewind-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .album-page{width:min(100%,436px);margin:12px auto 4px;padding:12px}
 .album-page h3{margin:10px 0 2px}
 .album-page p{margin:8px 0 2px}
@@ -329,13 +338,15 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <div id="fade"></div>
 
 <script src="npc-memory.js"></script>
-<script src="save-manager.js"></script>
+<script src="save-manager.js?v=bonds-1"></script>
 <script src="cottage-activities.js?v=seasons-1"></script>
 <script src="cottage-events.js?v=xiaoman-1"></script>
+<script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js"></script>
-<script src="lang/zh.js?v=seasons-1" charset="utf-8"></script>
-<script src="lang/en.js?v=seasons-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=seasons-1" charset="utf-8"></script>
+<script src="resident-stories.js"></script>
+<script src="lang/zh.js?v=stories-1" charset="utf-8"></script>
+<script src="lang/en.js?v=stories-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=stories-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -481,6 +492,30 @@ const CAPSULE_HAIRS=[
     if(K.up){R(3,5,10,2,c);R(4,7,8,1,dark);}
     else if(K.side){R(3,4,3,2,dark);R(8,3,3,2,light);}
     else{R(4,5,3,1,light);R(7,4,3,2,c);R(9,5,2,1,dark);}
+  }},
+  {id:'sideSweep',color:4,front(K,c){
+    capShort(K,c);const {R}=K;
+    R(4,1,7,2,c);R(5,2,4,1,shade(c,1.35));
+    if(!K.up){R(5,4,6,2,c);R(5,6,3,1,c);R(5,4,4,1,shade(c,1.27));}
+    R(K.side?3:11,5,1,4,shade(c,.8));
+  }},
+  {id:'silkLowBun',color:0,front(K,c){
+    capShort(K,c);const {R}=K,x=K.side?2:6;
+    if(K.up||K.side){R(x,8,5,4,c);R(x+1,11,3,2,shade(c,.78));R(x+1,9,3,1,'#f6d4ae');}
+    else{R(4,5,2,3,c);R(10,5,2,3,c);R(11,6,2,1,'#f6d4ae');}
+  }},
+  {id:'twinBraids',color:2,front(K,c){
+    capShort(K,c);const {R}=K,d=shade(c,.77),l=shade(c,1.27);
+    for(const x of K.side?[3]:[2,11]){
+      R(x,7,3,8,d);R(x+1,8,2,6,c);R(x,9,2,1,l);R(x+1,12,2,1,l);R(x,15,3,1,'#bd88a6');R(x+1,16,1,2,d);
+    }
+  }},
+  {id:'shaggyWolf',color:5,front(K,c){
+    capShort(K,c);const {R}=K,d=shade(c,.76);
+    R(3,1,8,2,c);R(4,2,4,1,shade(c,1.35));
+    R(2,5,3,4,c);R(3,8,2,4,d);R(2,11,2,1,c);
+    if(!K.side){R(11,5,3,4,c);R(11,8,2,4,d);R(12,11,2,1,c);}
+    if(K.up)R(5,8,6,4,c);else R(7,4,4,2,c);
   }}
 ];
 HAIRS.push(...CAPSULE_HAIRS);
@@ -566,6 +601,43 @@ const CAPSULE_DRESSES=[
     R(4+x,11,8-x,2,'#f6f3ef');R(3+x,13,10-x,1,'#e3edf3');
     if(K.up){R(5,14,6,3,'#e3edf3');R(6,17,4,1,'#f6f3ef');}
     else{R(7+x,13,2,1,'#e7bc76');R(7+x,14,1,2,'#d09972');}
+  }},
+  {id:'lavenderPinafore',color:8,sleeve:'puff',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,'#f5e5df',16);R(5,13,6,4,c);
+    R(4,17,8,3,c);R(3,20,10,1,shade(c,.7));
+    R(5,18,6,1,shade(c,1.25));R(6,16,4,2,'#f4ddd1');R(7,17,2,2,'#f4ddd1');
+  }},
+  {id:'emberQipao',color:2,sleeve:'short',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,c,17);R(5,17,6,4,c);R(5,21,6,1,shade(c,.72));
+    R(7,10,2,1,'#f5cd8f');R(5,15,1,6,shade(c,.75));
+    if(!K.up){R(8,11,2,1,'#f5cd8f');R(9,12,2,1,'#f5cd8f');R(10,19,1,3,'#f0c7aa');}
+  }},
+  {id:'wisteriaTeaDress',color:5,sleeve:'long',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,c,16);R(5,16,6,1,'#e4d4a5');R(4,17,8,4,c);
+    R(3,20,10,1,shade(c,.74));
+    for(const [x,y] of [[5,17],[10,18],[7,19],[11,20]]){R(x,y,1,1,'#edd4ed');R(x,y+1,1,1,'#9aac7e');}
+  }},
+  {id:'starlightTulle',color:7,sleeve:'none',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,c,16);R(5,16,6,1,'#dfd5ee');R(4,17,8,2,c);R(2,19,12,2,shade(c,.8));R(3,21,10,1,'#d5c8ed');
+    for(const [x,y] of [[5,18],[8,19],[11,18],[4,20],[10,20]])R(x,y,1,1,'#fff0cb');
+  }}
+];
+const CAPSULE_TOPS=[
+  {id:'apricotCardigan',color:3,sleeve:'long',draw(K,c){
+    const {R}=K;torso(K,c,16);if(!K.up)R(7,11,2,5,'#fff1dc');
+    R(5,15,6,1,shade(c,.72));R(9,13,1,1,'#f8d79a');R(9,15,1,1,'#f8d79a');
+  }},
+  {id:'embroideredBlouse',color:0,sleeve:'puff',draw(K,c){
+    const {R}=K;torso(K,c);R(6,11,4,1,'#ad747f');R(7,12,2,1,'#f0baae');
+    R(5,14,1,1,'#a06f96');R(10,14,1,1,'#a06f96');
+  }},
+  {id:'denimJacket',color:7,sleeve:'long',draw(K,c){
+    const {R}=K;torso(K,c,16);R(5,12,6,1,shade(c,1.25));
+    if(!K.up){R(7,13,2,3,'#e9dfd1');R(5,14,1,1,'#e3c994');R(10,14,1,1,'#e3c994');}
+  }},
+  {id:'cloudSweater',color:8,sleeve:'long',draw(K,c){
+    const {R}=K;torso(K,c,16);R(6,12,4,1,'#fff1dd');R(5,13,6,2,'#fff1dd');
+    R(5,16,6,1,shade(c,.75));
   }}
 ];
 const TOPS=[
@@ -593,9 +665,24 @@ const TOPS=[
     if(K.down){K.R(5,11,2,1,col);K.R(9,11,2,1,col);K.R(7,11,2,1,K.skin);K.R(7,12,2,2,TIE);K.R(7,14,1,1,TIE);}
     else if(K.up){K.R(5,11,6,3,col);K.R(5,13,6,1,shade(col,.8));}
     else{K.R(6,11,3,2,col);K.R(10,12,1,2,TIE);}}},
-  ...CAPSULE_DRESSES
+  ...CAPSULE_DRESSES,...CAPSULE_TOPS
 ];
 function hips(K,c){if(K.side)K.R(6,16,5,2,c);else{K.R(5,16,6,2,c);K.R(7,17,2,1,shade(c,.82));}}
+const CAPSULE_BOTTOMS=[
+  {id:'plaidPleats',color:9,draw(K,c){
+    const {R}=K;hips(K,c);R(4,17,8,3,c);R(3,20,10,1,shade(c,.78));
+    R(4,18,8,1,shade(c,1.28));for(const x of [5,8,11])R(x,17,1,4,shade(c,.74));
+  }},
+  {id:'pearlMidi',color:0,draw(K,c){
+    const {R}=K;hips(K,c);R(4,17,8,4,c);R(3,21,10,1,shade(c,.82));
+    R(5,18,1,3,shade(c,1.2));R(10,18,1,3,shade(c,.86));
+    for(const x of [4,7,10])R(x,21,1,1,'#fff8e8');
+  }},
+  {id:'petalWrap',color:4,draw(K,c){
+    const {R}=K;hips(K,c);R(4,17,8,3,c);R(3,19,9,1,shade(c,1.28));
+    R(3,20,7,1,c);R(4,21,4,1,shade(c,.73));R(7,17,1,3,shade(c,.73));R(10,16,2,1,'#f4d294');
+  }}
+];
 const BOTTOMS=[
   {id:'shorts',draw(K,c){hips(K,c);K.legs.forEach(l=>K.R(l.x,18,2,1,l.back?shade(c,.85):c));}},
   {id:'pants',draw(K,c){hips(K,c);K.legs.forEach(l=>K.R(l.x,18,2,l.bot-17,l.back?shade(c,.85):c));}},
@@ -607,6 +694,7 @@ const BOTTOMS=[
   {id:'longskirt',draw(K,c){const sh=shade(c,.84);
     if(K.side){K.R(6,16,5,1,c);K.R(5,17,7,4,c);K.R(4,21,8,1,sh);}
     else{K.R(5,16,6,1,c);K.R(4,17,8,4,c);K.R(3,21,10,1,sh);K.R(6,18,1,3,sh);K.R(9,18,1,3,sh);}}},
+  ...CAPSULE_BOTTOMS
 ];
 function feet(K,fn){K.legs.forEach(l=>fn(l,l.bot+1));}
 const SHOES=[
@@ -655,15 +743,19 @@ const ACCS=[
 ];
 const CAPSULE_POOLS={
   dress:{items:CAPSULE_DRESSES,owned:'capsuleDresses',slot:'top',colorKey:'topColor',tab:'capsule'},
-  hair:{items:CAPSULE_HAIRS,owned:'capsuleHairs',slot:'hair',colorKey:'hairColor',tab:'capsuleHair'}
+  hair:{items:CAPSULE_HAIRS,owned:'capsuleHairs',slot:'hair',colorKey:'hairColor',tab:'capsuleHair'},
+  top:{items:CAPSULE_TOPS,owned:'capsuleTops',slot:'top',colorKey:'topColor',tab:'capsuleTop'},
+  bottom:{items:CAPSULE_BOTTOMS,owned:'capsuleBottoms',slot:'bottom',colorKey:'bottomColor',tab:'capsuleBottom'}
 };
 const CATS=[
   {key:'skin',crop:[2,1,16,14]},
   {key:'hair',items:HAIRS.filter(hair=>!CAPSULE_HAIRS.includes(hair)),colorKey:'hairColor',colors:HAIR_COLORS,crop:[2,0,16,14]},
   {key:'capsuleHair',slot:'hair',items:CAPSULE_HAIRS,colorKey:'hairColor',colors:HAIR_COLORS,crop:[1,0,18,21]},
-  {key:'top',items:TOPS.filter(top=>!CAPSULE_DRESSES.includes(top)),colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
+  {key:'top',items:TOPS.filter(top=>!CAPSULE_DRESSES.includes(top)&&!CAPSULE_TOPS.includes(top)),colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
   {key:'capsule',slot:'top',items:CAPSULE_DRESSES,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
-  {key:'bottom',items:BOTTOMS,colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
+  {key:'capsuleTop',slot:'top',items:CAPSULE_TOPS,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
+  {key:'capsuleBottom',slot:'bottom',items:CAPSULE_BOTTOMS,colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
+  {key:'bottom',items:BOTTOMS.filter(item=>!CAPSULE_BOTTOMS.includes(item)),colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
   {key:'shoes',items:SHOES,colorKey:'shoesColor',colors:CLOTH,crop:[2,12,16,14]},
   {key:'hat',items:HATS,colorKey:'hatColor',colors:CLOTH,crop:[2,0,16,14]},
   {key:'acc',items:ACCS,colorKey:'accColor',colors:CLOTH,crop:[2,3,16,14]},
@@ -862,9 +954,10 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),xiaoman:XiaomanStory.load(),
+  garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
-  rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()]))
+  rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
+  bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS='homelove-save-v1';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
@@ -872,8 +965,12 @@ let playerReady=false;
 const validSave=s=>Number.isFinite(s.day)&&Number.isFinite(s.time)&&!!s.o&&!!s.rel&&!!s.inv;
 function save(){
   if(playerReady)state.position={x:P.x,y:P.y,dir:P.dir};
+  state.savedAt=Date.now();
   return SaveManager.save(localStorage,LS,state,validSave);
 }
+// v1 saves have no trust/jealousy block; CottageBonds.load fills it in when the save is applied.
+function migrateSave(s,from){return s&&typeof s==='object'?s:null;}
+let savedAtLoad=0;
 function applySave(s){
   if(!s||typeof s!=='object')return;
   state.npcMemory=s.npcMemory;
@@ -884,6 +981,9 @@ function applySave(s){
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
   state.xiaoman=XiaomanStory.load(s.xiaoman,state.day);
+  state.stories=ResidentStories.load(s.stories,state.day);
+  state.bonds=CottageBonds.load(s.bonds,NPCS.map(n=>n.id),state.day);
+  savedAtLoad=Number.isFinite(s.savedAt)?s.savedAt:0;
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
   if(Array.isArray(s.pets))state.pets=s.pets.filter(p=>p&&['cat','dog','bird','rabbit'].includes(p.kind)&&typeof p.name==='string').slice(0,3).map(p=>({kind:p.kind,ci:p.ci|0,name:p.name,bond:+p.bond||0,mode:p.mode==='stay'?'stay':'follow',done:(p.done&&typeof p.done==='object')?p.done:{},hx:p.hx,hy:p.hy,x:0,y:0,dir:1,anim:0}));
   if(s.need)['energy','hunger','mood'].forEach(k=>{if(typeof s.need[k]==='number')state.need[k]=clampN(s.need[k]);});
@@ -905,7 +1005,7 @@ function applySave(s){
     entry.type==='gift'&&entry.interpretation?.object===FISHING_INVITE.gift);
   if(Number.isFinite(priorGift?.time))queueFishingInvitation(fisher,Math.floor(priorGift.time/1440)+1);
 }
-applySave(SaveManager.load(localStorage,LS,validSave));
+applySave(SaveManager.load(localStorage,LS,validSave,migrateSave));
 state.life ||= {};
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.data&&hot.data.o)applySave(hot.data);
@@ -1291,10 +1391,12 @@ function visitWindow(n){
 }
 const present=n=>{
   if(xiaomanRoute(n)&&!XiaomanStory.visits(state.xiaoman,state.day))return false;
-  return rel(n).livesIn||summoned(n)||fishingInvitationReady(n)||(state.time>=visitWindow(n).start&&state.time<visitWindow(n).end);
+  return rel(n).livesIn||summoned(n)||calling(n)||fishingInvitationReady(n)||(state.time>=visitWindow(n).start&&state.time<visitWindow(n).end);
 };
-function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||t===FLOOR||t===DOOR);}
-function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn)return n.spots;const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
+// An unannounced visit: the resident shows up at any hour and comes looking for you, even indoors.
+const calling=n=>CottageBonds.calling(state.bonds,n.id,state.day,state.time);
+function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||calling(n)||t===FLOOR||t===DOOR);}
+function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)||calling(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn)return n.spots;const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
 function placeHome(n){const s=pick(HOME_IN);n.x=s[0]*16+8;n.y=s[1]*16+12;n.state='here';n.path=null;n.idle=10;n.leaving=false;}
 function updNpc(n,dt){
   const r=rel(n);
@@ -1305,6 +1407,15 @@ function updNpc(n,dt){
     const distance=Math.hypot(n.x-P.x,n.y-P.y);
     const scene=xiaomanScene(n);
     if(dt>0&&scene&&distance<36&&present(n)){startXiaomanScene(n,scene);return;}
+    if(dt>0&&calling(n)){
+      const drop=state.bonds.dropIn;
+      if(!drop.arrived){drop.arrived=true;sfx('ding');notify(tr('dropInArrive',{n:nm(n)}));}
+      if(distance<56){greetDropIn(n);return;}
+      if(!n.path&&Math.random()<dt*.6){
+        const spot=nearPlayerTiles().sort((a,b)=>Math.hypot(a[0]*16+8-P.x,a[1]*16+12-P.y)-Math.hypot(b[0]*16+8-P.x,b[1]*16+12-P.y))[0];
+        if(spot)npcGo(n,spot[0],spot[1]);
+      }
+    }
     if(!invitation&&!r.done.visit&&n.seekingPlayer&&distance<43){
       n.seekingPlayer=false;r.done.visit=true;n.path=null;n.idle=12;
       const line=outfitScore(n)>=4?nt(n).outfitHi:nt(n).greet[Math.min(2,Math.floor(hearts(r)/3))];
@@ -1316,7 +1427,11 @@ function updNpc(n,dt){
   }
   if(n.state==='away'){
     if(r.livesIn){placeHome(n);return;}
-    if(present(n)&&(invitation||summoned(n)||state.time<visitWindow(n).end-40)){n.x=6*16+8;n.y=19*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;}
+    if(present(n)&&(invitation||summoned(n)||calling(n)||state.time<visitWindow(n).end-40)){
+      n.x=6*16+8;n.y=19*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;
+      const drop=state.bonds.dropIn;
+      if(calling(n)&&!drop.arrived){drop.arrived=true;sfx('ding');notify(tr('dropInArrive',{n:nm(n)}));}
+    }
     return;
   }
   if((D.modal||busy)&&D.npc===n){n.moving=false;n.anim=0;return;}
@@ -1650,6 +1765,7 @@ function newDay(wake){
   NPCS.forEach(n=>{rel(n).done={};});
   state.pets.forEach(p=>{p.done={};});
   npcs.forEach(n=>{n.state='away';n.path=null;n.leaving=false;n.seekingPlayer=false;n.x=n.y=-100;});
+  bondsNewDay();
 }
 function wakeAtBed(){P.x=8*16+8;P.y=5*16+12;P.dir='right';snapPets();}
 function bedMenu(){
@@ -1740,16 +1856,22 @@ function drawCapsule(pool,payment){
   updateHud();sfx('levelup');
   const preview=el('div','capsule-reveal'),sprite=mk(20,26);
   preview.setAttribute('aria-hidden','true');
-  blitChar(sprite.getContext('2d'),{...state.o,[pool.slot]:item.id,[pool.colorKey]:item.color},'down',0,0,0);
+  blitChar(sprite.getContext('2d'),capsuleOutfit(pool,item),'down',0,0,0);
   preview.append(sprite);
   talk(objName('capsule'),[tr('capsuleWon',{dress:itemName(item.id)})],[
     {label:tr(pool.slot==='hair'?'capsuleTryHair':'capsuleTry'),fn:()=>tryCapsuleItem(pool,item)},
     {label:tr('capsuleView'),back:true,fn:()=>openCapsuleWardrobe(pool)}
   ],null,preview);
 }
+function capsuleOutfit(pool,item){
+  const outfit={...state.o,[pool.slot]:item.id,[pool.colorKey]:item.color};
+  if(pool.slot==='bottom'&&byId(TOPS,outfit.top).hidesBottom){outfit.top='tee';outfit.topColor=0;}
+  return outfit;
+}
 function tryCapsuleItem(pool,item){
-  const outfitChanged=state.o[pool.slot]!==item.id||state.o[pool.colorKey]!==item.color;
-  state.o[pool.slot]=item.id;state.o[pool.colorKey]=item.color;
+  const outfit=capsuleOutfit(pool,item);
+  const outfitChanged=Object.keys(outfit).some(k=>state.o[k]!==outfit[k]);
+  Object.assign(state.o,outfit);
   if(outfitChanged)rewardNewLook();
   save();
   sfx('pop');
@@ -1849,6 +1971,7 @@ function petCat(){
 }
 function pickFlower(f){
   sfx('pickup');f.picked=true;state.picked.push(f.i);state.inv.flower++;state.flowersTotal++;save();updateHud();heart(f.tx*16+8,f.ty*16+2);
+  if(CottageBonds.rare(B(),'clover',state.day,Math.random,.03))setTimeout(()=>notify(tr('cloverFound')),1400);
   if(state.flowersTotal===3)say(tr('garden'),tr('flower3'));
   else say(tr('garden'),tr('flowerGot',{x:state.inv.flower})+(state.flowersTotal<3?' '+tr('flowerMore',{x:3-state.flowersTotal}):''));
 }
@@ -2096,13 +2219,14 @@ function sickToday(n){return state.day>3&&(state.day+NPCS.indexOf(NPCS.find(npc=
 function rememberMissedOccasions(n){
   const relationship=rel(n);
   if(!relationship.met||hearts(relationship)<3||(n.id==='xm'&&state.xiaoman?.answer))return;
-  if(birthdayToday(n)&&!relationship.done.birthday)rememberPlayer(n,'birthday','missed',-.48,75);
-  if(sickToday(n)&&!relationship.done.visitSick)rememberPlayer(n,'visit','missed',-.30,68);
+  if(birthdayToday(n)&&!relationship.done.birthday){rememberPlayer(n,'birthday','missed',-.48,75);trustNpc(n,-10);}
+  if(sickToday(n)&&!relationship.done.visitSick){rememberPlayer(n,'visit','missed',-.30,68);trustNpc(n,-6);}
 }
 function markLife(n,type){
   const r=rel(n);if(r.done[type])return;
   r.done[type]=true;
   rememberPlayer(n,type==='visitSick'?'visit':type,'completed',.9,95);
+  trustNpc(n,type==='visitSick'?15:12);
   lifeOf(n).cards[type]=state.day;
   addPts(n,8);
   talk(nm(n),[memoryLine(n,NPCMemory.recall(state,n.id)[0])],null,()=>npcMenu(n,true));
@@ -2123,11 +2247,174 @@ function milestone(n){
 function jealousCheck(n,next){
   const p=npcs.find(m=>m!==n&&rel(m).couple&&m.state!=='away'&&Math.hypot(m.x-P.x,m.y-P.y)<120);
   if(!p){if(next)next();return;}
-  D.npc=p;talk(nm(p),[nt(p).jealous],null,()=>{rememberPlayer(p,'rival','witnessed',-.9,95,n.id);addPts(p,-6);if(next)next();});
+  D.npc=p;talk(nm(p),[nt(p).jealous],null,()=>{rememberPlayer(p,'rival','witnessed',-.9,95,n.id);CottageBonds.addJealousy(B(),p.id,40);trustNpc(p,-10);addPts(p,-6);if(next)next();});
+}
+
+/* ---------------- trust, jealousy, drop-ins, achievements ---------------- */
+const B=()=>state.bonds;
+const ptsMap=()=>Object.fromEntries(NPCS.map(n=>[n.id,rel(n).pts]));
+function courtNpc(n,kind){CottageBonds.court(B(),n.id,kind,state.day);}
+function trustNpc(n,d){CottageBonds.addTrust(B(),n.id,d);}
+function greetDropIn(n){
+  const drop=CottageBonds.meetDropIn(B());if(!drop)return;
+  n.path=null;n.idle=20;n.seekingPlayer=false;rel(n).done.visit=true;D.npc=n;
+  const lines=[tr('dropIn_'+drop.reason)];let after=()=>{};
+  if(drop.reason==='gift'){const k=pick(GIFT_KEYS);state.inv[k]=(state.inv[k]||0)+1;lines.push(tr('dropInGift',{n:nm(n),i:ITEM_ICONS[k]+itemLabel(k)}));updateHud();}
+  if(drop.reason==='help')after=()=>{advanceTime(20);notify(tr('dropInHelp',{n:nm(n)}));trustNpc(n,6);};
+  rememberPlayer(n,'dropIn','completed',.5,70,drop.reason);
+  trustNpc(n,3);
+  CottageBonds.unlock(B(),'dropIn',state.day);
+  if(drop.reason==='jealous'&&B().heard[n.id]){talk(nm(n),lines,null,()=>confront(n,null));save();return;}
+  talk(nm(n),lines,null,()=>{after();addPts(n,drop.reason==='missYou'?4:2);});
+  save();
+}
+// Courting two people at once gets around. The one who heard asks you about it.
+function confront(n,next){
+  const rival=npcs.find(m=>m.id===B().heard[n.id]);
+  if(!rival){CottageBonds.answer(B(),n.id,'soothe');if(next)next();return;}
+  const r=nm(rival),trusting=B().trust[n.id]>=15;D.npc=n;
+  const reply=(how,text,pts)=>()=>{
+    CottageBonds.answer(B(),n.id,how);
+    if(how==='honest')CottageBonds.unlock(B(),'honest',state.day);
+    rememberPlayer(n,'confront',how,how==='honest'?.1:how==='soothe'?-.1:-.5,80,rival.id);
+    D.npc=n;talk(nm(n),[text],null,()=>{if(pts)addPts(n,pts);save();if(next)next();});
+  };
+  talk(nm(n),[tr('confrontQ',{r})],[
+    {label:tr('confrontHonest',{r}),fn:reply('honest',tr('confrontHonestReply'),-2)},
+    {label:tr('confrontSoothe'),fn:reply('soothe',trusting?tr('confrontSootheReply'):tr('confrontSootheDoubt'),trusting?0:-2)},
+    {label:tr('confrontAvoid'),fn:reply('avoid',tr('confrontAvoidReply'),-4)}]);
+}
+// Called once the new day has started: overnight gossip, yesterday's recap, today's possible visitor, a morning snapshot.
+function bondsNewDay(){
+  const b=B();
+  const missed=CottageBonds.missDropIn(b,state.day-1,2880);
+  if(missed){const n=npcs.find(m=>m.id===missed.id);if(n)rememberPlayer(n,'dropIn','missed',-.2,50,missed.reason);}
+  CottageBonds.newDay(b);
+  CottageBonds.spreadGossip(b,state.day,id=>hearts(state.rel[id])>=3);
+  CottageBonds.recap(b,state.day,ptsMap());
+  CottageBonds.startDay(b,state.day,ptsMap());
+  planToday();
+  snapshotMorning();
+}
+function planToday(){
+  CottageBonds.planDropIn(B(),state.day,NPCS.filter(n=>rel(n).met&&!(xiaomanRoute(n)&&state.xiaoman?.answer)).map(n=>({id:n.id,hearts:hearts(rel(n)),livesIn:rel(n).livesIn})),Math.random);
+}
+function snapshotMorning(){try{SaveManager.snapshot(localStorage,LS,state,validSave,{label:'d-'+state.day,day:state.day});}catch(e){}}
+function bondsTick(){
+  const missed=CottageBonds.missDropIn(B(),state.day,state.time);
+  if(missed){const n=npcs.find(m=>m.id===missed.id);if(n){rememberPlayer(n,'dropIn','missed',-.2,50,missed.reason);notify(tr('dropInNote',{n:nm(n)}));}}
+  const L=Object.values(state.life||{});
+  CottageBonds.checkAchievements(B(),{dates:L.some(l=>l.firstDate)?1:0,birthdays:L.some(l=>l.cards?.birthday)?1:0,
+    sickVisits:L.some(l=>l.cards?.visitSick)?1:0,couple:anyCouple(),livesIn:NPCS.some(n=>rel(n).livesIn),dropIns:0,
+    rareDate:L.some(l=>l.cards?.rareDate)},state.day);
+  if(B().fresh.length&&!D.modal&&!busy){
+    const key=B().fresh.shift(),a=CottageBonds.ACHIEVEMENTS.find(x=>x.key===key);
+    if(a){notify(tr(a.rare?'rareToast':'badgeToast',{x:tr('badge_'+key)}));sfx('levelup');}
+    save();
+  }
+}
+// Rare: a shooting star, once a night at most, only if you are outdoors after 21:00.
+function skyWatch(){
+  if(state.time<21*60||state.time>=23.5*60||B().shootingDay===state.day)return;
+  const t=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));
+  if(t===FLOOR||t===DOOR)return;
+  B().shootingDay=state.day;
+  if(CottageBonds.rare(B(),'shootingStar',state.day,Math.random,.05)){notify(tr('shootingStar'));sfx('levelup');}
+}
+// While the page was closed, the day kept going (up to 4 hours, never past 22:00).
+let offlineMinutes=0;
+function catchUpOffline(){
+  if(!savedAtLoad)return 0;
+  const seconds=(Date.now()-savedAtLoad)/1000;
+  const gm=Math.min(seconds*TIME_RATE,240,Math.max(0,22*60-state.time));
+  if(gm<20)return 0;
+  state.time+=gm;decay(gm*.5,false);
+  return gm;
+}
+/* Keepsake cards: a pixel frame around a scene, saved as PNG. */
+function keepsakeCard(title,sub,body,art,color){
+  const W=300,H=420,c=mk(W*2,H*2),g=c.getContext('2d');g.scale(2,2);g.imageSmoothingEnabled=false;
+  g.fillStyle='#4a3340';g.fillRect(0,0,W,H);g.fillStyle='#fff6e8';g.fillRect(10,10,W-20,H-20);
+  g.fillStyle=color||'#e2708a';
+  for(let x=10;x<W-10;x+=8){g.fillRect(x,10,4,4);g.fillRect(x+4,H-14,4,4);}
+  for(let y=10;y<H-10;y+=8){g.fillRect(10,y+4,4,4);g.fillRect(W-14,y,4,4);}
+  let y=40;
+  if(art){const s=Math.max(1,Math.floor((W-80)/art.width));g.drawImage(art,(W-art.width*s)/2,y,art.width*s,art.height*s);y+=art.height*s+30;}
+  const font='"PingFang SC","Hiragino Sans","Microsoft YaHei",system-ui,sans-serif';
+  g.textAlign='center';g.fillStyle='#3a2a33';g.font=`700 22px ${font}`;g.fillText(title,W/2,y);
+  g.font=`12px ${font}`;g.fillStyle='#8a6a72';g.fillText(sub,W/2,y+22);
+  g.font=`13px ${font}`;g.fillStyle='#4a3a40';g.textAlign='left';
+  let row='',ty=y+52;
+  for(const ch of String(body||'')){if(g.measureText(row+ch).width>W-70&&!'，。、！？」,.!?'.includes(ch)){g.fillText(row,35,ty);ty+=19;row=ch;if(ty>H-50)break;}else row+=ch;}
+  if(row&&ty<=H-50)g.fillText(row,35,ty);
+  g.textAlign='center';g.fillStyle='#a08890';g.font=`11px ${font}`;g.fillText('HomeLove',W/2,H-28);
+  return c;
+}
+function badgeArt(a,unlocked){
+  const c=mk(16,16),g=c.getContext('2d');
+  const shape=['0000111111110000','0011111111111100','0111111111111110','0111111111111110','1111111111111111','1111111111111111','1111111111111111','1111111111111111',
+    '1111111111111111','1111111111111111','1111111111111111','1111111111111111','0111111111111110','0111111111111110','0011111111111100','0000111111110000'];
+  g.fillStyle=unlocked?a.color:'#c9bfae';
+  shape.forEach((row,j)=>[...row].forEach((bit,i)=>{if(bit==='1')g.fillRect(i,j,1,1);}));
+  g.fillStyle='#fff6e8';g.font='bold 10px system-ui,sans-serif';g.textAlign='center';g.textBaseline='middle';
+  g.fillText(unlocked?a.icon:'?',8,8.5);
+  return c;
+}
+function downloadCanvas(c,name){
+  c.toBlob(blob=>{if(!blob)return;const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);},'image/png');
+}
+function renderBadges(body){
+  const b=B(),list=CottageBonds.ACHIEVEMENTS,got=list.filter(a=>b.achievements[a.key]!=null).length;
+  body.append(el('p','rline',tr('badgeCount',{x:got,y:list.length})));
+  const grid=el('div','badge-grid');
+  for(const a of list){
+    const day=b.achievements[a.key],open=day!=null,item=el('div','badge'+(open?'':' locked')+(a.rare?' rare':''));
+    const art=badgeArt(a,open),pic=mk(48,48),pg=pic.getContext('2d');pg.imageSmoothingEnabled=false;pg.drawImage(art,0,0,48,48);
+    item.append(pic,el('strong',null,open||!a.rare?(a.rare?'★ ':'')+tr('badge_'+a.key):tr('badgeLocked')),
+      el('small',null,open?tr('badgeDay',{d:day}):a.rare?tr('badgeLockedText'):tr('badgeText_'+a.key)));
+    if(open){const save=el('button','pbtn',tr('badgeSave'));save.type='button';
+      save.onclick=()=>downloadCanvas(keepsakeCard(tr('badge_'+a.key),tr('badgeDay',{d:day}),tr('badgeText_'+a.key),art,a.color),'HomeLove-'+a.key+'.png');item.append(save);}
+    grid.append(item);
+  }
+  body.append(grid);
+}
+function renderRecap(container){
+  const r=B().report;
+  if(!r||r.day!==state.day-1)return;
+  const sec=el('section','dsec');sec.append(el('h3',null,tr('recapTitle')));
+  const name=id=>{const n=npcs.find(m=>m.id===id);return n?nm(n):id;};
+  const lines=r.changes.map(c=>tr(c.delta>0?'recapUp':'recapDown',{n:name(c.id),d:c.delta}));
+  for(const j of r.jealous||[])lines.push(tr('recapJealous',{n:name(j.id),r:name(j.rival)}));
+  if(r.note)lines.push(tr('recapNote',{n:name(r.note.id)}));
+  if(!lines.length)lines.push(tr('recapNone'));
+  const ul=el('ul','tips');lines.forEach(t=>ul.append(el('li',null,t)));sec.append(ul);
+  container.append(sec);
+}
+function renderRewind(container){
+  const snaps=SaveManager.snapshots(localStorage,LS).sort((a,b)=>b.day-a.day);
+  if(!snaps.length)return;
+  const sec=el('section','dsec');sec.append(el('h3',null,tr('rewindTitle')),el('p','rline',tr('rewindHint')));
+  const row=el('div','rewind-row');
+  for(const snap of snaps){
+    const b=el('button','pbtn',tr('rewindBtn',{d:snap.day}));b.type='button';
+    b.onclick=()=>{
+      if(!confirm(tr('rewindConfirm',{d:snap.day})))return;
+      const s=SaveManager.restore(localStorage,LS,snap.index,validSave,migrateSave);
+      if(!s)return;
+      s.savedAt=Date.now();
+      SaveManager.save(localStorage,LS,s,validSave);
+      try{sessionStorage.setItem('homelove-rewound',String(snap.day));}catch(e){}
+      window.removeEventListener('pagehide',save);window.removeEventListener('beforeunload',save);
+      location.reload();
+    };
+    row.append(b);
+  }
+  sec.append(row);container.append(sec);
 }
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 function npcMenu(n,back){
   const r=rel(n),h=hearts(r),T=nt(n);D.npc=n;
+  if(!back&&r.met&&B().heard[n.id]){confront(n,()=>npcMenu(n,true));return;}
   const alreadyMet=r.met,story=xiaomanRoute(n),friends=story&&state.xiaoman.answer==='friends';
   let greet;
   if(back)greet=tr('backGreet');
@@ -2148,6 +2435,8 @@ function npcMenu(n,back){
   const request=acceptedNeighborRequest(n);
   if(request)opts.unshift({label:tr('requestHandIn'),fn:()=>offerNeighborDelivery(n,request)});
   opts.unshift(...worldNpcOptions(n,back));
+  const chapter=rel(n).met?ResidentStories.next(state.stories,n.id,state.day,h):null;
+  if(chapter!==null)opts.unshift({label:tr('residentStoryOpen',{chapter:residentChapter(n.id,chapter)[0]}),fn:()=>openResidentStory(n,chapter)});
   const scene=xiaomanScene(n);
   if(scene)opts.unshift({label:tr('xmTalk'),fn:()=>startXiaomanScene(n,scene)});
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
@@ -2172,11 +2461,16 @@ function chat(n){
   const first=state.life?.[n.id]?.firstDate;
   const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest','worldUfo','worldBottle','worldSeed','xiaomanConfession'].includes(e.type));
   const lines=[];
-  if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
+  const earlier=state.stories[n.id]?.[1];
+  if(earlier&&state.day>earlier.day&&Math.random()<.4)lines.push(tr('residentRecall_'+n.id+'_'+earlier.choice));
+  else if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
   else if(recalled&&Math.random()<.4){const line=memoryLine(n,recalled);if(line)lines.push(line);}
   let gain=6+Math.round(NPCMemory.influence(state,n.id,'player'));const sc=outfitScore(n);
   if(sc>=4){lines.push(T.outfitHi);gain+=8;r.knowStyle=true;}else if(sc>=2){lines.push(T.outfitMid);gain+=4;}
   if(state.need.mood<25){lines.push(tr('tiredMood',{n:nm(n)}));gain-=3;}
+  const envy=B().jealousy[n.id],trust=B().trust[n.id];
+  if(envy>=50){lines.push(tr('chatJealous',{n:nm(n)}));gain-=3;}
+  else if(trust>=40&&Math.random()<.35){lines.push(tr('chatTrusted',{n:nm(n)}));gain+=1;}
   const pet=petSeenBy(n);if(pet){lines.push(tr('petLiked',{n:nm(n),p:pet.name}));gain+=4;note(n,'pet_'+pet.kind,12);}
   const friends=xiaomanRoute(n)&&state.xiaoman.answer==='friends';
   lines.push(friends?tr('xmFriendChat'):pick(r.couple?T.chatCouple:T.chat[Math.min(2,Math.floor(hearts(r)/3))]));
@@ -2204,11 +2498,13 @@ function socialAct(n,k){
   let v=n.social[k];const N=state.need,lines=[nt(n).social[k]];
   note(n,k,v);
   if(N.mood>=70)v+=2;else if(N.mood<25){v-=3;lines.push(tr('lowMood'));}
+  if(k==='flirt')courtNpc(n,'flirt');
   talk(nm(n),lines,null,()=>{addPts(n,v);milestone(n);if(k==='flirt'&&!r.couple)jealousCheck(n);});
 }
 function intimate(n,k){
   const r=rel(n);r.done[k]=true;advanceTime(5);D.npc=n;
   const cfg={hand:[5,8],hug:[3,15],kiss:[4,18]}[k];
+  courtNpc(n,k);
   heart(n.x,n.y-22);if(k!=='hand')heart(P.x,P.y-24);
   talk(nm(n),[nt(n)[k]],null,()=>{addPts(n,cfg[0]);state.need.mood=clampN(state.need.mood+cfg[1]);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});
 }
@@ -2228,6 +2524,7 @@ function give(n,k){
   lifeOf(n).firstGift ||= {day:state.day,item:k};
   rememberPlayer(n,'gift',d>=15?'liked':d<0?'disliked':'received',Math.max(-1,Math.min(1,d/15)),65,k);
   if(n.id===FISHING_INVITE.resident&&k===FISHING_INVITE.gift)queueFishingInvitation(n);
+  trustNpc(n,d>=15?3:d<0?-3:1);
   state.need.mood=clampN(state.need.mood+3);addPts(n,d);updateHud();
   talk(nm(n),[nt(n).giftLines[tierOf(d)].replace('{i}',itemLabel(k))],null,()=>milestone(n));
 }
@@ -2256,7 +2553,7 @@ function dateWith(n,loc){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];r.done.date=true;D.npc=n;
   busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
-      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
+      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);courtNpc(n,'date');trustNpc(n,3);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
 function confess(n){
   if(xiaomanRoute(n))return;
@@ -2266,10 +2563,30 @@ function confess(n){
     if(state.need.mood<40){talk(nm(n),[tr('confessFail1',{n:nm(n)}),tr('confessFail2')],null,()=>{rememberPlayer(n,'confession','rejected',-.5,85);addPts(n,-3);});return;}
     r.couple=true;state.need.mood=clampN(state.need.mood+25);
     for(let i=0;i<8;i++)setTimeout(()=>heart(n.x+(Math.random()*20-10),n.y-20-Math.random()*8),i*100);
-    talk(nm(n),nt(n).confess,null,()=>{rememberPlayer(n,'confession','accepted',1,100);addPts(n,5);updateHud();notify(tr('becameCouple',{n:nm(n)}));});
+    talk(nm(n),nt(n).confess,null,()=>{rememberPlayer(n,'confession','accepted',1,100);courtNpc(n,'confess');trustNpc(n,10);addPts(n,5);updateHud();notify(tr('becameCouple',{n:nm(n)}));});
   });
 }
 function moveIn(n){const r=rel(n);D.npc=n;talk(nm(n),nt(n).moveIn,null,()=>{r.livesIn=true;n.path=null;n.idle=5;save();notify(tr('movedIn',{n:nm(n)}));});}
+
+/* ---------------- resident stories ---------------- */
+const residentChapter=(id,index)=>Lp.residentStories[id][index];
+function openResidentStory(n,index){
+  const r=rel(n);
+  if(ResidentStories.next(state.stories,n.id,state.day,hearts(r))!==index)return;
+  const [,intro,choices,firstReply,secondReply]=residentChapter(n.id,index);
+  const lines=[intro];
+  if(index===2)lines.unshift(tr('residentRecall_'+n.id+'_'+state.stories[n.id][1].choice));
+  const replies=[firstReply,secondReply];
+  D.npc=n;
+  const opts=choices.map((label,choice)=>({label,fn:()=>{
+    if(!ResidentStories.complete(state.stories,n.id,state.day,hearts(r),index,choice))return;
+    rememberPlayer(n,'residentStory','completed',.5,75,index);
+    addPts(n,3);updateHud();
+    D.npc=n;talk(nm(n),[replies[choice]]);
+  }}));
+  opts.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
+  talk(nm(n),lines,opts);
+}
 
 /* ---------------- Xiaoman’s story ---------------- */
 function xiaomanRoute(n){
@@ -2570,7 +2887,10 @@ $('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOp
 {const box=$('#langPick');LANG_ORDER.forEach(c=>{const b=el('button','pbtn',PACKS[c].meta.label);b.type='button';b.dataset.lang=c;b.lang=PACKS[c].meta.htmlLang;b.onclick=()=>setLang(c);box.append(b);});}
 let helloShown=false;
 function begin(){audioInit();if(AC&&sndOn)AC.resume().then(()=>sfx('start')).catch(()=>{});startOpen=false;state.seen=true;save();$('#start').classList.add('hidden');cv.focus({preventScroll:true});
-  if(!helloShown){helloShown=true;setTimeout(()=>say(tr('home'),state.day===1&&state.time<9*60?tr('welcomeFirst'):tr('welcomeBack')),300);}}
+  if(!helloShown){helloShown=true;setTimeout(()=>say(tr('home'),state.day===1&&state.time<9*60?tr('welcomeFirst'):tr('welcomeBack')),300);
+    let rewound=null;try{rewound=sessionStorage.getItem('homelove-rewound');sessionStorage.removeItem('homelove-rewound');}catch(e){}
+    if(rewound)setTimeout(()=>notify(tr('rewindDone',{d:rewound})),1600);
+    else if(offlineMinutes>=60)setTimeout(()=>notify(tr('offlineBack',{h:Math.round(offlineMinutes/60)})),1600);}}
 $('#btnStart').addEventListener('click',begin);
 
 /* ---------------- dressing room ---------------- */
@@ -2586,7 +2906,7 @@ function renderPicker(){
   const tabs=$('#tabs');tabs.innerHTML='';
   CATS.forEach(c=>{
     const label=c.key==='capsule'?lifeText('扭蛋礼裙','Capsule gowns','ガチャドレス'):
-      c.key==='capsuleHair'?tr('capsuleHairTab'):Lp.cats[c.key];
+      c.key==='capsuleHair'?tr('capsuleHairTab'):c.key==='capsuleTop'||c.key==='capsuleBottom'?tr(c.key+'Tab'):Lp.cats[c.key];
     const b=el('button','tab'+(c.key===curCat?' on':''),label);
     b.type='button';b.setAttribute('aria-pressed',c.key===curCat);
     b.onclick=()=>{curCat=c.key;renderPicker();};tabs.append(b);
@@ -2600,8 +2920,8 @@ function renderPicker(){
     const capsule=capsulePoolFor(it);
     const locked=!unlocked(it),sel=state.o[slot]===it.id,fans=likedBy(cat,it.id);
     const b=el('button','item'+(sel?' sel':'')+(locked?' locked':''));b.type='button';b.setAttribute('aria-pressed',sel);
-    const thumb={...state.o,[slot]:it.id};
-    if(capsule&&!sel)thumb[capsule.colorKey]=it.color;
+    const variant=sel&&capsule?{...it,color:state.o[capsule.colorKey]}:it;
+    const thumb=capsule?capsuleOutfit(capsule,variant):{...state.o,[slot]:it.id};
     b.append(thumbCanvas(thumb,cat.crop),el('span',null,it.label));
     if(fans.length){b.append(el('span','liked','♥'));b.title=tr('likedBy',{x:listJoin(fans)});}
     if(locked){
@@ -2610,8 +2930,7 @@ function renderPicker(){
     }
     b.onclick=()=>{
       if(locked){notify(capsule?tr('capsuleLocked'):tr('lockedToast',{i:it.label,x:it.lock,y:state.flowersTotal}));return;}
-      if(capsule&&!sel)state.o[capsule.colorKey]=it.color;
-      state.o[slot]=it.id;changed();
+      Object.assign(state.o,thumb);changed();
     };
     box.append(b);
   });
@@ -2670,6 +2989,11 @@ $('#btnSave').addEventListener('click',()=>{
 /* ---------------- diary ---------------- */
 function statusOf(r){const s=Lp.status;if(r.livesIn)return s.livesIn;if(r.couple)return s.couple;const h=hearts(r);if(h>=8)return s.h8;if(h>=6)return s.h6;if(h>=3)return s.h3;if(h>=1)return s.h1;return r.met?s.met:s.none;}
 function nextHint(n){
+  const story=state.stories[n.id];
+  if(story&&rel(n).met&&story.length<ResidentStories.chapters.length){
+    const ready=ResidentStories.next(state.stories,n.id,state.day,hearts(rel(n)));
+    if(ready!==null)return tr('residentStoryReady');
+  }
   if(xiaomanRoute(n))return tr(state.xiaoman.answer==='friends'?'xmHintFriends':state.xiaoman.answer==='space'?'xmHintSpace':'xmHint');
   const r=rel(n),h=hearts(r);
   if(!r.met)return tr('hintMeet',{t:fmt(n.arrive),n:nm(n)});
@@ -2710,6 +3034,10 @@ function renderDiary(){
     const nl=el('div','rline');nl.append(document.createTextNode(tr('notes')));nl.append(notes.length?document.createTextNode(notes.join('  ')):el('em',null,tr('notesEmpty')));
     info.append(top,el('div','rsub',`${T.title} · `+(r.livesIn?tr('livesHere'):xiaomanRoute(n)&&state.xiaoman.answer?tr('xmVisits_'+state.xiaoman.answer):tr('visits',{a:fmt(n.arrive),b:fmt(n.leave)}))),hs,
       el('div','rline',today),el('div','rline',tr('favGift')+giftTxt),el('div','rline',tr('favStyle')+styleTxt),nl,el('div','rnext',nextHint(n)));
+    if(r.met){
+      const tv=B().trust[n.id],jv=B().jealousy[n.id];
+      info.append(el('div','rline',tr('trustLabel')+lifeText('：',': ','：')+tr(CottageBonds.trustWord(tv))+(jv>=10?' · '+tr('jealousyLine',{x:Math.round(jv)}):'')));
+    }
     if(r.met){
       const life=state.life[n.id],cards=life?.cards||{};
       const labels={birthday:lifeText('生日快乐','Birthday','誕生日'),visitSick:lifeText('病中探望','A visit','お見舞い'),firstDate:lifeText('初次约会','First date','初デート'),rareDate:lifeText('难忘约会','Rare date','忘れられないデート'),neighborRequest:tr('requestKeepsake')};
@@ -2768,7 +3096,9 @@ function renderDiary(){
     })));
     b.append(section);
   }
+  renderRecap(b);
   b.append(s1,s4,s2,pondLog,s3);
+  renderRewind(b);
 }
 function openDiary(){if(dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
 function closeDiary(){sfx('page');diaryOpen=false;$('#diary').classList.add('hidden');cv.focus({preventScroll:true});}
@@ -2778,7 +3108,7 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories)).sort((a,b)=>b.day-a.day);
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -2788,6 +3118,24 @@ function updateAlbumBadge(){
 function albumScene(card,n){
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.kind==='story'){
+    const scene={gy:'home',xy:'garden',jy:'pond',by:'stars'}[n.id];
+    MemoryAlbum.paint(g,scene);
+    blitChar(g,n.outfit,'down',0,36,20);
+    const [x,y]=[64,scene==='home'?28:40];
+    if(n.id==='gy'){
+      g.fillStyle='#fff0cd';g.fillRect(x,y,7,6);g.fillRect(x+7,y+1,2,3);
+      g.fillStyle='#93634c';g.fillRect(x+1,y,5,1);
+    }else if(n.id==='xy'){
+      g.fillStyle='#d9975d';g.fillRect(x,y+1,6,4);g.fillRect(x+1,y,4,6);
+      g.fillStyle='#9d663f';g.fillRect(x+2,y,1,6);
+    }else{
+      g.fillStyle='#b38c7d';g.fillRect(x,y,13,9);
+      g.fillStyle='#f2ddbb';g.fillRect(x+1,y+1,11,7);
+      g.fillStyle=n.id==='jy'?'#a27891':'#728ba0';g.fillRect(x+3,y+3,7,1);g.fillRect(x+3,y+5,5,1);
+    }
+    return art;
+  }
   if(card.event?.startsWith('xm')){
     MemoryAlbum.paint(g,card.event==='xmPostcard'?'home':'garden');
     blitChar(g,n.outfit,'down',0,29,22);
@@ -2827,6 +3175,7 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.kind==='story')return residentChapter(n.id,card.index)[3+card.choice];
   if(card.event?.startsWith('xm'))return tr(card.choice?'world_xmConfession_'+card.choice:'xmCard_'+card.event);
   if(card.event)return tr(card.choice?'world_'+card.event+'_'+card.choice:'worldUfoPostcard');
   if(card.kind==='postcard')return tr('postcard_'+n.id+'_'+card.variant);
@@ -2843,7 +3192,7 @@ function renderAlbum(){
   body.replaceChildren();
   body.scrollTop=0;
   const selected=cards.find(card=>card.key===albumSelected);
-  const title=card=>tr(card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
+  const title=card=>card.kind==='story'?residentChapter(card.resident,card.index)[0]:tr(card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
   const resident=card=>npcs.find(n=>n.id===card.resident);
   const stamp=(card,n)=>(n?nm(n)+' · ':'')+tr('day',{d:card.day});
   if(selected){
@@ -2854,18 +3203,21 @@ function renderAlbum(){
       body.querySelector('[data-key="'+selected.key+'"]')?.focus();
     };
     const n=resident(selected),page=el('article','album-page');
-    page.append(albumScene(selected,n),el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)));
+    const keep=el('button','pbtn',tr('albumSave'));keep.type='button';
+    keep.onclick=()=>downloadCanvas(keepsakeCard(title(selected),stamp(selected,n),albumDetails(selected,n),albumScene(selected,n)),'HomeLove-'+selected.key+'.png');
+    page.append(albumScene(selected,n),el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)),keep);
     body.append(back,page);back.focus();
     return;
   }
   const tabs=el('div','album-tabs');
-  for(const [tab,label] of [['events','albumEvents'],['postcards','albumPostcards']]){
+  for(const [tab,label] of [['events','albumEvents'],['postcards','albumPostcards'],['badges','albumBadges']]){
     const b=el('button','pbtn'+(tab===albumTab?' primary':''),tr(label));
     b.type='button';b.dataset.tab=tab;b.setAttribute('aria-pressed',tab===albumTab);
     b.onclick=()=>{albumTab=tab;markAlbumTabSeen(cards);renderAlbum();body.querySelector('[data-tab="'+tab+'"]').focus();};
     tabs.append(b);
   }
   body.append(tabs);
+  if(albumTab==='badges'){renderBadges(body);return;}
   const visible=cards.filter(card=>(card.kind==='postcard')===(albumTab==='postcards'));
   if(!visible.length){body.append(el('p',null,tr(albumTab==='events'?'albumEmptyEvents':'albumEmptyPostcards')));return;}
   const grid=el('div','album-grid');
@@ -2879,6 +3231,7 @@ function renderAlbum(){
   body.append(grid);
 }
 function markAlbumTabSeen(cards){
+  if(albumTab==='badges')return;
   const unread=cards.filter(card=>(card.kind==='postcard')===(albumTab==='postcards')&&!state.album.seen.includes(card.key));
   if(unread.length){state.album.seen.push(...unread.map(card=>card.key));save();}
   updateAlbumBadge();
@@ -3053,7 +3406,7 @@ function render(time){
 }
 
 /* ---------------- loop ---------------- */
-let hudT=0,saveT=0,stepT=0;
+let hudT=0,saveT=0,stepT=0,bondsT=0;
 function update(dt){
   const paused=startOpen||dressOpen||diaryOpen||albumOpen||D.modal||busy;
   let dx=0,dy=0;
@@ -3078,6 +3431,8 @@ function update(dt){
   if(!paused){
     const gm=dt*TIME_RATE;state.time+=gm;decay(gm,P.moving);
     updateNightVisitor();
+    skyWatch();
+    bondsT+=dt;if(bondsT>2){bondsT=0;bondsTick();}
     updFish(dt);
     if(state.time>=26*60||state.need.energy<=0){FISH.on=false;FISH.companion=null;passOut();}
   }
@@ -3094,6 +3449,11 @@ function update(dt){
 }
 let last=performance.now();
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);render(t/1000);requestAnimationFrame(loop);}
+// Start of session: yesterday's baseline, today's possible visitor, and the hours that passed while the page was closed.
+if(!B().dayStart)CottageBonds.startDay(B(),state.day,ptsMap());
+planToday();
+offlineMinutes=catchUpOffline();
+if(!SaveManager.snapshots(localStorage,LS).some(s=>s.label==='d-'+state.day))snapshotMorning();
 applyLang();
 snapPets();
 requestAnimationFrame(loop);
