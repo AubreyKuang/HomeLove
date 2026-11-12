@@ -330,11 +330,12 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 
 <script src="npc-memory.js"></script>
 <script src="save-manager.js"></script>
-<script src="cottage-activities.js?v=neighbor-letters-1"></script>
+<script src="cottage-activities.js?v=cottage-events-1"></script>
+<script src="cottage-events.js"></script>
 <script src="memory-album.js"></script>
-<script src="lang/zh.js?v=memory-album-1" charset="utf-8"></script>
-<script src="lang/en.js?v=memory-album-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=memory-album-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=cottage-events-1" charset="utf-8"></script>
+<script src="lang/en.js?v=cottage-events-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=cottage-events-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -384,7 +385,7 @@ function tr(key,v){const s=(Lp.ui&&Lp.ui[key])??(PACKS.zh&&PACKS.zh.ui[key])??ke
 const nt=n=>Lp.npcs[n.id];
 const nm=n=>nt(n).name;
 const itemName=id=>(Lp.clothes&&Lp.clothes[id])||id;
-const itemLabel=k=>Lp.items[k].name;
+const itemLabel=k=>k==='mysteryBloom'?tr('worldBloomName'):Lp.items[k].name;
 const listJoin=a=>a.join(tr('listSep'));
 
 /* ---------------- wardrobe data ---------------- */
@@ -861,7 +862,7 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),
+  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()]))
 };
@@ -881,6 +882,7 @@ function applySave(s){
   if(s.o&&typeof s.o==='object')Object.assign(state.o,s.o);
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
+  state.events=CottageEvents.load(s.events,state.day);
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
   if(Array.isArray(s.pets))state.pets=s.pets.filter(p=>p&&['cat','dog','bird','rabbit'].includes(p.kind)&&typeof p.name==='string').slice(0,3).map(p=>({kind:p.kind,ci:p.ci|0,name:p.name,bond:+p.bond||0,mode:p.mode==='stay'?'stay':'follow',done:(p.done&&typeof p.done==='object')?p.done:{},hx:p.hx,hy:p.hy,x:0,y:0,dir:1,anim:0}));
   if(s.need)['energy','hunger','mood'].forEach(k=>{if(typeof s.need[k]==='number')state.need[k]=clampN(s.need[k]);});
@@ -1714,6 +1716,8 @@ function deliverAlbumPostcard(){
   if(postcard)state.album.postcards.push(postcard);
 }
 function unreadAlbumPostcard(){
+  const special=state.events&&CottageEvents.postcard(state.events,state.day);
+  if(special&&!state.album.seen.includes(special.key))return special;
   return state.album?.postcards.findLast(card=>!state.album.seen.includes(MemoryAlbum.postcardKey(card)));
 }
 function checkMail(){
@@ -1799,11 +1803,13 @@ function pickFlower(f){
 }
 function plotVerb(plot){
   if(!plot)return tr('plantCrop');
+  if(plot.crop==='mysteryBloom'&&CottageActivities.ripe(plot))return tr('worldSeedLook');
   return tr(CottageActivities.ripe(plot)?'harvestCrop':'tendCrop',{crop:itemLabel(plot.crop)});
 }
 function tendPlot(i){
   const plot=state.garden[i];
   if(CottageActivities.ripe(plot)){
+    if(plot.crop==='mysteryBloom'){bloomMenu(i);return;}
     const crop=CottageActivities.pickCrop(state.garden,i);
     state.inv[crop]++;
     sfx('pickup');save();updateHud();
@@ -1813,13 +1819,16 @@ function tendPlot(i){
   const opts=[];
   let line=tr('plantTip');
   if(!plot){
-    for(const [crop,{days}] of Object.entries(CottageActivities.crops)){
+    for(const [crop,{days,event}] of Object.entries(CottageActivities.crops)){
+      if(event)continue;
       opts.push({label:tr('plantOption',{crop:itemLabel(crop),days}),fn:()=>{
         state.garden[i]=CottageActivities.seed(crop);
         sfx('pickup');save();
         say(tr('farm'),tr('cropPlanted',{crop:itemLabel(crop)}));
       }});
     }
+    const event=state.events&&seedPlantOption(i);
+    if(event)opts.unshift(event);
   }else{
     const days=CottageActivities.crops[plot.crop].days-plot.growth;
     line=tr(plot.watered?'cropWet':'cropDry',{crop:itemLabel(plot.crop),days});
@@ -1928,10 +1937,13 @@ function reel(){
       rememberPlayer(companion,'sharedFishing','caught',1,95,caught);
       state.need.mood=clampN(state.need.mood+8);
     }
+    const bottle=!companion&&state.events&&CottageEvents.discover(state.events,'bottle',state.day,Math.random());
     sfx('catch');state.inv[k]++;endFish(15,3);heart(P.x,P.y-26);
     if(companion){
       D.npc=companion;
       talk(nm(companion),[tr('sharedFishingCaught',{i,size:result.size})]);
+    }else if(bottle){
+      talk(tr('pond'),[tr('worldBottleFound',{item:i})]);
     }else{
       say(tr('pond'),result?tr(result.record?'fishRecord':'fishSized',{i,size:result.size}):tr('fishGot',{i})+(k==='star'?' '+tr('fishRare'):''));
     }
@@ -1988,6 +2000,7 @@ function rememberPlayer(n,type,outcome,emotion,impact,object){
 function memoryLine(n,entry){
   const data=entry.interpretation;
   if(!data||typeof data!=='object')return '';
+  if(['worldUfo','worldBottle','worldSeed'].includes(data.type))return tr(data.type+'Recall_'+data.object);
   if(data.type==='neighborRequest')return tr('requestRecall_'+n.id,{item:itemLabel(data.object)});
   if(data.type==='sharedFishing')return tr('sharedFishingRecall',{
     fish:itemLabel(data.object.kind),size:data.object.size
@@ -2061,6 +2074,7 @@ function npcMenu(n,back){
   if(fishingInvitationReady(n))opts.unshift({label:tr('sharedFishingTalk'),fn:()=>offerFishingInvitation(n)});
   const request=acceptedNeighborRequest(n);
   if(request)opts.unshift({label:tr('requestHandIn'),fn:()=>offerNeighborDelivery(n,request)});
+  opts.unshift(...worldNpcOptions(n,back));
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
   if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
@@ -2081,7 +2095,7 @@ function chat(n){
   if(r.done.chat){talk(nm(n),[T.tired],null,()=>npcMenu(n,true));return;}
   r.done.chat=true;advanceTime(15);
   const first=state.life?.[n.id]?.firstDate;
-  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest'].includes(e.type));
+  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest','worldUfo','worldBottle','worldSeed'].includes(e.type));
   const lines=[];
   if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
   else if(recalled&&Math.random()<.4){const line=memoryLine(n,recalled);if(line)lines.push(line);}
@@ -2178,8 +2192,133 @@ function confess(n){
 }
 function moveIn(n){const r=rel(n);D.npc=n;talk(nm(n),nt(n).moveIn,null,()=>{r.livesIn=true;n.path=null;n.idle=5;save();notify(tr('movedIn',{n:nm(n)}));});}
 
+/* ---------------- cottage events ---------------- */
+function updateNightVisitor(){
+  const {landing}=CottageEvents;
+  if(state.day<2||state.time<landing.start||state.time>=landing.end||FISH.on)return;
+  const tile=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));
+  if(tile===FLOOR||tile===DOOR)return;
+  const ufo=state.events.ufo;
+  if(ufo.checked===state.day||ufo.done)return;
+  if(CottageEvents.discover(state.events,'ufo',state.day,Math.random())){
+    ufo.minute=state.time;
+    sfx('ding');notify(tr('worldUfoArrival'));
+  }
+  save();
+}
+function visitorTarget(){
+  if(!CottageEvents.landed(state.events,state.day,state.time))return null;
+  const {x,y}=CottageEvents.landing;
+  if(state.time-state.events.ufo.minute<4||Math.hypot(x-P.x,y-P.y)>22)return null;
+  return {kind:'visitor',verb:tr('worldUfoTalk'),x,y:y-20};
+}
+let visitorDeparture=-1;
+function visitAlien(){
+  const flower='flower',fish=['fish','carp','moonfish'].find(k=>state.inv[k]>0);
+  const choices=[
+    {label:tr('worldUfoFlower'),disabled:state.inv.flower<1,fn:()=>finishVisit('flower',flower)},
+    {label:tr('worldUfoFish',{fish:fish?itemLabel(fish):itemLabel('fish')}),disabled:!fish,fn:()=>finishVisit('fish',fish)},
+    {label:tr('worldUfoSit'),fn:()=>finishVisit('sit')},
+    {label:tr('walkAway'),fn:null}
+  ];
+  talk(tr('worldVisitor'),[tr('worldUfoIntro')],choices);
+}
+function finishVisit(choice,item){
+  if(item&&state.inv[item]<1)return;
+  if(!CottageEvents.finish(state.events,'ufo',state.day,choice))return;
+  if(item)state.inv[item]--;
+  if(choice==='fish')state.inv.shell++;
+  state.need.mood=clampN(state.need.mood+8);
+  visitorDeparture=absMin();save();updateHud();sfx('ding');
+  talk(tr('worldVisitor'),[tr('world_ufo_'+choice)]);
+}
+function drawNightVisitor(g,time){
+  const landed=CottageEvents.landed(state.events,state.day,state.time);
+  const lift=absMin()-visitorDeparture;
+  const departing=visitorDeparture>=0&&lift>=0&&lift<6;
+  if(!landed&&!departing)return;
+  const {x,y}=CottageEvents.landing;
+  const elapsed=state.time-state.events.ufo.minute;
+  const height=landed?Math.max(0,4-elapsed)*13:lift*12;
+  const open=landed&&elapsed>=4;
+  const sy=Math.round(y-26-height);
+  g.fillStyle='#8ac3c9';g.fillRect(x-17,6*16+6,21,1);g.fillRect(x-12,6*16+9,16,1);
+  if(landed){
+    glow(g,x,sy+7,24,'rgba(166,225,214,.28)');
+    if(open){g.fillStyle='rgba(181,231,205,.18)';g.fillRect(x-11,sy+4,18,20);}
+  }
+  CottageEvents.ship(g,x-11,sy,open);
+  if(open)CottageEvents.alien(g,x,y+(Math.sin(time*2)>0?0:1));
+}
+function worldNpcOptions(n,back){
+  const {ufo,bottle,seed}=state.events;
+  const opts=[];
+  if(n.id==='by'&&ufo.done&&state.day>ufo.done&&!ufo.told){
+    opts.push({label:tr('worldTellBai'),fn:()=>{
+      ufo.told=state.day;
+      rememberPlayer(n,'worldUfo',ufo.choice,.8,90,ufo.choice);
+      save();talk(nm(n),[tr('worldBaiReply')]);
+    }});
+  }
+  if(n.id!=='xm')return opts;
+  if(bottle.found&&!bottle.done)opts.push({label:tr('worldBottleTalk'),fn:()=>bottleMenu(n)});
+  if(!back&&!seed.found&&seed.checked!==state.day&&state.day>=2&&state.time>=9*60&&state.time<15*60){
+    if(CottageEvents.discover(state.events,'seed',state.day,Math.random()))notify(tr('worldSeedOfferHint'));
+    save();
+  }
+  if(seed.found&&!seed.accepted)opts.push({label:tr('worldSeedOffer'),fn:()=>{
+    seed.accepted=state.day;
+    save();talk(nm(n),[tr('worldSeedGift')]);
+  }});
+  return opts;
+}
+function bottleMenu(n){
+  talk(nm(n),[tr('worldBottleIntro')],[
+    {label:tr('worldBottleDeliver'),fn:()=>resolveWorldEvent(n,'bottle','deliver')},
+    {label:tr('worldBottleReply'),fn:()=>resolveWorldEvent(n,'bottle','reply')},
+    {label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)}
+  ]);
+}
+function seedPlantOption(i){
+  const seed=state.events?.seed;
+  if(!seed?.accepted||seed.done||state.garden.some(plot=>plot?.crop==='mysteryBloom'))return null;
+  return {label:tr('worldSeedPlant'),fn:()=>{
+    if(state.garden[i]||seed.done||state.garden.some(plot=>plot?.crop==='mysteryBloom'))return;
+    state.garden[i]=CottageActivities.seed('mysteryBloom');
+    save();say(tr('farm'),tr('worldSeedPlanted'));
+  }};
+}
+function bloomMenu(i){
+  const seed=state.events.seed;
+  const n=npcs.find(n=>n.id==='xm');
+  if(!seed.done){
+    talk(tr('farm'),[tr('worldSeedBloomed')],[
+      {label:tr('worldSeedKeep'),fn:()=>resolveWorldEvent(n,'seed','keep')},
+      {label:tr('worldSeedReturn'),fn:()=>resolveWorldEvent(n,'seed','return',i)},
+      {label:tr('walkAway'),fn:null}
+    ]);
+    return;
+  }
+  talk(tr('farm'),[tr('worldSeedStillHere')],[
+    {label:tr('clearPlot'),fn:()=>talk(tr('farm'),[tr('clearPlotAsk',{crop:tr('worldBloomName')})],[
+      {label:tr('clearPlot'),fn:()=>{state.garden[i]=null;save();}},
+      {label:tr('optBack'),back:true,fn:()=>bloomMenu(i)}
+    ])},
+    {label:tr('walkAway'),fn:null}
+  ]);
+}
+function resolveWorldEvent(n,kind,choice,plotIndex){
+  if(!CottageEvents.finish(state.events,kind,state.day,choice))return;
+  if(kind==='seed'&&choice==='return')state.garden[plotIndex]=null;
+  rememberPlayer(n,kind==='bottle'?'worldBottle':'worldSeed',choice,.8,80,choice);
+  addPts(n,5);updateHud();
+  talk(kind==='seed'?tr('farm'):nm(n),[tr('world_'+kind+'_'+choice)]);
+}
+
 /* ---------------- interaction ---------------- */
 function findTarget(){
+  const visitor=visitorTarget();
+  if(visitor)return visitor;
   const d=DV[P.dir],fx=P.x+d[0]*12,fy=P.y-3+d[1]*12;
   for(const n of npcs){if(n.state!=='away'&&Math.hypot(n.x-fx,n.y-4-fy)<13)return {kind:'npc',n,verb:tr('talkTo',{n:nm(n)}),x:n.x,y:n.y-31};}
   const pt=petAt(fx,fy);if(pt)return {kind:'pet',p:pt,verb:tr('petVerb',{p:pt.name}),x:pt.x,y:pt.y-20};
@@ -2203,7 +2342,8 @@ function interact(){
   const t=findTarget();if(!t)return;
   walkRoute=[];
   D.npc=null;
-  if(t.kind==='npc')npcMenu(t.n);
+  if(t.kind==='visitor')visitAlien();
+  else if(t.kind==='npc')npcMenu(t.n);
   else if(t.kind==='cat')petCat();
   else if(t.kind==='pet')petMenu(t.p);
   else if(t.kind==='gold')pickGold();
@@ -2508,7 +2648,8 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 /* ---------------- keepsake album ---------------- */
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
-const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album);
+const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
+  .concat(CottageEvents.cards(state.events,state.day)).sort((a,b)=>b.day-a.day);
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -2517,6 +2658,23 @@ function updateAlbumBadge(){
 }
 function albumScene(card,n){
   const art=mk(96,60),g=art.getContext('2d');
+  art.setAttribute('aria-hidden','true');
+  if(card.event){
+    MemoryAlbum.paint(g,card.event==='seed'?'garden':card.event==='bottle'?'pond':'stars');
+    if(card.event==='seed'){
+      blitChar(g,n.outfit,'down',0,27,19);
+      CottageEvents.bloom(g,64,40);
+      if(card.choice==='keep')CottageEvents.bloom(g,75,46);
+    }else if(card.event==='bottle'){
+      blitChar(g,n.outfit,'down',0,22,14);
+      CottageEvents.bottle(g,61,46);
+      if(card.choice==='reply'){g.fillStyle='#fff0c8';g.fillRect(56,25,15,8);}
+    }else{
+      CottageEvents.ship(g,65,card.event==='ufoPostcard'?19:29,card.event==='ufo');
+      if(card.event==='ufo')CottageEvents.alien(g,38,43,card.choice);
+    }
+    return art;
+  }
   const scene=card.kind==='postcard'?POSTCARD_SCENES[n.id][card.variant]:
     card.place??({rareDate:'garden',sharedFishing:'pond',neighborRequest:'garden',firstDate:'garden'}[card.kind]||card.kind);
   MemoryAlbum.paint(g,scene);
@@ -2526,10 +2684,10 @@ function albumScene(card,n){
     g.fillStyle='#ffe5b8';g.fillRect(76,43,11,7);
     g.fillStyle='#d19b7b';g.fillRect(80,46,3,1);
   }
-  art.setAttribute('aria-hidden','true');
   return art;
 }
 function albumDetails(card,n){
+  if(card.event)return tr(card.choice?'world_'+card.event+'_'+card.choice:'worldUfoPostcard');
   if(card.kind==='postcard')return tr('postcard_'+n.id+'_'+card.variant);
   if(card.kind==='sharedFishing'&&Object.hasOwn(CottageActivities.fish,card.info?.kind)){
     const caught=card.info;
@@ -2544,9 +2702,9 @@ function renderAlbum(){
   body.replaceChildren();
   body.scrollTop=0;
   const selected=cards.find(card=>card.key===albumSelected);
-  const title=card=>tr('albumCard_'+card.kind);
+  const title=card=>tr(card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
   const resident=card=>npcs.find(n=>n.id===card.resident);
-  const stamp=(card,n)=>nm(n)+' · '+tr('day',{d:card.day});
+  const stamp=(card,n)=>(n?nm(n)+' · ':'')+tr('day',{d:card.day});
   if(selected){
     const back=el('button','pbtn',tr('albumBack'));
     back.type='button';
@@ -2660,6 +2818,9 @@ function render(time){
       ctx.fillStyle='rgba(65,45,58,.26)';ctx.fillRect(x+1,y+2,14,12);
       ctx.fillStyle='#89c7df';ctx.fillRect(x+12,y+10,1,2);
     }
+    if(plot.crop==='mysteryBloom'&&CottageActivities.ripe(plot)){
+      CottageEvents.bloom(ctx,x+8,y+3);return;
+    }
     const sprout=CottageActivities.ripe(plot)
       ?SPR[plot.crop==='berry'?'berryRipe':plot.crop]
       :plot.growth?SPR.berryLeaf:SPR.sprout;
@@ -2709,9 +2870,17 @@ function render(time){
     ctx.globalCompositeOperation='lighter';
     if(state.lamp){glow(ctx,LAMP_POS[0],LAMP_POS[1]-8,72,`rgba(255,190,100,${(0.3*dark).toFixed(3)})`);glow(ctx,LAMP_POS[0],LAMP_POS[1]-14,16,`rgba(255,220,140,${(0.35*dark).toFixed(3)})`);}
     if(dark>0.5){glow(ctx,6*16+8,2*16+9,14,'rgba(150,170,255,0.15)');glow(ctx,9*16+8,2*16+9,14,'rgba(150,170,255,0.15)');glow(ctx,14*16+8,2*16+9,14,'rgba(150,170,255,0.15)');
+      state.garden.forEach((plot,i)=>{
+        if(plot?.crop==='mysteryBloom'&&CottageActivities.ripe(plot)){
+          const x=(17+i%6)*16+8,y=(13+Math.floor(i/6))*16+5;
+          glow(ctx,x,y,12,'rgba(255,211,151,.34)');
+          ctx.fillStyle='#fff0bc';ctx.fillRect(x,y,1,1);
+        }
+      });
       for(const f of fireflies){const fx=f.x+Math.sin(time*f.s+f.p)*10,fy=f.y+Math.cos(time*f.s*.7+f.p)*7,a=(Math.sin(time*2.4*f.s+f.p)+1)/2*dark;
         if(a>.3){glow(ctx,fx,fy,5,`rgba(255,240,140,${(a*.5).toFixed(2)})`);ctx.fillStyle=`rgba(255,250,190,${a.toFixed(2)})`;ctx.fillRect(Math.round(fx),Math.round(fy),1,1);}}}
     ctx.globalCompositeOperation='source-over';
+    drawNightVisitor(ctx,time);
   }
 }
 
@@ -2740,6 +2909,7 @@ function update(dt){
   }else P.anim=0;
   if(!paused){
     const gm=dt*TIME_RATE;state.time+=gm;decay(gm,P.moving);
+    updateNightVisitor();
     updFish(dt);
     if(state.time>=26*60||state.need.energy<=0){FISH.on=false;FISH.companion=null;passOut();}
   }
@@ -2778,6 +2948,24 @@ snapPets();
     lock(b){dev.lock=!dev.lock;b.textContent=(dev.lock?'🔒 状态锁满：开':'🔓 状态锁满：关');if(dev.lock){fillNeeds();updateHud();}},
     resetDay(){NPCS.forEach(n=>{rel(n).done={};});state.pets.forEach(p=>{p.done={};});flowers.forEach(f=>{f.picked=false;});state.picked=[];save();notify('🛠 今天的互动次数和花朵已重置');},
     time(h){state.time=h*60;npcs.forEach(n=>{if(!rel(n).livesIn&&!summoned(n)){n.state='away';n.path=null;n.leaving=false;n.x=n.y=-100;}});updateHud();notify('🛠 时间跳到 '+fmt(state.time));},
+    previewEvent(kind){
+      if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){notify('先回到游戏画面再预览事件');return;}
+      const event=state.events[kind];
+      if(event.done){notify('这个存档已完成该事件，可以在收藏里回看');return;}
+      if(kind==='ufo'){
+        const {x,y,start}=CottageEvents.landing;
+        state.time=start;
+        Object.assign(P,{x:x-19,y,dir:'right'});walkRoute=[];snapPets();
+        event.checked=event.found=state.day;
+        event.minute=start;
+        notify(tr('worldUfoArrival'));
+      }else{
+        event.found ||= state.day;
+        const n=npcs.find(person=>person.id==='xm');
+        npcMenu(n);
+      }
+      save();updateHud();
+    },
     wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
@@ -2799,6 +2987,9 @@ snapPets();
   [[7,'07:00'],[10,'10:00'],[13,'13:00'],[16,'16:00'],[18,'18:00'],[21,'21:00']].forEach(([h,l])=>{const b=document.createElement('button');b.type='button';b.textContent=l;
     b.style.cssText='cursor:pointer;padding:2px 4px;border-radius:4px;border:1px solid #6b5a72;background:#3d3248;color:#fff6e6;font:inherit';
     b.onclick=()=>{A.time(h);cv.focus({preventScroll:true});};row.append(b);});
+  btn('🛸 预览飞船来客',()=>A.previewEvent('ufo'));
+  btn('🍾 预览漂流瓶',()=>A.previewEvent('bottle'));
+  btn('🌱 预览无名种子',()=>A.previewEvent('seed'));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;

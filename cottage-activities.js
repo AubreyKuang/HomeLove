@@ -2,7 +2,8 @@ const CottageActivities = (() => {
   const crops = {
     berry: {days: 2, regrow: 1},
     carrot: {days: 1},
-    pumpkin: {days: 3}
+    pumpkin: {days: 3},
+    mysteryBloom: {days: 2, event: true}
   };
   const fish = {
     fish: {min: 10, max: 24},
