@@ -552,7 +552,7 @@ Object.assign(window.HL_LANG.ja.ui, {
   "capsuleIntro": "ガラスの中にはドレス入りのカプセル。集めた数は {owned}/{total}。毎回新しいドレスが出るよ。",
   "capsuleFree": "回す（初回無料）",
   "capsuleTrade": "{item}を {cost} 個使って回す（所持 {count} 個）",
-  "capsuleComplete": "ドレスが4着そろった。クローゼットで着替えられるよ。",
+  "capsuleComplete": "ドレスをすべて集めた。クローゼットで着替えられるよ。",
   "capsuleWon": "カプセルが開いた！「{dress}」がクローゼットに加わった。",
   "capsuleTry": "試着する",
   "capsuleKeep": "しまっておく",
@@ -564,6 +564,12 @@ Object.assign(window.HL_LANG.ja.clothes, {
   "moonGown": "星夜のトレーンドレス",
   "lilyGown": "スズランのパールドレス",
   "peacockGown": "孔雀の金刺繍ドレス"
+});
+Object.assign(window.HL_LANG.ja.clothes, {
+  "seaSailorDress": "潮風のセーラーワンピ",
+  "dawnButterflyGown": "朝焼けの蝶刺繍ドレス",
+  "deepSeaGown": "深海のマーメイドドレス",
+  "snowCapeDress": "雪ベルベットのケープドレス"
 });
 window.HL_LANG.ja.objects.capsule = {"name": "ドレスガチャ", "verb": "ドレスガチャを回す"};
 

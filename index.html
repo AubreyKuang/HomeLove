@@ -290,7 +290,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
     <p data-i18n="intro1"></p>
     <p data-i18n="intro2"></p>
     <div class="keys">
-      <span class="k"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span><span data-i18n="kMove"></span>
+      <span class="k"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span><span id="moveHelp"></span>
       <span class="k"><kbd>E</kbd><kbd data-i18n="space"></kbd></span><span data-i18n="kAct"></span>
       <span class="k"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span data-i18n="kChoose"></span>
       <span class="k"><kbd>C</kbd><kbd>J</kbd><kbd>L</kbd></span><span data-i18n="kMenus"></span>
@@ -305,9 +305,9 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="npc-memory.js"></script>
 <script src="save-manager.js"></script>
 <script src="cottage-activities.js?v=neighbor-letters-1"></script>
-<script src="lang/zh.js?v=neighbor-letters-1" charset="utf-8"></script>
-<script src="lang/en.js?v=neighbor-letters-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=neighbor-letters-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=capsule-gowns-2" charset="utf-8"></script>
+<script src="lang/en.js?v=capsule-gowns-2" charset="utf-8"></script>
+<script src="lang/ja.js?v=capsule-gowns-2" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -443,6 +443,41 @@ const CAPSULE_DRESSES=[
     R(4+x,18,2,3,light);R(7,17,2,4,light);R(10,18,2,3,light);
     R(5+x,15,6-x,1,trim);R(K.up?9:6,11,1,3,trim);
     for(const px of [4,7,10,12]){R(px,20,1,1,trim);R(px,21,1,1,c);}
+  }},
+  {id:'seaSailorDress',color:7,sleeve:'short',hidesBottom:true,draw(K,c){
+    const {R}=K,x=K.side?1:0,shadow=shade(c,.72),light=shade(c,1.28);
+    torso(K,c,16);
+    R(5+x,16,6-x,1,shadow);R(4+x,17,8-x,2,c);R(3+x,19,10-x,1,shadow);
+    R(4+x,18,8-x,1,WHITE);R(5+x,19,2,1,light);
+    if(K.up){R(5,11,6,2,WHITE);R(6,13,4,1,WHITE);}
+    else{R(5+x,11,2,1,WHITE);R(9,11,2,1,WHITE);R(7+x,12,2,2,'#f2a157');}
+  }},
+  {id:'dawnButterflyGown',color:4,sleeve:'puff',hidesBottom:true,draw(K,c){
+    const {R}=K,x=K.side?1:0,shadow=shade(c,.74),light=shade(c,1.25);
+    torso(K,c,16);
+    R(5+x,16,6-x,1,'#a97383');R(4+x,17,8-x,2,c);R(2+x,19,12-x,2,c);
+    R(2+x,21,12-x,1,shadow);R(3+x,20,10-x,1,light);R(5+x,18,1,2,light);
+    const bow=K.up?7:8;
+    R(bow-2,14,2,2,'#d582a7');R(bow+1,14,2,2,'#d582a7');R(bow,15,1,1,'#fff1c4');
+    R(9,18,1,1,'#d582a7');R(11,19,1,1,'#d582a7');
+  }},
+  {id:'deepSeaGown',color:6,sleeve:'none',hidesBottom:true,draw(K,c){
+    const {R}=K,x=K.side?1:0,shadow=shade(c,.63),light=shade(c,1.45);
+    torso(K,c,16);
+    R(5+x,16,6-x,2,c);R(6+x,18,4,2,shadow);
+    R(4,20,8,1,c);R(2,21,12,1,shadow);
+    R(4,21,2,1,light);R(10,21,2,1,light);R(6+x,17,1,2,light);
+    R(8,18,1,1,c);R(9,19,1,1,light);
+    if(K.down){R(6,11,1,1,WHITE);R(9,11,1,1,WHITE);R(7,12,2,1,WHITE);}
+  }},
+  {id:'snowCapeDress',color:11,sleeve:'long',hidesBottom:true,draw(K,c){
+    const {R}=K,x=K.side?1:0,shadow=shade(c,.68),light=shade(c,1.32);
+    torso(K,c,16);
+    R(5+x,16,6-x,1,c);R(4+x,17,8-x,3,c);R(3+x,20,10-x,2,shadow);
+    R(4+x,20,8-x,1,light);R(4+x,21,8-x,1,'#e3edf3');
+    R(4+x,11,8-x,2,'#f6f3ef');R(3+x,13,10-x,1,'#e3edf3');
+    if(K.up){R(5,14,6,3,'#e3edf3');R(6,17,4,1,'#f6f3ef');}
+    else{R(7+x,13,2,1,'#e7bc76');R(7+x,14,1,2,'#d09972');}
   }}
 ];
 const TOPS=[
@@ -533,7 +568,8 @@ const ACCS=[
 const CATS=[
   {key:'skin',crop:[2,1,16,14]},
   {key:'hair',items:HAIRS,colorKey:'hairColor',colors:HAIR_COLORS,crop:[2,0,16,14]},
-  {key:'top',items:TOPS,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
+  {key:'top',items:TOPS.filter(top=>!CAPSULE_DRESSES.includes(top)),colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
+  {key:'capsule',slot:'top',items:CAPSULE_DRESSES,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
   {key:'bottom',items:BOTTOMS,colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
   {key:'shoes',items:SHOES,colorKey:'shoesColor',colors:CLOTH,crop:[2,12,16,14]},
   {key:'hat',items:HATS,colorKey:'hatColor',colors:CLOTH,crop:[2,0,16,14]},
@@ -1019,6 +1055,7 @@ OBJS.forEach(o=>{const s=SPR[o.id];o.spr=s;const px=o.tx*16+Math.floor((o.tw*16-
 
 /* ---------------- player, cat, residents, particles ---------------- */
 const P={x:4*16+8,y:6*16+10,dir:'down',moving:false,anim:0};
+let walkRoute=[];
 playerReady=true;
 if(state.position&&Number.isFinite(state.position.x)&&Number.isFinite(state.position.y)){
   Object.assign(P,state.position);
@@ -1073,6 +1110,35 @@ function bfs(sx,sy,gx,gy,indoor){
     for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=cx+dx,ny=cy+dy;if(!npcPassable(nx,ny,indoor))continue;const ni=ny*MW+nx;if(prev[ni]!==-1)continue;prev[ni]=c;q.push(ni);}}
   if(prev[goal]===-1)return null;
   const path=[];for(let c=goal;c!==start;c=prev[c])path.push([c%MW,(c/MW)|0]);return path.reverse();
+}
+function setWalkDestination(x,y){
+  const sx=Math.floor(P.x/16),sy=Math.floor((P.y-2)/16);
+  const gx=Math.floor(x/16),gy=Math.floor(y/16);
+  if(!npcPassable(sx,sy,true)||!npcPassable(gx,gy,true))return false;
+  const tiles=bfs(sx,sy,gx,gy,true);
+  if(!tiles)return false;
+  const route=tiles.map(([tx,ty])=>[tx*16+8,ty*16+12]);
+  if(route.length)route.unshift([sx*16+8,sy*16+12]);
+  route.push(blocked(x,y+2)?[gx*16+8,gy*16+12]:[x,y+2]);
+  walkRoute=route;
+  return true;
+}
+function followWalkRoute(distance){
+  let moved=false;
+  while(distance>0&&walkRoute.length){
+    const [x,y]=walkRoute[0];
+    const dx=x-P.x,dy=y-P.y,len=Math.hypot(dx,dy);
+    if(len===0){walkRoute.shift();continue;}
+    const step=Math.min(len,distance);
+    const ratio=step/len;
+    if(!tryMove(step===len?x:P.x+dx*ratio,step===len?y:P.y+dy*ratio)){
+      walkRoute=[];break;
+    }
+    P.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
+    moved=true;distance-=step;
+    if(step===len)walkRoute.shift();
+  }
+  return moved;
 }
 function lifeOf(n){return state.life[n.id] ||= {cards:{}};}
 function birthdayOf(n){return 1+NPCS.indexOf(NPCS.find(npc=>npc.id===n.id))*4;}
@@ -1504,27 +1570,35 @@ function capsuleMenu(){
 function drawCapsule(payment){
   const remaining=CAPSULE_DRESSES.filter(dress=>!unlocked(dress));
   if(!remaining.length)return;
+  const cost=state.capsuleDresses.length?CAPSULE_COST[payment]:0;
   if(state.capsuleDresses.length){
     if(!Object.hasOwn(CAPSULE_COST,payment)||state.inv[payment]<CAPSULE_COST[payment])return;
-    state.inv[payment]-=CAPSULE_COST[payment];
+    state.inv[payment]-=cost;
   }
   const dress=pick(remaining);
   state.capsuleDresses.push(dress.id);
-  save();updateHud();sfx('levelup');
+  if(!save()){
+    state.capsuleDresses.pop();
+    if(cost)state.inv[payment]+=cost;
+    talk(objName('capsule'),[lifeText('存档失败，扭蛋没有扣材料。请检查浏览器的存储设置。','The draw could not be saved. Your items were returned. Check browser storage.','保存できなかったため、材料を戻しました。ブラウザのストレージ設定を確認してください。')]);
+    return;
+  }
+  updateHud();sfx('levelup');
   const preview=el('div','capsule-reveal'),sprite=mk(20,26);
   preview.setAttribute('aria-hidden','true');
   blitChar(sprite.getContext('2d'),{...state.o,top:dress.id,topColor:dress.color},'down',0,0,0);
   preview.append(sprite);
   talk(objName('capsule'),[tr('capsuleWon',{dress:itemName(dress.id)})],[
     {label:tr('capsuleTry'),fn:()=>tryCapsuleDress(dress)},
-    {label:tr('capsuleKeep'),fn:null}
+    {label:lifeText('去衣柜看礼裙','View in wardrobe','クローゼットで見る'),back:true,fn:openCapsuleWardrobe}
   ],null,preview);
 }
 function tryCapsuleDress(dress){
-  curCat='top';openDress();
+  openCapsuleWardrobe();
   state.o.top=dress.id;state.o.topColor=dress.color;
   changed();
 }
+function openCapsuleWardrobe(){curCat='capsule';openDress();}
 function checkMail(){
   const current=CottageActivities.openRequest(state.neighborRequest,state.day);
   const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
@@ -2000,6 +2074,7 @@ function interact(){
   if(FISH.on){reel();return;}
   if(busy||dressOpen||diaryOpen||startOpen)return;
   const t=findTarget();if(!t)return;
+  walkRoute=[];
   D.npc=null;
   if(t.kind==='npc')npcMenu(t.n);
   else if(t.kind==='cat')petCat();
@@ -2037,6 +2112,7 @@ function applyLang(){
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=tr(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-aria]').forEach(e=>{e.setAttribute('aria-label',tr(e.dataset.i18nAria));});
   document.querySelectorAll('[data-i18n-title]').forEach(e=>{e.title=tr(e.dataset.i18nTitle);});
+  $('#moveHelp').textContent=tr('kMove')+' · '+lifeText('点击地面走过去','Click the ground to walk there','地面をクリックして移動');
   $('#btnStart').textContent=tr(startLabel);
   $('#btnLang').textContent='🌐 '+Lp.meta.label;
   document.querySelectorAll('.langpick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===LANG));
@@ -2072,6 +2148,7 @@ addEventListener('keydown',e=>{
     return;
   }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
+  if(e.code==='Escape'||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code))walkRoute=[];
   keys.add(e.code);
   if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);}
 });
@@ -2108,13 +2185,22 @@ function likedBy(cat,id){if(cat.key==='skin'||cat.key==='hair')return [];return 
 function likedColor(i){return npcs.filter(n=>rel(n).knowStyle&&n.likeColors.includes(i)).map(nm);}
 function renderPicker(){
   const tabs=$('#tabs');tabs.innerHTML='';
-  CATS.forEach(c=>{const b=el('button','tab'+(c.key===curCat?' on':''),Lp.cats[c.key]);b.type='button';b.setAttribute('aria-pressed',c.key===curCat);b.onclick=()=>{curCat=c.key;renderPicker();};tabs.append(b);});
+  CATS.forEach(c=>{
+    const label=c.key==='capsule'?lifeText('扭蛋礼裙','Capsule gowns','ガチャドレス'):Lp.cats[c.key];
+    const b=el('button','tab'+(c.key===curCat?' on':''),label);
+    b.type='button';b.setAttribute('aria-pressed',c.key===curCat);
+    b.onclick=()=>{curCat=c.key;renderPicker();};tabs.append(b);
+  });
   const cat=CATS.find(c=>c.key===curCat),box=$('#items');box.innerHTML='';
+  box.scrollTop=0;
+  const slot=cat.slot??cat.key;
   const list=cat.key==='skin'?SKINS.map((s,i)=>({id:i,label:Lp.skins[i]})):cat.items.map(it=>Object.assign({},it,{label:itemName(it.id)}));
   list.forEach(it=>{
-    const locked=!unlocked(it),sel=state.o[cat.key]===it.id,fans=likedBy(cat,it.id);
+    const locked=!unlocked(it),sel=state.o[slot]===it.id,fans=likedBy(cat,it.id);
     const b=el('button','item'+(sel?' sel':'')+(locked?' locked':''));b.type='button';b.setAttribute('aria-pressed',sel);
-    b.append(thumbCanvas(Object.assign({},state.o,{[cat.key]:it.id}),cat.crop),el('span',null,it.label));
+    const thumb={...state.o,[slot]:it.id};
+    if(isCapsuleDress(it)&&!sel)thumb.topColor=it.color;
+    b.append(thumbCanvas(thumb,cat.crop),el('span',null,it.label));
     if(fans.length){b.append(el('span','liked','♥'));b.title=tr('likedBy',{x:listJoin(fans)});}
     if(locked){
       b.append(el('span','lock',isCapsuleDress(it)?tr('capsuleTag'):`🌼${state.flowersTotal}/${it.lock}`));
@@ -2123,7 +2209,7 @@ function renderPicker(){
     b.onclick=()=>{
       if(locked){notify(isCapsuleDress(it)?tr('capsuleLocked'):tr('lockedToast',{i:it.label,x:it.lock,y:state.flowersTotal}));return;}
       if(isCapsuleDress(it)&&state.o.top!==it.id)state.o.topColor=it.color;
-      state.o[cat.key]=it.id;changed();
+      state.o[slot]=it.id;changed();
     };
     box.append(b);
   });
@@ -2162,7 +2248,7 @@ $('#btnWalk').addEventListener('click',()=>{pWalk=!pWalk;$('#btnWalk').textConte
 $('#btnRandom').addEventListener('click',()=>{
   const o=state.o,r=a=>a[Math.floor(Math.random()*a.length)],ci=()=>Math.floor(Math.random()*CLOTH.length);
   o.hair=r(HAIRS).id;o.hairColor=Math.floor(Math.random()*HAIR_COLORS.length);
-  o.top=r(TOPS).id;o.topColor=ci();o.bottom=r(BOTTOMS).id;o.bottomColor=ci();o.shoes=r(SHOES).id;o.shoesColor=ci();
+  o.top=r(TOPS.filter(unlocked)).id;o.topColor=ci();o.bottom=r(BOTTOMS).id;o.bottomColor=ci();o.shoes=r(SHOES).id;o.shoesColor=ci();
   o.hat=Math.random()<.4?'none':r(HATS.filter(h=>h.id!=='none'&&unlocked(h))).id;o.hatColor=ci();
   o.acc=Math.random()<.5?'none':r(ACCS.filter(a=>a.id!=='none')).id;o.accColor=ci();
   changed();
@@ -2288,6 +2374,21 @@ function resize(){
   scale=Math.max(1,Math.floor(Math.min(cv.width/(16*15),cv.height/(16*10))));
 }
 addEventListener('resize',resize);resize();
+function cameraOrigin(){
+  const vw=cv.width/scale,vh=cv.height/scale,mw=MW*16,mh=MH*16;
+  const x=vw>=mw?(mw-vw)/2:Math.max(0,Math.min(mw-vw,P.x-vw/2));
+  const y=vh>=mh?(mh-vh)/2:Math.max(0,Math.min(mh-vh,P.y-10-vh/2));
+  return [Math.round(x*scale)/scale,Math.round(y*scale)/scale];
+}
+cv.addEventListener('click',e=>{
+  if(e.button!==0||startOpen||dressOpen||diaryOpen||D.modal||busy||FISH.on)return;
+  const bounds=cv.getBoundingClientRect();
+  if(!bounds.width||!bounds.height)return;
+  const [cx,cy]=cameraOrigin();
+  const x=cx+(e.clientX-bounds.left)*cv.width/(bounds.width*scale);
+  const y=cy+(e.clientY-bounds.top)*cv.height/(bounds.height*scale);
+  if(setWalkDestination(x,y))cv.focus({preventScroll:true});
+});
 const fireflies=[];{const rnd=mulberry32(77);for(let i=0;i<18;i++){let x,y;do{x=1+rnd()*(MW-2);y=1+rnd()*(MH-2);}while(map[(y|0)*MW+(x|0)]!==G);fireflies.push({x:x*16,y:y*16,p:rnd()*6.28,s:.5+rnd()});}}
 function drawArrow(g,x,y){x=Math.round(x);y=Math.round(y);const F=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
   F(-3,-1,7,2,'#2a1e24');F(-2,1,5,1,'#2a1e24');F(-1,2,3,1,'#2a1e24');F(0,3,1,1,'#2a1e24');
@@ -2305,13 +2406,15 @@ function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addCo
 function drawPerson(g,o,dir,fr,px,py){const x=Math.round(px),y=Math.round(py);g.fillStyle='rgba(40,30,30,.22)';g.fillRect(x-5,y-1,10,2);g.fillRect(x-4,y+1,8,1);blitChar(g,o,dir,fr,x-10,y-25);}
 function render(time){
   ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#2a2230';ctx.fillRect(0,0,cv.width,cv.height);
-  const S=scale,vw=cv.width/S,vh=cv.height/S,mw=MW*16,mh=MH*16,dark=darkness();
-  let cx=P.x-vw/2,cy=P.y-10-vh/2;
-  cx=vw>=mw?(mw-vw)/2:Math.max(0,Math.min(mw-vw,cx));
-  cy=vh>=mh?(mh-vh)/2:Math.max(0,Math.min(mh-vh,cy));
-  cx=Math.round(cx*S)/S;cy=Math.round(cy*S)/S;
+  const S=scale,vw=cv.width/S,vh=cv.height/S,dark=darkness();
+  const [cx,cy]=cameraOrigin();
   ctx.setTransform(S,0,0,S,-cx*S,-cy*S);ctx.imageSmoothingEnabled=false;
   ctx.drawImage(ground,0,0);
+  if(walkRoute.length){
+    const [x,y]=walkRoute.at(-1).map(Math.round);
+    ctx.fillStyle='#704844';ctx.fillRect(x-4,y-4,8,4);
+    ctx.fillStyle='#ffe1a2';ctx.fillRect(x-3,y-3,6,2);
+  }
   for(const [x,y] of waterTiles){const h=hash2(x,y);if(Math.sin(time*1.6+h*40)>0.82){ctx.fillStyle='#e2f6fc';ctx.fillRect(x*16+3+(h*8|0),y*16+4+(hash2(y,x)*8|0),3,1);}}
   drawWindows(ctx,dark>0.5);
   state.garden.forEach((plot,i)=>{
@@ -2381,16 +2484,24 @@ let hudT=0,saveT=0,stepT=0;
 function update(dt){
   const paused=startOpen||dressOpen||diaryOpen||D.modal||busy;
   let dx=0,dy=0;
+  if(paused||FISH.on)walkRoute=[];
   if(!paused&&!FISH.on){
     if(has('ArrowLeft','KeyA','left'))dx-=1;if(has('ArrowRight','KeyD','right'))dx+=1;
     if(has('ArrowUp','KeyW','up'))dy-=1;if(has('ArrowDown','KeyS','down'))dy+=1;
   }
+  const sp=64*(state.need.energy<15?0.6:1)*dt;
+  let moving=false;
   if(dx||dy){
+    walkRoute=[];
     if(dx&&dy){const hd=dx<0?'left':'right',vd=dy<0?'up':'down';if(P.dir!==hd&&P.dir!==vd)P.dir=hd;}
     else P.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';
-    const len=Math.hypot(dx,dy),sp=64*(state.need.energy<15?0.6:1)*dt;moveBy(dx/len*sp,dy/len*sp);P.moving=true;P.anim+=dt;
+    const len=Math.hypot(dx,dy);moveBy(dx/len*sp,dy/len*sp);moving=true;
+  }else if(walkRoute.length)moving=followWalkRoute(sp);
+  P.moving=moving;
+  if(moving){
+    P.anim+=dt;
     stepT+=dt;if(stepT>0.3){stepT=0;const tt=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));sfx('step',tt===FLOOR||tt===DOOR);}
-  } else {P.moving=false;P.anim=0;}
+  }else P.anim=0;
   if(!paused){
     const gm=dt*TIME_RATE;state.time+=gm;decay(gm,P.moving);
     updFish(dt);

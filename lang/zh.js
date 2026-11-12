@@ -552,7 +552,7 @@ Object.assign(window.HL_LANG.zh.ui, {
   "capsuleIntro": "玻璃罩里装着礼裙扭蛋。已收集 {owned}/{total}，每次都会抽到新款。",
   "capsuleFree": "转一次（首次免费）",
   "capsuleTrade": "用 {cost} 个{item}转一次（现有 {count}）",
-  "capsuleComplete": "四件礼裙都收齐了，随时可以去衣柜换穿。",
+  "capsuleComplete": "礼裙都收齐了，随时可以去衣柜换穿。",
   "capsuleWon": "扭蛋打开了！「{dress}」已收进衣柜。",
   "capsuleTry": "现在试穿",
   "capsuleKeep": "先收进衣柜",
@@ -564,6 +564,12 @@ Object.assign(window.HL_LANG.zh.clothes, {
   "moonGown": "星夜拖尾礼裙",
   "lilyGown": "铃兰珍珠礼裙",
   "peacockGown": "孔雀金纹礼裙"
+});
+Object.assign(window.HL_LANG.zh.clothes, {
+  "seaSailorDress": "海盐水手裙",
+  "dawnButterflyGown": "晨曦绣蝶礼裙",
+  "deepSeaGown": "深海人鱼裙",
+  "snowCapeDress": "冬雪绒斗篷裙"
 });
 window.HL_LANG.zh.objects.capsule = {"name": "礼裙扭蛋机", "verb": "转动礼裙扭蛋机"};
 
