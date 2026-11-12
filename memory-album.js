@@ -44,6 +44,13 @@ const MemoryAlbum = (() => {
     const r=(x,y,w,h,color)=>{g.fillStyle=color;g.fillRect(x,y,w,h);};
     const night=scene==='stars',pond=scene==='pond'||night,room=['home','birthday','visitSick','firstGift'].includes(scene);
     r(0,0,96,60,room?'#f5d7ba':night?'#35486d':'#b5dce4');
+    if(scene==='winterPond'){
+      r(0,21,96,39,'#dfeaf1');r(5,35,86,23,'#a9ccdf');r(11,33,74,2,'#bddbe7');
+      r(5,35,86,1,'#f4f8f8');r(13,57,70,1,'#f4f8f8');
+      for(const [x,y] of [[7,8],[24,13],[32,6],[42,18],[58,8],[71,15],[87,7],[79,28],[14,25]])r(x,y,1,1,'#fbf9ef');
+      for(const [x,y,w] of [[12,40,11],[43,46,13],[77,42,7],[16,53,8],[72,54,10]])r(x,y,w,1,'#d9edf0');
+      return;
+    }
     if(room){
       for(let x=1;x<96;x+=10)r(x,0,1,38,'#eac4a9');
       r(0,37,96,23,'#bd8c67');
