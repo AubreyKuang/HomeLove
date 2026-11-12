@@ -53,6 +53,20 @@ On phones, an on-screen pad and an A button appear. Time flows at 1 real second 
 - **Diary** — Resident cards with hours, affection and daily chat/gift checklists, your bag and item index, the pond journal, cottage tips, pet list, and "Turn back time" snapshots (one each morning, kept 4 days).
 - **Music & sound** — A soft music-box soundtrack that slows down at night, plus footsteps, dialogue, gathering, fishing and pet sounds — all synthesized live in the browser. No audio files.
 
+### Jealousy (修罗场)
+
+Once you have a partner, flirting with someone else, holding their hand, or going on a date right in front of your partner gets you caught — jealousy shoots up and trust drops by 6. Each partner reacts in their own words:
+
+| Partner | When jealous |
+|---|---|
+| Gu Yan | ……刚才那位，你们很熟吗？我只是好奇。 |
+| Lin Xiaoman | ……刚才那个人是谁呀？我、我才没有在意呢。 |
+| Lu Xingye | ……那家伙是谁？我、我也可以对你更好的！ |
+| Jiang Yu | ……刚才那人谁啊？我没生气，就是问问。 |
+| Bai Ye | ……你和那个人，聊得挺开心啊。 |
+
+Turn on the test mode and all four guys crowd around you at once — the 修罗场 gets even livelier.
+
 ## Screenshots
 
 | | |
