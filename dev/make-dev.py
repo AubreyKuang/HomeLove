@@ -68,6 +68,13 @@ PANEL = r'''
       state.time=9*60;
       save();updateHud();
     },
+    previewSnowFishing(){
+      if(!canPreview())return;
+      A.previewSeason('winter');
+      state.snowFishing.invited ||= state.day;
+      state.snowFishing.checked=state.day;
+      save();openSnowFishing(!state.snowFishing.stats.last);
+    },
     previewXiaoman(){
       if(!canPreview())return;
       const n=npcs.find(person=>person.id==='xm'),story=state.xiaoman;
@@ -121,6 +128,7 @@ PANEL = r'''
     const b=document.createElement('button');b.type='button';b.textContent=label;b.title='预览四季';
     b.onclick=()=>{A.previewSeason(CottageActivities.seasons[index]);cv.focus({preventScroll:true});};seasons.append(b);
   }
+  btn('🎣 预览第一场雪冰钓',A.previewSnowFishing);
   btn('🎀 预览小满剧情',A.previewXiaoman);
   const stories=document.createElement('select');stories.setAttribute('aria-label','选择男主');
   for(const [id,name] of [['gy','顾言'],['xy','陆星野'],['jy','江屿'],['by','白夜']]){
