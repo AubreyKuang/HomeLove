@@ -375,11 +375,11 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js?v=snow-fishing-1"></script>
 <script src="resident-stories.js"></script>
-<script src="village-map.js"></script>
+<script src="village-map.js?v=venues-1"></script>
 <script src="cottage-travel.js"></script>
-<script src="lang/zh.js?v=travel-map-1" charset="utf-8"></script>
-<script src="lang/en.js?v=travel-map-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=travel-map-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=venues-1" charset="utf-8"></script>
+<script src="lang/en.js?v=venues-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=venues-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1168,7 +1168,7 @@ fences.forEach(([x,y])=>block(x,y));
 VillageMap.props.forEach(p=>{
   for(let y=p.y;y<p.y+p.h;y++)for(let x=p.x;x<p.x+p.w;x++)block(x,y);
 });
-const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>p.id!=='lamp'&&p.id!=='hoop'&&p.id!=='fountain'&&
+const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>(Object.hasOwn(VillageMap.places,p.id)||Object.hasOwn(VillageMap.exchanges,p.id)||p.id==='guide')&&
   tx>=p.x&&tx<p.x+p.w&&ty>=p.y&&ty<p.y+p.h);
 const ICE_HOLES=[[19,6],[23,6]];
 const isIceHole=(x,y)=>ICE_HOLES.some(([tx,ty])=>tx===x&&ty===y);
@@ -1529,7 +1529,7 @@ function villageDuty(n){
 // An unannounced visit: the resident shows up at any hour and comes looking for you, even indoors.
 const calling=n=>CottageBonds.calling(state.bonds,n.id,state.day,state.time);
 function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||calling(n)||t===FLOOR||t===DOOR);}
-function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)||calling(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn){const duty=villageDuty(n);return duty?[duty.anchor]:n.spots;}const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
+function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)||calling(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn){const duty=villageDuty(n);return duty?[duty.spot]:n.spots;}const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
 function placeHome(n){const s=pick(HOME_IN);n.x=s[0]*16+8;n.y=s[1]*16+12;n.state='here';n.path=null;n.idle=10;n.leaving=false;}
 function updNpc(n,dt){
   const r=rel(n);
@@ -1562,7 +1562,7 @@ function updNpc(n,dt){
   if(n.state==='away'){
     if(r.livesIn){placeHome(n);return;}
     if(present(n)&&(duty||invitation||summoned(n)||calling(n)||state.time<visitWindow(n).end-40)){
-      const [x,y]=duty?.anchor??VillageMap.gates[0];
+      const [x,y]=duty?.spot??VillageMap.gates[0];
       n.x=x*16+8;n.y=y*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;n.lastVillageDuty=duty;
       const drop=state.bonds.dropIn;
       if(calling(n)&&!drop.arrived){drop.arrived=true;sfx('ding');notify(tr('dropInArrive',{n:nm(n)}));}
@@ -1572,7 +1572,7 @@ function updNpc(n,dt){
   if((D.modal||busy)&&D.npc===n){n.moving=false;n.anim=0;return;}
   if(duty!==n.lastVillageDuty&&present(n)){
     n.lastVillageDuty=duty;n.leaving=false;n.path=null;n.idle=0;
-    if(duty)npcGo(n,...duty.anchor);
+    if(duty)npcGo(n,...duty.spot);
     else if(!invitation&&!summoned(n)&&!calling(n)&&!r.livesIn)npcGo(n,...pick(n.spots));
   }
   if(!present(n)&&!n.leaving){n.leaving=true;npcGo(n,6,19);if(!n.path){n.state='away';n.x=n.y=-100;return;}}
@@ -2735,7 +2735,7 @@ function npcMenu(n,back){
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
   const duty=villageDuty(n);
-  if(duty&&Math.hypot(n.x-duty.anchor[0]*16-8,n.y-duty.anchor[1]*16-12)<52){
+  if(duty&&Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)<52){
     opts.unshift(villageActivityOption(duty.id,n));
   }
   if(n.id==='xy'&&state.snowFishing.invited&&CottageActivities.seasonOf(state.day)==='winter')
@@ -3801,7 +3801,7 @@ function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addCo
 function drawPerson(g,o,dir,fr,px,py){const x=Math.round(px),y=Math.round(py);g.fillStyle='rgba(40,30,30,.22)';g.fillRect(x-5,y-1,10,2);g.fillRect(x-4,y+1,8,1);blitChar(g,o,dir,fr,x-10,y-25);}
 function drawVillageWork(g,n,time){
   const duty=villageDuty(n);
-  if(!duty||n.moving||Math.hypot(n.x-duty.anchor[0]*16-8,n.y-duty.anchor[1]*16-12)>18)return;
+  if(!duty||n.moving||Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)>18)return;
   const x=Math.round(n.x),y=Math.round(n.y),t=reducedMotion?0:time;
   const rect=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
   if(duty.id==='cafe'){
@@ -3887,7 +3887,7 @@ function render(time){
   const ents=[];
   for(const prop of VillageMap.props){
     const x=prop.x*16,y=(prop.y+prop.h)*16;
-    if(x+prop.w*16>cx&&x<cx+vw&&y>cy&&y-50<cy+vh)
+    if(x+prop.w*16>cx&&x<cx+vw&&y>cy&&y-52<cy+vh)
       ents.push({key:y-1,draw:g=>VillageMap.paintProp(g,prop,winter,dark>.5,time)});
   }
   for(const s of statics)if(s.x+s.w>cx&&s.x<cx+vw&&s.y+s.h>cy&&s.y<cy+vh)ents.push(s);
