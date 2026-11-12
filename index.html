@@ -124,6 +124,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .items{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:10px;overflow:auto;min-height:120px;flex:1;padding:2px 6px 6px 2px;align-content:start}
 .item{border:3px solid var(--line);border-radius:6px;background:var(--panel-2);padding:8px 4px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
 .item canvas{width:64px;height:56px}
+.items[data-category="capsuleHair"] .item canvas{width:54px;height:63px}
 .item span{font-size:12px;font-weight:700}
 .item.sel{background:var(--sel);color:var(--sel-ink);box-shadow:3px 3px 0 var(--shadow)}
 .item.locked canvas{filter:grayscale(1);opacity:.45}
@@ -305,9 +306,9 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="npc-memory.js"></script>
 <script src="save-manager.js"></script>
 <script src="cottage-activities.js?v=neighbor-letters-1"></script>
-<script src="lang/zh.js?v=capsule-gowns-2" charset="utf-8"></script>
-<script src="lang/en.js?v=capsule-gowns-2" charset="utf-8"></script>
-<script src="lang/ja.js?v=capsule-gowns-2" charset="utf-8"></script>
+<script src="lang/zh.js?v=capsule-hair-1" charset="utf-8"></script>
+<script src="lang/en.js?v=capsule-hair-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=capsule-hair-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -396,6 +397,66 @@ const HAIRS=[
     back(K,c){if(K.side){K.R(1,4,3,8,c);K.R(3,5,1,1,TIE);}},
     front(K,c){capShort(K,c);if(K.up){K.R(7,9,2,6,c);K.R(7,8,2,1,TIE);}}},
 ];
+const CAPSULE_HAIRS=[
+  {id:'cloudBob',color:6,front(K,c){
+    capShort(K,c);
+    const {R}=K,light=shade(c,1.25),dark=shade(c,.75);
+    if(K.up){R(3,8,10,3,c);R(4,11,8,1,dark);R(5,9,4,1,light);}
+    else if(K.side){R(2,5,3,5,c);R(3,10,4,2,dark);R(4,9,3,2,c);}
+    else{R(2,5,3,5,c);R(11,5,3,5,c);R(3,10,3,1,dark);R(10,10,3,1,dark);R(6,5,4,1,light);}
+  }},
+  {id:'ribbonBraid',color:2,
+    back(K,c){if(!K.up){K.R(K.side?2:11,8,3,6,shade(c,.85));}},
+    front(K,c){
+      capShort(K,c);
+      const {R}=K,x=K.up?7:K.side?3:11,light=shade(c,1.23),dark=shade(c,.76);
+      R(x,9,3,3,c);R(x+1,12,2,3,c);R(x,11,1,1,light);R(x+2,13,1,1,dark);
+      R(x,15,4,1,'#e8a5b9');R(x+1,16,2,2,dark);
+    }
+  },
+  {id:'doubleBuns',color:1,front(K,c){
+    capShort(K,c);
+    const {R}=K,light=shade(c,1.3),dark=shade(c,.8);
+    R(2,0,3,1,c);R(1,1,5,3,c);R(2,1,2,1,light);R(2,4,3,1,dark);
+    if(!K.side){R(11,0,3,1,c);R(10,1,5,3,c);R(11,1,2,1,light);R(11,4,3,1,dark);}
+    if(K.up)R(6,6,4,1,light);
+  }},
+  {id:'waterfallWaves',color:3,
+    back(K,c){
+      const {R}=K,dark=shade(c,.76);
+      R(K.side?2:3,6,K.side?5:10,10,dark);
+      R(K.side?1:2,15,K.side?5:12,3,dark);
+    },
+    front(K,c){
+      capShort(K,c);
+      const {R}=K,light=shade(c,1.23),dark=shade(c,.82);
+      if(K.up){R(3,8,10,7,c);R(2,14,12,3,c);R(5,9,1,5,light);R(9,10,1,6,dark);}
+      else if(K.side){R(2,6,4,8,c);R(1,13,4,3,c);R(3,8,1,5,light);}
+      else{R(2,5,2,9,c);R(12,5,2,9,c);R(3,12,2,4,c);R(11,12,2,4,c);R(3,7,1,4,light);R(12,10,1,3,light);}
+    }
+  },
+  {id:'highPonytail',color:5,
+    back(K,c){
+      if(K.side){K.R(0,3,4,8,c);K.R(1,10,3,4,shade(c,.82));}
+      else if(K.down){K.R(10,4,4,9,shade(c,.85));}
+    },
+    front(K,c){
+      capShort(K,c);
+      const {R}=K,light=shade(c,1.28);
+      if(K.up){R(7,3,4,3,c);R(8,6,4,7,c);R(9,7,1,5,light);R(7,5,4,1,'#f0c888');}
+      else{R(K.side?3:10,1,3,2,c);R(K.side?3:11,3,2,1,'#f0c888');}
+    }
+  },
+  {id:'curlyPixie',color:7,front(K,c){
+    capShort(K,c);
+    const {R}=K,light=shade(c,1.3),dark=shade(c,.81);
+    R(4,1,3,2,c);R(8,0,3,3,c);R(5,2,2,1,light);R(9,1,1,2,light);
+    if(K.up){R(3,5,10,2,c);R(4,7,8,1,dark);}
+    else if(K.side){R(3,4,3,2,dark);R(8,3,3,2,light);}
+    else{R(4,5,3,1,light);R(7,4,3,2,c);R(9,5,2,1,dark);}
+  }}
+];
+HAIRS.push(...CAPSULE_HAIRS);
 function torso(K,c,len){len=len||15;const sh=shade(c,.86),h=len-10;
   if(K.side){K.R(6,11,5,h,c);K.R(6,len,5,1,sh);}
   else{K.R(5,11,6,h,c);K.R(5,len,6,1,sh);K.R(K.up?5:10,11,1,h,sh);}
@@ -565,9 +626,14 @@ const ACCS=[
       else K.R(6,11,1,3,d);}},
   {id:'necklace',front(K,c){if(K.down){K.R(6,11,1,1,c);K.R(9,11,1,1,c);K.R(7,12,2,1,c);}else if(K.side)K.R(10,11,1,2,c);}},
 ];
+const CAPSULE_POOLS={
+  dress:{items:CAPSULE_DRESSES,owned:'capsuleDresses',slot:'top',colorKey:'topColor',tab:'capsule'},
+  hair:{items:CAPSULE_HAIRS,owned:'capsuleHairs',slot:'hair',colorKey:'hairColor',tab:'capsuleHair'}
+};
 const CATS=[
   {key:'skin',crop:[2,1,16,14]},
-  {key:'hair',items:HAIRS,colorKey:'hairColor',colors:HAIR_COLORS,crop:[2,0,16,14]},
+  {key:'hair',items:HAIRS.filter(hair=>!CAPSULE_HAIRS.includes(hair)),colorKey:'hairColor',colors:HAIR_COLORS,crop:[2,0,16,14]},
+  {key:'capsuleHair',slot:'hair',items:CAPSULE_HAIRS,colorKey:'hairColor',colors:HAIR_COLORS,crop:[1,0,18,21]},
   {key:'top',items:TOPS.filter(top=>!CAPSULE_DRESSES.includes(top)),colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
   {key:'capsule',slot:'top',items:CAPSULE_DRESSES,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
   {key:'bottom',items:BOTTOMS,colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
@@ -768,7 +834,7 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],neighborRequest:null,
+  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()]))
 };
@@ -795,8 +861,10 @@ function applySave(s){
   state.garden=CottageActivities.loadGarden(s.garden,s.plots);
   state.fishLog=CottageActivities.loadFishLog(s.fishLog);
   state.neighborRequest=CottageActivities.loadRequest(s.neighborRequest);
-  if(Array.isArray(s.capsuleDresses))state.capsuleDresses=CAPSULE_DRESSES
-    .filter(dress=>s.capsuleDresses.includes(dress.id)).map(dress=>dress.id);
+  for(const pool of Object.values(CAPSULE_POOLS)){
+    const saved=s[pool.owned];
+    state[pool.owned]=Array.isArray(saved)?pool.items.filter(item=>saved.includes(item.id)).map(item=>item.id):[];
+  }
   if(s.meal==='breakfast'||s.meal==='dinner')state.meal=s.meal;if(s.chores&&typeof s.chores==='object')state.chores=s.chores;
   if(Array.isArray(s.looks))state.looks=s.looks.filter(l=>l&&typeof l==='object').slice(0,6);
   if(s.rel)NPCS.forEach(n=>{const src=s.rel[n.id];if(src&&typeof src==='object'){const r=state.rel[n.id];Object.assign(r,src);if(!r.done||typeof r.done!=='object')r.done={};if(!r.notes||typeof r.notes!=='object')r.notes={};}});
@@ -810,8 +878,11 @@ state.life ||= {};
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.data&&hot.data.o)applySave(hot.data);
 if(hot&&hot.snapshot){try{hot.snapshot(snapshot);}catch(e){}}
-const isCapsuleDress=it=>CAPSULE_DRESSES.some(dress=>dress.id===it.id);
-const unlocked=it=>isCapsuleDress(it)?state.capsuleDresses.includes(it.id):(!it.lock||state.flowersTotal>=it.lock);
+const capsulePoolFor=it=>Object.values(CAPSULE_POOLS).find(pool=>pool.items.some(item=>item.id===it.id));
+const unlocked=it=>{
+  const pool=capsulePoolFor(it);
+  return pool?state[pool.owned].includes(it.id):!it.lock||state.flowersTotal>=it.lock;
+};
 const rel=n=>state.rel[n.id];
 const hearts=r=>Math.floor(r.pts/10);
 const absMin=()=>state.day*1440+state.time;
@@ -1551,34 +1622,40 @@ function readBook(){
 }
 function writeLetter(){sfx('rustle');busyFade(()=>{advanceTime(40);state.inv.letter++;state.need.energy=clampN(state.need.energy-3);updateHud();save();},()=>say(tr('desk'),tr('letterDone')));}
 const CAPSULE_COST={shell:2,flower:3};
+const firstCapsule=()=>Object.values(CAPSULE_POOLS).every(pool=>!state[pool.owned].length);
 function capsuleMenu(){
   D.npc=null;
-  const owned=state.capsuleDresses.length;
-  if(owned===CAPSULE_DRESSES.length){
-    talk(objName('capsule'),[tr('capsuleComplete')]);
-    return;
-  }
-  const opts=owned===0
-    ?[{label:tr('capsuleFree'),fn:()=>drawCapsule()}]
+  const opts=Object.entries(CAPSULE_POOLS).map(([kind,pool])=>({
+    label:tr('capsulePool_'+kind,{owned:state[pool.owned].length,total:pool.items.length}),
+    fn:()=>capsulePoolMenu(pool)
+  }));
+  talk(objName('capsule'),[tr('capsuleChoosePool')],opts.concat({label:tr('walkAway'),fn:null}));
+}
+function capsulePoolMenu(pool){
+  const owned=state[pool.owned].length,total=pool.items.length;
+  const opts=owned===total
+    ?[{label:tr('capsuleView'),fn:()=>openCapsuleWardrobe(pool)}]
+    :firstCapsule()
+    ?[{label:tr('capsuleFree'),fn:()=>drawCapsule(pool)}]
     :Object.entries(CAPSULE_COST).map(([item,cost])=>({
       label:tr('capsuleTrade',{item:itemLabel(item),cost,count:state.inv[item]}),
-      disabled:state.inv[item]<cost,fn:()=>drawCapsule(item)
+      disabled:state.inv[item]<cost,fn:()=>drawCapsule(pool,item)
     }));
-  talk(objName('capsule'),[tr('capsuleIntro',{owned,total:CAPSULE_DRESSES.length})],
-    opts.concat({label:tr('walkAway'),fn:null}));
+  talk(objName('capsule'),[tr(owned===total?'capsuleComplete':'capsulePoolIntro',{owned,total})],
+    opts.concat({label:tr('optBack'),back:true,fn:capsuleMenu}));
 }
-function drawCapsule(payment){
-  const remaining=CAPSULE_DRESSES.filter(dress=>!unlocked(dress));
+function drawCapsule(pool,payment){
+  const owned=state[pool.owned],remaining=pool.items.filter(item=>!unlocked(item));
   if(!remaining.length)return;
-  const cost=state.capsuleDresses.length?CAPSULE_COST[payment]:0;
-  if(state.capsuleDresses.length){
+  const free=firstCapsule(),cost=free?0:CAPSULE_COST[payment];
+  if(!free){
     if(!Object.hasOwn(CAPSULE_COST,payment)||state.inv[payment]<CAPSULE_COST[payment])return;
     state.inv[payment]-=cost;
   }
-  const dress=pick(remaining);
-  state.capsuleDresses.push(dress.id);
+  const item=pick(remaining);
+  owned.push(item.id);
   if(!save()){
-    state.capsuleDresses.pop();
+    owned.pop();
     if(cost)state.inv[payment]+=cost;
     talk(objName('capsule'),[lifeText('存档失败，扭蛋没有扣材料。请检查浏览器的存储设置。','The draw could not be saved. Your items were returned. Check browser storage.','保存できなかったため、材料を戻しました。ブラウザのストレージ設定を確認してください。')]);
     return;
@@ -1586,19 +1663,19 @@ function drawCapsule(payment){
   updateHud();sfx('levelup');
   const preview=el('div','capsule-reveal'),sprite=mk(20,26);
   preview.setAttribute('aria-hidden','true');
-  blitChar(sprite.getContext('2d'),{...state.o,top:dress.id,topColor:dress.color},'down',0,0,0);
+  blitChar(sprite.getContext('2d'),{...state.o,[pool.slot]:item.id,[pool.colorKey]:item.color},'down',0,0,0);
   preview.append(sprite);
-  talk(objName('capsule'),[tr('capsuleWon',{dress:itemName(dress.id)})],[
-    {label:tr('capsuleTry'),fn:()=>tryCapsuleDress(dress)},
-    {label:lifeText('去衣柜看礼裙','View in wardrobe','クローゼットで見る'),back:true,fn:openCapsuleWardrobe}
+  talk(objName('capsule'),[tr('capsuleWon',{dress:itemName(item.id)})],[
+    {label:tr(pool.slot==='hair'?'capsuleTryHair':'capsuleTry'),fn:()=>tryCapsuleItem(pool,item)},
+    {label:tr('capsuleView'),back:true,fn:()=>openCapsuleWardrobe(pool)}
   ],null,preview);
 }
-function tryCapsuleDress(dress){
-  openCapsuleWardrobe();
-  state.o.top=dress.id;state.o.topColor=dress.color;
+function tryCapsuleItem(pool,item){
+  openCapsuleWardrobe(pool);
+  state.o[pool.slot]=item.id;state.o[pool.colorKey]=item.color;
   changed();
 }
-function openCapsuleWardrobe(){curCat='capsule';openDress();}
+function openCapsuleWardrobe(pool){curCat=pool.tab;openDress();}
 function checkMail(){
   const current=CottageActivities.openRequest(state.neighborRequest,state.day);
   const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
@@ -2186,29 +2263,32 @@ function likedColor(i){return npcs.filter(n=>rel(n).knowStyle&&n.likeColors.incl
 function renderPicker(){
   const tabs=$('#tabs');tabs.innerHTML='';
   CATS.forEach(c=>{
-    const label=c.key==='capsule'?lifeText('扭蛋礼裙','Capsule gowns','ガチャドレス'):Lp.cats[c.key];
+    const label=c.key==='capsule'?lifeText('扭蛋礼裙','Capsule gowns','ガチャドレス'):
+      c.key==='capsuleHair'?tr('capsuleHairTab'):Lp.cats[c.key];
     const b=el('button','tab'+(c.key===curCat?' on':''),label);
     b.type='button';b.setAttribute('aria-pressed',c.key===curCat);
     b.onclick=()=>{curCat=c.key;renderPicker();};tabs.append(b);
   });
   const cat=CATS.find(c=>c.key===curCat),box=$('#items');box.innerHTML='';
+  box.dataset.category=cat.key;
   box.scrollTop=0;
   const slot=cat.slot??cat.key;
   const list=cat.key==='skin'?SKINS.map((s,i)=>({id:i,label:Lp.skins[i]})):cat.items.map(it=>Object.assign({},it,{label:itemName(it.id)}));
   list.forEach(it=>{
+    const capsule=capsulePoolFor(it);
     const locked=!unlocked(it),sel=state.o[slot]===it.id,fans=likedBy(cat,it.id);
     const b=el('button','item'+(sel?' sel':'')+(locked?' locked':''));b.type='button';b.setAttribute('aria-pressed',sel);
     const thumb={...state.o,[slot]:it.id};
-    if(isCapsuleDress(it)&&!sel)thumb.topColor=it.color;
+    if(capsule&&!sel)thumb[capsule.colorKey]=it.color;
     b.append(thumbCanvas(thumb,cat.crop),el('span',null,it.label));
     if(fans.length){b.append(el('span','liked','♥'));b.title=tr('likedBy',{x:listJoin(fans)});}
     if(locked){
-      b.append(el('span','lock',isCapsuleDress(it)?tr('capsuleTag'):`🌼${state.flowersTotal}/${it.lock}`));
-      b.title=isCapsuleDress(it)?tr('capsuleLocked'):tr('lockedTitle',{x:it.lock});
+      b.append(el('span','lock',capsule?tr('capsuleTag'):`🌼${state.flowersTotal}/${it.lock}`));
+      b.title=capsule?tr('capsuleLocked'):tr('lockedTitle',{x:it.lock});
     }
     b.onclick=()=>{
-      if(locked){notify(isCapsuleDress(it)?tr('capsuleLocked'):tr('lockedToast',{i:it.label,x:it.lock,y:state.flowersTotal}));return;}
-      if(isCapsuleDress(it)&&state.o.top!==it.id)state.o.topColor=it.color;
+      if(locked){notify(capsule?tr('capsuleLocked'):tr('lockedToast',{i:it.label,x:it.lock,y:state.flowersTotal}));return;}
+      if(capsule&&!sel)state.o[capsule.colorKey]=it.color;
       state.o[slot]=it.id;changed();
     };
     box.append(b);
@@ -2247,7 +2327,7 @@ $('#rotR').addEventListener('click',()=>rot(1));
 $('#btnWalk').addEventListener('click',()=>{pWalk=!pWalk;$('#btnWalk').textContent=tr(pWalk?'stop':'walk');drawPreview();});
 $('#btnRandom').addEventListener('click',()=>{
   const o=state.o,r=a=>a[Math.floor(Math.random()*a.length)],ci=()=>Math.floor(Math.random()*CLOTH.length);
-  o.hair=r(HAIRS).id;o.hairColor=Math.floor(Math.random()*HAIR_COLORS.length);
+  o.hair=r(HAIRS.filter(unlocked)).id;o.hairColor=Math.floor(Math.random()*HAIR_COLORS.length);
   o.top=r(TOPS.filter(unlocked)).id;o.topColor=ci();o.bottom=r(BOTTOMS).id;o.bottomColor=ci();o.shoes=r(SHOES).id;o.shoesColor=ci();
   o.hat=Math.random()<.4?'none':r(HATS.filter(h=>h.id!=='none'&&unlocked(h))).id;o.hatColor=ci();
   o.acc=Math.random()<.5?'none':r(ACCS.filter(a=>a.id!=='none')).id;o.accColor=ci();

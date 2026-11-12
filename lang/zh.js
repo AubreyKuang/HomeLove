@@ -549,15 +549,15 @@ Object.assign(window.HL_LANG.zh.ui, {
   "sharedFishingKeepsake": "月下同钓",
   "sharedFishingDetails": "{day} {time} · {fish} · {size} 厘米",
   "sharedFishingRecall": "还记得我们一起钓到的那条{size}厘米的{fish}吗？那晚池塘很静。",
-  "capsuleIntro": "玻璃罩里装着礼裙扭蛋。已收集 {owned}/{total}，每次都会抽到新款。",
+  "capsulePoolIntro": "已收集 {owned}/{total}，每次都会抽到新款。",
   "capsuleFree": "转一次（首次免费）",
   "capsuleTrade": "用 {cost} 个{item}转一次（现有 {count}）",
-  "capsuleComplete": "礼裙都收齐了，随时可以去衣柜换穿。",
+  "capsuleComplete": "本池已经收齐，可以去衣柜换搭配。",
   "capsuleWon": "扭蛋打开了！「{dress}」已收进衣柜。",
   "capsuleTry": "现在试穿",
   "capsuleKeep": "先收进衣柜",
   "capsuleTag": "扭蛋",
-  "capsuleLocked": "这件礼裙可以在门口的扭蛋机抽到。"
+  "capsuleLocked": "这一款可以在门口的扭蛋机抽到。"
 });
 Object.assign(window.HL_LANG.zh.clothes, {
   "roseGown": "蔷薇千层礼裙",
@@ -571,7 +571,7 @@ Object.assign(window.HL_LANG.zh.clothes, {
   "deepSeaGown": "深海人鱼裙",
   "snowCapeDress": "冬雪绒斗篷裙"
 });
-window.HL_LANG.zh.objects.capsule = {"name": "礼裙扭蛋机", "verb": "转动礼裙扭蛋机"};
+window.HL_LANG.zh.objects.capsule = {"name": "扭蛋机", "verb": "查看扭蛋机"};
 
 // Neighbor letters
 Object.assign(window.HL_LANG.zh.ui, {
@@ -603,4 +603,21 @@ Object.assign(window.HL_LANG.zh.ui, {
   "requestLetter_by": "在画池塘的夜色。想看看月光鱼的银鳞，也想看看星星石在灯下是什么颜色。",
   "requestThanks_by": "……等颜料干了，我给你看这幅画。",
   "requestRecall_by": "你带来的{item}让我找到了那晚水面的颜色。"
+});
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "capsuleChoosePool": "你想抽哪一池？发型和礼裙分别收集。",
+  "capsulePool_dress": "礼裙池 {owned}/{total}",
+  "capsulePool_hair": "发型池 {owned}/{total}",
+  "capsuleView": "去衣柜查看",
+  "capsuleTryHair": "现在试戴",
+  "capsuleHairTab": "扭蛋发型"
+});
+Object.assign(window.HL_LANG.zh.clothes, {
+  "cloudBob": "棉花云波波头",
+  "ribbonBraid": "蝴蝶结侧辫",
+  "doubleBuns": "双丸子头",
+  "waterfallWaves": "瀑布长卷发",
+  "highPonytail": "金扣高马尾",
+  "curlyPixie": "精灵卷短发"
 });

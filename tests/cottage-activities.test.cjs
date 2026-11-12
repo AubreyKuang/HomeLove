@@ -227,20 +227,25 @@ test('first moonfish gift schedules a night invitation, retry, and one shared ca
   assert.equal(runtime.fishingInvitationReady(resident),false);
 });
 
-test('capsule draws grant new gowns once and charge only accepted game items', () => {
-  const state = {capsuleDresses: [], inv: {shell: 2, flower: 6}, o: {top: 'tee'}};
+test('capsule pools share the free draw, grant new items, and refund failed saves', () => {
+  const state = {capsuleDresses: [], capsuleHairs: [], inv: {shell: 2, flower: 6}, o: {top: 'tee'}};
   let options, preview, canSave=true;
   const runtime = game({
-    state, D: {}, pick: choices => choices[0], unlocked: dress => state.capsuleDresses.includes(dress.id),
+    state, D: {}, HAIRS: [], pick: choices => choices[0],
+    unlocked: item => [...state.capsuleDresses,...state.capsuleHairs].includes(item.id),
     tr: key => key, itemLabel: key => key, itemName: key => key, objName: key => key,
     talk(_speaker, _lines, choices, _onEnd, art) { options = choices; preview = art; },
     el: () => ({setAttribute() {}, append() {}}), mk: () => ({getContext() {}}), blitChar() {},
     lifeText: zh=>zh, openDress() {}, changed() {}, save(){return canSave;}, updateHud() {}, sfx() {}
   });
   runSection(runtime,'const CAPSULE_DRESSES=','const TOPS=');
+  runSection(runtime,'const CAPSULE_HAIRS=','function torso(');
+  runSection(runtime,'const CAPSULE_POOLS=','const CATS=');
+  const pools=vm.runInContext('CAPSULE_POOLS',runtime);
   runSection(runtime,'const CAPSULE_COST=','function checkMail(');
   vm.runInContext("let curCat = 'hair';",runtime);
   runtime.capsuleMenu();
+  options[0].fn();
   options[0].fn();
   assert.ok(preview);
   assert.equal(state.inv.shell,2);
@@ -248,25 +253,41 @@ test('capsule draws grant new gowns once and charge only accepted game items', (
   assert.equal(state.o.top,'roseGown');
   assert.equal(state.o.topColor,9);
   assert.equal(vm.runInContext('curCat',runtime),'capsule');
-  runtime.drawCapsule('star');
+  runtime.drawCapsule(pools.dress,'star');
   assert.equal(state.capsuleDresses.length,1);
   canSave=false;
-  runtime.drawCapsule('shell');
+  runtime.drawCapsule(pools.dress,'shell');
   assert.equal(state.inv.shell,2);
   assert.equal(state.capsuleDresses.length,1);
   canSave=true;
-  runtime.drawCapsule('shell');
-  runtime.drawCapsule('shell');
+  runtime.drawCapsule(pools.dress,'shell');
+  runtime.drawCapsule(pools.dress,'shell');
   assert.equal(state.inv.shell,0);
   assert.equal(state.capsuleDresses.length,2);
-  runtime.drawCapsule('flower');
-  runtime.drawCapsule('flower');
+  runtime.drawCapsule(pools.dress,'flower');
+  runtime.drawCapsule(pools.dress,'flower');
   state.inv.flower=15;
-  for(let i=0;i<4;i++)runtime.drawCapsule('flower');
-  runtime.drawCapsule('flower');
+  for(let i=0;i<4;i++)runtime.drawCapsule(pools.dress,'flower');
+  runtime.drawCapsule(pools.dress,'flower');
   assert.equal(state.inv.flower,3);
   assert.equal(new Set(state.capsuleDresses).size,8);
   assert.ok(state.capsuleDresses.includes('snowCapeDress'));
+  runtime.capsuleMenu();
+  options[1].fn();
+  assert.equal(options[0].label,'capsuleTrade');
+  assert.equal(options[0].disabled,true);
+  options[1].fn();
+  assert.equal(state.inv.flower,0);
+  assert.deepEqual(state.capsuleHairs,['cloudBob']);
+  options[0].fn();
+  assert.equal(state.o.hair,'cloudBob');
+  assert.equal(state.o.hairColor,6);
+  assert.equal(state.o.top,'roseGown');
+  assert.equal(vm.runInContext('curCat',runtime),'capsuleHair');
+  state.inv.flower=18;
+  for(let i=0;i<6;i++)runtime.drawCapsule(pools.hair,'flower');
+  assert.equal(new Set(state.capsuleHairs).size,6);
+  assert.equal(state.inv.flower,3);
 });
 
 test('click route goes around an obstacle, rejects blocked targets, and stops on arrival', () => {
