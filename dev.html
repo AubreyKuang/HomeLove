@@ -385,7 +385,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const TILE = 16, MW = VillageMap.width, MH = VillageMap.height, TIME_RATE = 2; // 2 game minutes per real second
+const TILE = 16, MW = VillageMap.width, MH = VillageMap.height, TIME_RATE = 1.5; // 1.5 game minutes per real second
 
 /* ---------------- helpers ---------------- */
 function hexToRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
@@ -1478,17 +1478,33 @@ function bfs(sx,sy,gx,gy,indoor){
   if(prev[goal]===-1)return null;
   const path=[];for(let c=goal;c!==start;c=prev[c])path.push([c%MW,(c/MW)|0]);return path.reverse();
 }
+// Walkable tiles nearest the clicked tile, nearest first (BFS outward, capped).
+// Used so a click on a fence, furniture, water or any other blocked tile walks
+// to the closest reachable spot instead of silently doing nothing.
+function nearestWalkableTiles(gx,gy){
+  const seen=new Uint8Array(MW*MH),out=[],q=[[gx,gy]];seen[gy*MW+gx]=1;
+  for(let h=0;h<q.length&&out.length<24;h++){const [cx,cy]=q[h];
+    if(npcPassable(cx,cy,true))out.push([cx,cy]);
+    if(Math.abs(cx-gx)+Math.abs(cy-gy)>=8)continue;
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const nx=cx+dx,ny=cy+dy;
+      if(nx<0||ny<0||nx>=MW||ny>=MH||seen[ny*MW+nx])continue;seen[ny*MW+nx]=1;q.push([nx,ny]);}}
+  return out;
+}
 function setWalkDestination(x,y){
   const sx=Math.floor(P.x/16),sy=Math.floor((P.y-2)/16);
   const gx=Math.floor(x/16),gy=Math.floor(y/16);
-  if(!npcPassable(sx,sy,true)||!npcPassable(gx,gy,true))return false;
-  const tiles=bfs(sx,sy,gx,gy,true);
-  if(!tiles)return false;
-  const route=tiles.map(([tx,ty])=>[tx*16+8,ty*16+12]);
-  if(route.length)route.unshift([sx*16+8,sy*16+12]);
-  route.push(blocked(x,y+2)?[gx*16+8,gy*16+12]:[x,y+2]);
-  walkRoute=route;
-  return true;
+  if(gx<0||gy<0||gx>=MW||gy>=MH)return false;
+  if(!npcPassable(sx,sy,true))return false;
+  for(const [cx,cy] of nearestWalkableTiles(gx,gy)){
+    const tiles=bfs(sx,sy,cx,cy,true);
+    if(!tiles)continue;
+    const route=tiles.map(([tx,ty])=>[tx*16+8,ty*16+12]);
+    if(route.length)route.unshift([sx*16+8,sy*16+12]);
+    route.push(cx===gx&&cy===gy&&!blocked(x,y+2)?[x,y+2]:[cx*16+8,cy*16+12]);
+    walkRoute=route;
+    return true;
+  }
+  return false;
 }
 function followWalkRoute(distance){
   let moved=false;
@@ -1714,7 +1730,12 @@ function adopt(c,name){
   for(let i=0;i<4;i++)setTimeout(()=>heart(p.x+(Math.random()*12-6),p.y-14),i*120);
   updateHud();save();notify(tr('adoptDone',{p:name}));say(name,Lp.pets.kinds[c.k].sound);
 }
-function petAt(fx,fy){return state.pets.find(p=>Math.hypot(p.x-fx,p.y-4-fy)<12);}
+// One shared radius for the interaction prompt and the E key: both go through
+// findTarget(), so they can never drift apart. 26px from the point 12px ahead
+// of the player covers standing next to someone (including two steps below
+// them on the cafe porch) without reaching across the whole yard.
+const INTERACT_RADIUS=26;
+function petAt(fx,fy){return state.pets.find(p=>Math.hypot(p.x-fx,p.y-4-fy)<INTERACT_RADIUS);}
 function petSeenBy(n){return state.pets.find(p=>p.kind===NPC_PET[n.id]&&Math.hypot(p.x-n.x,p.y-n.y)<56);}
 const summoned=n=>state.summon===state.day&&MEN.includes(n.id);
 function nearPlayerTiles(){
@@ -1896,7 +1917,7 @@ let mapOpen=false;
 let busy=false,dressOpen=false,diaryOpen=false,albumOpen=false,startOpen=true,target=null;
 const fadeEl=$('#fade');
 function busyFade(mid,end){busy=true;fadeEl.style.opacity='1';setTimeout(()=>{mid&&mid();fadeEl.style.opacity='0';setTimeout(()=>{busy=false;end&&end();},450);},650);}
-function decay(m,moving){const N=state.need;N.energy=clampN(N.energy-m*(0.07+(moving?0.03:0)));N.hunger=clampN(N.hunger-m*0.09);let md=-0.03;if(N.hunger<20||N.energy<20)md-=0.1;N.mood=clampN(N.mood+m*md);}
+function decay(m,moving){const N=state.need;N.energy=clampN(N.energy-m*(0.07+(moving?0.02:0)));N.hunger=clampN(N.hunger-m*0.06);let md=-0.03;if(N.hunger<20||N.energy<20)md-=0.1;N.mood=clampN(N.mood+m*md);}
 function advanceTime(m){state.time+=m;decay(m,false);}
 const partnerHome=()=>npcs.find(n=>rel(n).livesIn);
 function newDay(wake){
@@ -1908,7 +1929,7 @@ function newDay(wake){
   npcs.forEach(n=>{n.state='away';n.path=null;n.leaving=false;n.seekingPlayer=false;n.x=n.y=-100;});
   bondsNewDay();
 }
-function wakeAtBed(){P.x=8*16+8;P.y=5*16+12;P.dir='right';snapPets();}
+function wakeAtBed(){P.x=8*16+8;P.y=5*16+12;P.dir='right';snapPets();clearPrompt();}
 function bedMenu(){
   const h=state.time/60,late=h>=20||h<5,ph=partnerHome();
   talk(objName('bed'),[late?(ph?tr('bedLatePartner',{n:nm(ph)}):tr('bedLate')):tr('bedEarly')],[].concat(ph&&late?[{label:tr('bedTogether',{n:nm(ph)}),fn:()=>nightTogether(ph)}]:[],[
@@ -2860,7 +2881,7 @@ function dateMenu(n){
 }
 function dateWith(n,loc){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];r.done.date=true;D.npc=n;
-  busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
+  busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();clearPrompt();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
       D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);courtNpc(n,'date');trustNpc(n,3);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
@@ -3249,9 +3270,9 @@ function findTarget(){
   const visitor=visitorTarget();
   if(visitor)return visitor;
   const d=DV[P.dir],fx=P.x+d[0]*12,fy=P.y-3+d[1]*12;
-  for(const n of npcs){if(n.state!=='away'&&Math.hypot(n.x-fx,n.y-4-fy)<13)return {kind:'npc',n,verb:tr('talkTo',{n:nm(n)}),x:n.x,y:n.y-31};}
+  for(const n of npcs){if(n.state!=='away'&&Math.hypot(n.x-fx,n.y-4-fy)<INTERACT_RADIUS)return {kind:'npc',n,verb:tr('talkTo',{n:nm(n)}),x:n.x,y:n.y-31};}
   const pt=petAt(fx,fy);if(pt)return {kind:'pet',p:pt,verb:tr('petVerb',{p:pt.name}),x:pt.x,y:pt.y-20};
-  if(Math.hypot(cat.x-fx,cat.y-4-fy)<13)return {kind:'cat',verb:tr('petCat'),x:cat.x,y:cat.y-20};
+  if(Math.hypot(cat.x-fx,cat.y-4-fy)<INTERACT_RADIUS)return {kind:'cat',verb:tr('petCat'),x:cat.x,y:cat.y-20};
   const tx=Math.floor(fx/16),ty=Math.floor(fy/16),mx=Math.floor(P.x/16),my=Math.floor((P.y-2)/16);
   const winter=CottageActivities.seasonOf(state.day)==='winter';
   const fl=!winter&&flowers.find(f=>!f.picked&&((f.tx===tx&&f.ty===ty)||(f.tx===mx&&f.ty===my)));
@@ -3305,6 +3326,9 @@ function updatePrompt(){
   if(!txt){promptEl.classList.add('hidden');return;}
   promptEl.innerHTML='';const k=document.createElement('kbd');k.textContent=actKey();promptEl.append(k,document.createTextNode(txt));promptEl.classList.remove('hidden');
 }
+// Drop any stale prompt immediately when the player is moved discontinuously
+// (teleports); the per-frame findTarget() in update() covers plain walking.
+function clearPrompt(){target=null;updatePrompt();}
 function applyLang(){
   Lp=PACKS[LANG];
   const root=document.documentElement;root.lang=Lp.meta.htmlLang;
@@ -3782,7 +3806,12 @@ cv.addEventListener('click',e=>{
   const [cx,cy]=cameraOrigin();
   const x=cx+(e.clientX-bounds.left)*cv.width/(bounds.width*scale);
   const y=cy+(e.clientY-bounds.top)*cv.height/(bounds.height*scale);
-  if(setWalkDestination(x,y))cv.focus({preventScroll:true});
+  // Clicking a resident's sprite walks to the resident (routing around fences
+  // through gaps) instead of to the tile under the cursor, which is often the
+  // fence or furniture drawn behind them. Sprite is ~20px wide, ~25px tall.
+  let tx=x,ty=y;
+  for(const n of npcs){if(n.state!=='away'&&Math.abs(x-n.x)<=12&&y-n.y>=-28&&y-n.y<=6){tx=n.x;ty=n.y;break;}}
+  if(setWalkDestination(tx,ty))cv.focus({preventScroll:true});
 });
 const fireflies=[];{const rnd=mulberry32(77);for(let i=0;i<18;i++){let x,y;do{x=1+rnd()*(MW-2);y=1+rnd()*(MH-2);}while(map[(y|0)*MW+(x|0)]!==G);fireflies.push({x:x*16,y:y*16,p:rnd()*6.28,s:.5+rnd()});}}
 function drawArrow(g,x,y){x=Math.round(x);y=Math.round(y);const F=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
