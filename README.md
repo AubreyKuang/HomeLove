@@ -39,7 +39,7 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 
 - **过日子**：时间会流逝（现实 1 秒 = 游戏 2 分钟），有白天、傍晚和夜晚。三条状态要照顾：⚡精力（去小床睡觉）、🍙饱腹（去小圆桌吃饭）、💗心情。熬到凌晨 2 点或精力耗光会直接睡着。
 - **换装**：7 类衣物（肤色、发型、上衣、下装、鞋子、头饰、配饰），大部分有 12 种颜色，可以转身查看四个方向，可以随机搭配，最多收藏 6 套。在院子里采 3 朵花能解锁花环。
-- **礼裙扭蛋机**：走到门口信箱右边按 E。首抽免费，之后每抽可用 2 个贝壳或 3 朵花。八款不重复，包含蔷薇千层、星夜拖尾、铃兰珍珠、孔雀金纹、海盐水手、晨曦绣蝶、深海人鱼和冬雪绒斗篷。抽中后可以直接试穿，或在衣柜的「扭蛋礼裙」页查看、改色和存搭配。
+- **扭蛋机**：走到门口信箱右边按 E，选择 **礼裙池**（8 款）或 **发型池**（6 款）。两池共用一次免费首抽，之后每抽用 2 个贝壳或 3 朵花，池内不重复。新发型有棉花云波波头、蝴蝶结侧辫、双丸子头、瀑布长卷发、金扣高马尾和精灵卷短发。抽中后可直接试戴，或到衣柜的「扭蛋发型」和「扭蛋礼裙」页查看、改色、保存搭配。
 - **收集和制作**：在花园采花，在小圆桌用草莓烤饼干，在书桌写情书。菜园和池塘的收成也可以在灶台做饭，或者作为礼物送给居民。
 - **种田**：到院子右侧菜地按 E 播种或照料。胡萝卜、草莓和南瓜分别需要 1、2、3 个浇过水的夜晚。草莓收过后，再浇水过一晚还能结果。一天没浇水，作物会等着你。种得多时可以一次浇完所有缺水的菜地。
 - **钓鱼**：面朝池塘按 E 选钓法。西侧芦苇边常见小鱼，东侧开阔水面更容易钓到金鳞鲤或月光鱼。白天找金鳞鲤，天黑再来找月光鱼。草莓鱼饵能缩短等待、延长收竿时间，也更容易钓到这两种鱼。看到「！」后趁进度条走完前收竿，鱼的首次钓获日期和最长尺寸会记进日记。
@@ -138,7 +138,7 @@ You live in a small cottage with a pond, a strawberry patch and a flower garden.
 - **Daily life**: time flows (1 real second = 2 game minutes) from morning to late night. Keep an eye on ⚡ energy (sleep in bed), 🍙 fullness (eat at the table) and 💗 mood. Stay up past 2 a.m. or run out of energy and you'll pass out.
 - **Dress-up**: 7 categories (skin, hair, tops, bottoms, shoes, headwear, extras), most in 12 colors. Turn the preview to see all four sides, roll a random outfit, and save up to 6 looks. Pick 3 flowers to unlock the flower wreath.
 - **Garden and pond**: plant, water, and harvest strawberries, carrots, and pumpkins. Fish the reed bank or the open water by day or night, optionally using a strawberry as bait. Reel in when “!” appears. The diary keeps your first catch date and best size for each species. Give your harvest away or try it at the stove.
-- **Dress capsules**: the machine beside the mailbox gives you a free first draw. Later draws cost two shells or three flowers. Collect eight distinct outfits without duplicates, then try them on or recolor them under Capsule gowns in the wardrobe.
+- **Capsules**: choose between eight gowns and six hairstyles at the machine beside the mailbox. The first draw is free across both pools, then each draw costs two shells or three flowers. There are no duplicates. Try on or recolor your prizes under Capsule gowns and Capsule hair in the wardrobe.
 - **Fishing by moonlight**: give Bai Ye a moonfish. Starting two days later, he can come find you in the yard between 19:00 and 23:30. Your first catch together earns a dated keepsake with the species and size.
 - **Neighbor letters**: check the mailbox after meeting a resident. Accept a favor, choose one of two items to deliver within three days, and earn flowers or shells plus affection. The diary tracks accepted favors and keeps a card for the first one you complete for each neighbor.
 - **Romance**:
@@ -214,7 +214,7 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 - **暮らし**：時間が流れます（現実の 1 秒 = ゲーム内 2 分）。⚡体力（ベッドで眠る）、🍙満腹（テーブルで食事）、💗気分の 3 つに気を配りましょう。深夜 2 時を過ぎるか体力が尽きると、その場で寝てしまいます。
 - **着せ替え**：7 カテゴリ（肌の色、髪型、トップス、ボトムス、くつ、帽子・髪飾り、小物）、ほとんどが 12 色。4 方向から確認でき、ランダムコーデや最大 6 着までのお気に入り保存も。花を 3 本摘むと花かんむりが解放されます。
 - **畑と釣り**：イチゴ、ニンジン、カボチャを植え、水やりして収穫。昼夜で釣れる魚が変わり、イチゴをエサにもできる。「！」が出たら竿を上げよう。初めて釣れた日と最大サイズは日記に残る。収穫物や魚は料理や贈り物に使える。
-- **ドレスガチャ**：郵便受けのそばにあるガチャは初回無料。次からは貝殻2個か花3本で回せる。8着が重複せずに手に入り、クローゼットの「ガチャドレス」で試着や色替えができる。
+- **ガチャ**：郵便受けのそばで、ドレス8着と髪型6種のどちらを集めるか選べる。初回はどちらか一方が無料で、次からは貝殻2個か花3本。重複はなく、クローゼットで試着や色替えができる。
 - **月夜のふたり釣り**：白夜に月光魚を贈ると、2日後から19:00〜23:30に庭へ釣りに誘いに来ることがある。一緒に釣った最初の魚は、日付や魚の名前、大きさとともに記念カードに残る。
 - **ご近所からの手紙**：住人と知り合ったら郵便受けを確認。お願いを引き受け、3日以内に指定の品をどちらか一つ届けると、花や貝殻と好感度がもらえる。日記で期限を確認でき、住人ごとの初回のお手伝いは記念カードに残る。
 - **恋愛**：
@@ -346,7 +346,7 @@ node --test tests/*.test.cjs
 
 ### 本次测试
 
-- 15 项 Node 回归通过，覆盖旧存档迁移、作物生长、钓获、礼裙扭蛋、邻里来信、NPC 记忆和点击走路绕障碍。英语和日语语言包检查通过。
+- 15 项 Node 回归通过，覆盖旧存档迁移、作物生长、钓获、发型与礼裙扭蛋、邻里来信、NPC 记忆和点击走路绕障碍。英语和日语语言包检查通过。
 - 使用固定随机值调用主分支的游戏函数，验证后续约会保留第一次约会地点、聊天能提起该地点、稀有卡可触发、近处恋人才会目击，以及换装后有点评。
 - 在 Chrome 在线测试版完成池塘约会，确认攻略笔记出现。主分支新版界面的浏览器测试尚未完成。
 
