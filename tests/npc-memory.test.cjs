@@ -121,3 +121,21 @@ if(dollhouse) {
     assert.ok(ctx.memory.influence(state,'alice','player')>0);
   });
 }
+
+test('missed occasions become memories only when a familiar resident was not acknowledged', () => {
+  const misses=[];
+  const relation={met:true,done:{}};
+  const ctx=runtime({rel:()=>relation,hearts:()=>4,birthdayToday:()=>true,sickToday:()=>true,
+    rememberPlayer:(person,type,outcome,emotion)=>misses.push({type,outcome,emotion})});
+  loadFunction(ctx,html,'rememberMissedOccasions','function markLife(');
+  const resident={id:'alice'};
+  ctx.rememberMissedOccasions(resident);
+  assert.deepEqual(misses.map(m=>m.type),['birthday','visit']);
+  assert.ok(misses.every(m=>m.outcome==='missed'&&m.emotion<0));
+  relation.done={birthday:true,visitSick:true};
+  ctx.rememberMissedOccasions(resident);
+  relation.met=false;
+  relation.done={};
+  ctx.rememberMissedOccasions(resident);
+  assert.equal(misses.length,2);
+});

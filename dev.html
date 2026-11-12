@@ -190,6 +190,13 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
   .card{margin:16px}
 }
 @media (prefers-reduced-motion:reduce){#preview.pop,.bar.low i,#dialog .more{animation:none}#fade{transition:none}}
+
+.keepsakes{display:flex;flex-wrap:wrap;gap:7px;margin:8px 0}
+.keepsake{display:flex;align-items:center;gap:6px;min-height:45px;padding:4px 7px;border:1px solid #ac745d;background:#fff0cc;color:#633f36;box-shadow:2px 2px 0 #d8a679;border-radius:3px}
+.keepsake[data-kind="rareDate"]{border-color:#ac84b8;background:#f4e4ff;box-shadow:2px 2px 0 #c49ccc}
+.keepsake canvas{width:30px;height:39px;image-rendering:pixelated}
+.keepsake-caption{display:grid;gap:1px;font-size:11px}
+.keepsake-caption small{font-size:10px}
 </style>
 </head>
 <body>
@@ -1332,6 +1339,7 @@ function decay(m,moving){const N=state.need;N.energy=clampN(N.energy-m*(0.07+(mo
 function advanceTime(m){state.time+=m;decay(m,false);}
 const partnerHome=()=>npcs.find(n=>rel(n).livesIn);
 function newDay(wake){
+  for(const n of npcs)rememberMissedOccasions(n);
   state.day++;state.time=wake;flowers.forEach(f=>f.picked=false);state.picked=[];state.plots.fill(false);state.changedToday=false;
   NPCS.forEach(n=>{rel(n).done={};});
   state.pets.forEach(p=>{p.done={};});
@@ -1455,6 +1463,10 @@ function memoryLine(n,entry){
     en:{date:'I still remember our first date.',gift:'I remember your gift.',birthday:'Thank you for remembering my birthday.',visit:'I was glad you visited when I was sick.',rival:'It still stings to remember that date I saw.'},
     ja:{date:'初めてのデート、今も覚えているよ。',gift:'プレゼント、今も覚えているよ。',birthday:'誕生日を覚えていてくれてありがとう。',visit:'お見舞いに来てくれてうれしかった。',rival:'あの日のことを思い出すと、まだ少しつらい。'}
   }[LANG]||{};
+  if(data.outcome==='missed'){
+    if(data.type==='birthday')return lifeText('那天是我的生日，我本来以为你会记得。','I had hoped you would remember my birthday.','誕生日を覚えていてくれると思っていたよ。');
+    if(data.type==='visit')return lifeText('那几天不舒服，有点想见你。','I missed you while I was sick.','具合が悪かったとき、会いたかったよ。');
+  }
   const line=copy[data.type]||'';
   const detail=data.type==='date'?where:data.type==='gift'?itemLabel(data.object):'';
   return line&&detail?line+' '+detail:line;
@@ -1462,6 +1474,12 @@ function memoryLine(n,entry){
 function lifeText(zh,en,ja){return ({zh,en,ja})[LANG]||en;}
 function birthdayToday(n){return (state.day-1)%28+1===birthdayOf(n);}
 function sickToday(n){return state.day>3&&(state.day+NPCS.indexOf(NPCS.find(npc=>npc.id===n.id))*3)%17===0;}
+function rememberMissedOccasions(n){
+  const relationship=rel(n);
+  if(!relationship.met||hearts(relationship)<3)return;
+  if(birthdayToday(n)&&!relationship.done.birthday)rememberPlayer(n,'birthday','missed',-.48,75);
+  if(sickToday(n)&&!relationship.done.visitSick)rememberPlayer(n,'visit','missed',-.30,68);
+}
 function markLife(n,type){
   const r=rel(n);if(r.done[type])return;
   r.done[type]=true;
@@ -1490,6 +1508,7 @@ function jealousCheck(n,next){
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 function npcMenu(n,back){
   const r=rel(n),h=hearts(r),T=nt(n);D.npc=n;
+  const alreadyMet=r.met;
   let greet;
   if(back)greet=tr('backGreet');
   else if(!r.met){r.met=true;greet=T.first;save();}
@@ -1507,7 +1526,17 @@ function npcMenu(n,back){
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
   if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
-  talk(nm(n),[greet],opts);
+  const lines=[greet];
+  if(!back&&alreadyMet&&!n.working){
+    const life=lifeOf(n);
+    const outfit=JSON.stringify(state.o);
+    if(life.lastOutfit!==undefined&&life.lastOutfit!==outfit){
+      const score=outfitScore(n);
+      lines.push(score>=4?T.outfitHi:score>=2?T.outfitMid:lifeText('今天换了新搭配啊。','You put together a different look today.','今日は雰囲気が違うね。'));
+    }
+    life.lastOutfit=outfit;
+  }
+  talk(nm(n),lines,opts);
 }
 function chat(n){
   const r=rel(n),T=nt(n);D.npc=n;
@@ -1827,9 +1856,20 @@ function renderDiary(){
     if(r.met){
       const life=state.life[n.id],cards=life?.cards||{};
       const labels={birthday:lifeText('生日快乐','Birthday','誕生日'),visitSick:lifeText('病中探望','A visit','お見舞い'),firstDate:lifeText('初次约会','First date','初デート'),rareDate:lifeText('难忘约会','Rare date','忘れられないデート')};
+      info.append(el('div','rline',lifeText('生日：每个周期第 ','Birthday: day ','誕生日：周期の ')+birthdayOf(n)+lifeText(' 天',' of each cycle',' 日目')));
+      const keepsakes=el('div','keepsakes');
       for(const [key,day] of Object.entries(cards)){
-        if(labels[key])info.append(el('span','pill love',`◆ ${labels[key]} · ${tr('day',{d:day})}`));
+        if(!labels[key])continue;
+        const keepsake=el('article','keepsake');
+        keepsake.dataset.kind=key;
+        const sprite=mk(20,26);
+        blitChar(sprite.getContext('2d'),n.outfit,'down',0,0,0);
+        const caption=el('div','keepsake-caption');
+        caption.append(el('strong',null,labels[key]),el('small',null,tr('day',{d:day})));
+        keepsake.append(sprite,caption);
+        keepsakes.append(keepsake);
       }
+      if(keepsakes.childElementCount)info.append(keepsakes);
     }
     card.append(c,info);grid.append(card);
   });
