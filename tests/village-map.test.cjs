@@ -51,3 +51,34 @@ test('four residents have independent village shifts and daily visits load from 
   assert.equal(V.loadVisits({cafe:2,court:4,market:2},3).cafe,2);
   assert.equal(V.loadVisits({cafe:2,court:4,market:2},3).court,undefined);
 });
+
+vm.runInContext(read('cottage-travel.js')+'\nthis.travelAPI=CottageTravel;',ctx);
+const travel=ctx.travelAPI;
+
+test('transport orders charge once, arrive next day and survive a save and reload',()=>{
+  const state=travel.load(undefined,4),inventory={shell:20};
+  assert.equal(state.selected,null);
+  assert.equal(travel.order(state,inventory,'car',4),false);
+  assert.equal(travel.order(state,inventory,'constructor',4),false);
+  assert.equal(travel.order(state,inventory,'bicycle',4),true);
+  assert.equal(travel.order(state,inventory,'bicycle',4),false);
+  assert.equal(inventory.shell,6);
+  assert.equal(travel.receive(state,'bicycle',4),false);
+  const restored=travel.load(JSON.parse(JSON.stringify(state)),5);
+  assert.deepEqual(Array.from(travel.ready(restored,5)),['bicycle']);
+  assert.equal(travel.receive(restored,'bicycle',5),true);
+  assert.equal(travel.receive(restored,'bicycle',5),false);
+  assert.equal(travel.order(restored,inventory,'bicycle',5),false);
+  assert.equal(travel.ready(restored,5).length,0);
+});
+
+test('mounted travel respects indoor tiles and the car needs a road',()=>{
+  for(const [id,{speed}] of Object.entries(travel.catalog)){
+    const state=travel.load({owned:[id],selected:id});
+    assert.ok(speed>1);
+    assert.equal(travel.riding(state,'inside'),null);
+    assert.equal(travel.riding(state,'road'),id);
+    assert.equal(travel.riding(state,'outdoor'),id==='car'?null:id);
+  }
+  assert.equal(travel.load({owned:[],selected:'car'}).selected,null);
+});

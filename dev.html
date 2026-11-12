@@ -53,7 +53,11 @@ button:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
 .pbtn.primary{background:var(--accent);color:var(--accent-ink)}
 kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2px solid var(--line);border-radius:4px;background:var(--sel);color:var(--sel-ink);text-align:center;font-family:"Silkscreen","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:12px;line-height:18px}
 
-#hud{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));display:flex;gap:8px;z-index:5;pointer-events:none;flex-wrap:wrap;max-width:calc(100% - 210px)}
+#hud{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));display:grid;justify-items:start;gap:8px;z-index:5;pointer-events:none;max-width:calc(100% - 210px)}
+#hudStats{display:flex;gap:8px;flex-wrap:wrap}
+#miniMap{display:block;width:clamp(95px,14vw,144px);padding:3px;pointer-events:auto;text-align:left}
+#miniOverview{display:block;width:100%;height:auto;image-rendering:pixelated;border-radius:2px}
+#miniRide{display:block;margin:3px 2px 0;font-size:11px;font-weight:700;line-height:1.3}
 .chip{background:var(--panel);border:3px solid var(--line);box-shadow:3px 3px 0 var(--shadow);border-radius:6px;padding:4px 10px;font-weight:700;font-size:13px;display:flex;gap:8px;align-items:center;white-space:nowrap}
 .chip .n{font-variant-numeric:tabular-nums}
 .bar{display:flex;align-items:center;gap:3px;font-size:12px}
@@ -63,6 +67,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .bar.low i{animation:blink 1s steps(2) infinite}
 @keyframes blink{50%{border-color:var(--accent);background:var(--accent)}}
 #hudR{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));display:flex;gap:8px;z-index:5;flex-wrap:wrap;justify-content:flex-end;max-width:280px}
+@media(max-width:560px){#hud{max-width:46vw;gap:6px}#hudStats{gap:5px}#hudR{max-width:48vw}#hudR .pbtn{padding:4px 6px;font-size:12px}}
 
 #prompt{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7;padding:6px 12px;font-size:14px;font-weight:700;white-space:nowrap}
 #toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:9;padding:5px 12px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
@@ -239,6 +244,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <canvas id="game" tabindex="0" data-i18n-aria="title"></canvas>
 
 <div id="hud">
+  <div id="hudStats">
   <div class="chip" id="chipTime">☀️</div>
   <div class="chip">
     <span class="bar" id="barE">⚡<i><b id="bE"></b></i></span>
@@ -246,8 +252,14 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
     <span class="bar" id="barM">💗<i><b id="bM"></b></i></span>
   </div>
   <div class="chip" data-i18n-title="bagTitle">🎒<span class="n" id="cBag">0</span></div>
+  </div>
+  <button class="px" id="miniMap" type="button" aria-controls="villageMap" data-i18n-aria="miniMapLabel" data-i18n-title="villageMap">
+    <canvas id="miniOverview" width="192" height="136" aria-hidden="true"></canvas>
+    <span id="miniRide" class="hidden"></span>
+  </button>
 </div>
 <div id="hudR">
+  <button class="pbtn" id="btnTravel" type="button" data-i18n="travelShop"></button>
   <button class="pbtn" id="btnMap" type="button" data-i18n="villageMap"></button>
   <button class="pbtn primary" id="btnWardrobe" type="button" data-i18n="btnWardrobe"></button>
   <button class="pbtn" id="btnAlbum" type="button" data-i18n="btnAlbum"></button>
@@ -364,9 +376,10 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="memory-album.js?v=snow-fishing-1"></script>
 <script src="resident-stories.js"></script>
 <script src="village-map.js"></script>
-<script src="lang/zh.js?v=village-1" charset="utf-8"></script>
-<script src="lang/en.js?v=village-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=village-1" charset="utf-8"></script>
+<script src="cottage-travel.js"></script>
+<script src="lang/zh.js?v=travel-map-1" charset="utf-8"></script>
+<script src="lang/en.js?v=travel-map-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=travel-map-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1054,7 +1067,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  villageVisits:{},bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
+  villageVisits:{},travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS='homelove-save-dev';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
@@ -1076,6 +1089,7 @@ function applySave(s){
   if(s.o&&typeof s.o==='object')Object.assign(state.o,s.o);
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
   state.villageVisits=VillageMap.loadVisits(s.villageVisits,state.day);
+  state.travel=CottageTravel.load(s.travel,state.day);
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
   state.snowFishing=SnowFishing.load(s.snowFishing,state.day);
@@ -2026,6 +2040,15 @@ function unreadAlbumPostcard(){
   return state.album?.postcards.findLast(card=>!state.album.seen.includes(MemoryAlbum.postcardKey(card)));
 }
 function checkMail(){
+  const vehicles=state.travel?readyVehicles():[];
+  if(vehicles.length){
+    const opts=vehicles.map(id=>({label:tr('vehicleCollect',{name:tr('vehicle_'+id)}),fn:()=>collectVehicle(id)}));
+    opts.push({label:tr('albumOtherMail'),back:true,fn:checkCottageLetters});
+    talk(objName('mailbox'),[tr('vehiclePackage')],opts);return;
+  }
+  checkCottageLetters();
+}
+function checkCottageLetters(){
   const postcard=unreadAlbumPostcard();
   if(!postcard){checkNeighborMail();return;}
   const n=npcs.find(person=>person.id===postcard.resident);
@@ -3047,6 +3070,63 @@ function resolveWorldEvent(n,kind,choice,plotIndex){
 
 /* ---------------- interaction ---------------- */
 /* ---------------- village activities ---------------- */
+/* ---------------- village delivery and transport ---------------- */
+function readyVehicles(){
+  return state.travel?CottageTravel.ready(state.travel,state.day):[];
+}
+function openTravelShop(){
+  if(startOpen||mapOpen||busy||dressOpen||diaryOpen||albumOpen||D.modal||FISH.on)return;
+  D.npc=null;walkRoute=[];
+  const opts=Object.entries(CottageTravel.catalog).map(([id,{cost,speed}])=>{
+    const name=tr('vehicle_'+id),owned=state.travel.owned.includes(id),due=state.travel.orders[id];
+    if(owned)return {label:tr(state.travel.selected===id?'vehicleSelected':'vehicleEquip',{name}),
+      disabled:state.travel.selected===id,fn:()=>equipVehicle(id)};
+    if(due)return {label:tr(due<=state.day?'vehicleAtMailbox':'vehicleInTransit',{name,day:due}),disabled:true,fn:null};
+    return {label:tr('vehicleOrder',{name,cost,speed:Math.round((speed-1)*100)}),disabled:state.inv.shell<cost,fn:()=>orderVehicle(id)};
+  });
+  if(state.travel.selected)opts.push({label:tr('vehicleWalk'),fn:()=>equipVehicle(null)});
+  opts.push({label:tr('walkAway'),back:true,fn:null});
+  talk(tr('travelShop'),[tr('travelShopIntro',{shells:state.inv.shell})],opts);
+}
+function orderVehicle(id){
+  if(!CottageTravel.order(state.travel,state.inv,id,state.day))return;
+  if(!save()){
+    state.inv.shell+=CottageTravel.catalog[id].cost;
+    delete state.travel.orders[id];
+    talk(tr('travelShop'),[tr('vehicleSaveFailed')]);return;
+  }
+  updateHud();sfx('ding');
+  talk(tr('travelShop'),[tr('vehicleOrdered',{name:tr('vehicle_'+id)})],[
+    {label:tr('travelShop'),fn:openTravelShop},{label:tr('walkAway'),back:true,fn:null}
+  ]);
+}
+function equipVehicle(id){
+  const previous=state.travel.selected;
+  if(id!==null&&!state.travel.owned.includes(id))return;
+  state.travel.selected=id;
+  if(!save()){state.travel.selected=previous;talk(tr('travelShop'),[tr('vehicleSaveFailed')]);return;}
+  updateHud();say(tr('travelShop'),id?tr('vehicleEquipped',{name:tr('vehicle_'+id)}):tr('vehicleWalk'));
+}
+function collectVehicle(id){
+  const due=state.travel.orders[id],previous=state.travel.selected;
+  if(!CottageTravel.receive(state.travel,id,state.day))return;
+  state.travel.selected=id;
+  if(!save()){
+    state.travel.owned.pop();state.travel.orders[id]=due;state.travel.selected=previous;
+    talk(objName('mailbox'),[tr('vehicleSaveFailed')]);return;
+  }
+  updateHud();sfx('pickup');
+  talk(objName('mailbox'),[tr('vehicleReceived',{name:tr('vehicle_'+id)})],[
+    {label:tr('albumOtherMail'),fn:checkMail},{label:tr('walkAway'),back:true,fn:null}
+  ]);
+}
+function activeRide(){
+  if(!state.travel.selected||FISH.on||busy)return null;
+  const t=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));
+  const surface=t===FLOOR||t===DOOR?'inside':[PATH,STONE,BRIDGE].includes(t)?'road':'outdoor';
+  return CottageTravel.riding(state.travel,surface);
+}
+
 function villageInteraction(id){
   const trades=VillageMap.exchanges[id];
   if(trades){
@@ -3094,21 +3174,56 @@ function doVillageActivity(id,n){
 function closeVillageMap(){
   mapOpen=false;$('#villageMap').classList.add('hidden');cv.focus({preventScroll:true});
 }
+function overviewBackdrop(season){
+  const art=SEASON_ART[season];
+  if(art.overview)return art.overview;
+  const c=mk(MW*4,MH*4),g=c.getContext('2d');
+  g.imageSmoothingEnabled=false;g.drawImage(art.ground,0,0,c.width,c.height);
+  for(const prop of VillageMap.props){
+    g.fillStyle='#785b55';g.fillRect(prop.x*4,prop.y*4,prop.w*4,prop.h*4);
+  }
+  for(const place of Object.values(VillageMap.places)){
+    const [x,y]=place.tile;
+    g.fillStyle='#6b4e4e';g.fillRect(x*4-1,y*4-1,6,6);
+    g.fillStyle=place.color;g.fillRect(x*4,y*4,4,4);
+  }
+  art.overview=c;
+  return c;
+}
+function drawOverview(canvas,season,viewport){
+  const g=canvas.getContext('2d');
+  g.drawImage(overviewBackdrop(season),0,0);
+  if(viewport){
+    const [x,y]=cameraOrigin();
+    g.strokeStyle='rgba(255,251,229,.72)';
+    g.strokeRect(Math.floor(x/4)+.5,Math.floor(y/4)+.5,Math.floor(cv.width/scale/4),Math.floor(cv.height/scale/4));
+  }
+  const px=Math.floor(P.x/4),py=Math.floor((P.y-2)/4);
+  g.fillStyle='#fff4db';g.fillRect(px-2,py-2,5,5);
+  g.fillStyle='#ae4f68';g.fillRect(px-1,py-1,3,3);
+}
+let miniOverviewKey='';
+function updateMiniMap(){
+  const season=CottageActivities.seasonOf(state.day),[x,y]=cameraOrigin();
+  const key=[season,P.x>>2,P.y>>2,x>>2,y>>2,cv.width,cv.height,scale].join(':');
+  if(key!==miniOverviewKey){
+    miniOverviewKey=key;
+    drawOverview($('#miniOverview'),season,true);
+  }
+  const ride=state.travel.selected,badge=$('#miniRide');
+  badge.classList.toggle('hidden',!ride);
+  if(ride){
+    const label=activeRide()?tr('vehicle_'+ride):tr('vehicleParked',{name:tr('vehicle_'+ride)});
+    if(badge.textContent!==label)badge.textContent=label;
+  }
+}
 function openVillageMap(){
   if(mapOpen||startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on)return;
   mapOpen=true;walkRoute=[];keys.clear();touchKeys.clear();
   const mapEl=$('#villageMap'),box=$('#villageStops');
-  const art=SEASON_ART[CottageActivities.seasonOf(state.day)];
-  const mapCanvas=$('#villageOverview'),g=mapCanvas.getContext('2d');
-  g.imageSmoothingEnabled=false;g.drawImage(art.ground,0,0,mapCanvas.width,mapCanvas.height);
-  for(const prop of VillageMap.props){
-    g.fillStyle='#785b55';g.fillRect(prop.x*4,prop.y*4,prop.w*4,prop.h*4);
-  }
+  drawOverview($('#villageOverview'),CottageActivities.seasonOf(state.day),false);
   box.replaceChildren();
   for(const [id,place] of Object.entries(VillageMap.places)){
-    const [x,y]=place.tile;
-    g.fillStyle='#6b4e4e';g.fillRect(x*4-1,y*4-1,6,6);
-    g.fillStyle=place.color;g.fillRect(x*4,y*4,4,4);
     const button=el('button','pbtn village-stop');button.type='button';
     const dot=el('span','village-dot');dot.style.background=place.color;
     const words=el('span',null,tr('village_'+id));
@@ -3122,11 +3237,11 @@ function openVillageMap(){
     };
     box.append(button);
   }
-  g.fillStyle='#fff4db';g.fillRect(Math.floor(P.x/4)-2,Math.floor((P.y-2)/4)-2,5,5);
-  g.fillStyle='#914557';g.fillRect(Math.floor(P.x/4)-1,Math.floor((P.y-2)/4)-1,3,3);
   mapEl.classList.remove('hidden');$('#villageClose').focus();
 }
 $('#btnMap').addEventListener('click',openVillageMap);
+$('#miniMap').addEventListener('click',openVillageMap);
+$('#btnTravel').addEventListener('click',openTravelShop);
 $('#villageClose').addEventListener('click',closeVillageMap);
 $('#villageMap').addEventListener('click',e=>{if(e.target.id==='villageMap')closeVillageMap();});
 
@@ -3144,7 +3259,7 @@ function findTarget(){
   for(const [ax,ay] of [[tx,ty],[mx,my]]){const pi=plotIndex(ax,ay);if(pi>=0)return {kind:'plot',i:pi,verb:plotVerb(state.garden[pi],pi),x:ax*16+8,y:ay*16+2};}
   if(!state.goldFound&&[[tx,ty],[mx,my]].some(([a,b])=>a===GOLD_TILE[0]&&b===GOLD_TILE[1]))return {kind:'gold',verb:tr('goldVerb'),x:GOLD_TILE[0]*16+8,y:GOLD_TILE[1]*16-4};
   const o=objAt(tx,ty);
-  if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&unreadAlbumPostcard()?tr('albumMailPrompt'):o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
+  if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&readyVehicles().length?tr('vehiclePackage'):o.id==='mailbox'&&unreadAlbumPostcard()?tr('albumMailPrompt'):o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
     x:(o.tx+o.tw/2)*16,y:o.py-5};
   const prop=villagePropAt(tx,ty);
   if(prop)return {kind:'village',id:prop.id,verb:tr('village_'+prop.id),x:(prop.x+prop.w/2)*16,y:prop.y*16-9};
@@ -3239,7 +3354,7 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   if(e.code==='Escape'||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code))walkRoute=[];
   keys.add(e.code);
-  if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);if(e.code==='KeyG')openVillageMap();}
+  if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);if(e.code==='KeyG')openVillageMap();if(e.code==='KeyV')openTravelShop();}
 });
 addEventListener('keyup',e=>keys.delete(e.code));
 addEventListener('blur',()=>{keys.clear();touchKeys.clear();});
@@ -3724,6 +3839,7 @@ function drawSeasonParticles(g,time,winter){
   }
 }
 function render(time){
+  updateMiniMap();
   ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#2a2230';ctx.fillRect(0,0,cv.width,cv.height);
   const S=scale,vw=cv.width/S,vh=cv.height/S,dark=darkness();
   const [cx,cy]=cameraOrigin();
@@ -3776,7 +3892,10 @@ function render(time){
   }
   for(const s of statics)if(s.x+s.w>cx&&s.x<cx+vw&&s.y+s.h>cy&&s.y<cy+vh)ents.push(s);
   ents.push({key:P.y,draw:g=>{
-    drawPerson(g,state.o,P.dir,P.moving?WALK[Math.floor(P.anim*7)%4]:0,P.x,P.y);
+    const ride=activeRide();
+    if(ride)CottageTravel.paint(g,ride,P.x,P.y,P.dir,false);
+    if(ride!=='car')drawPerson(g,state.o,P.dir,!ride&&P.moving?WALK[Math.floor(P.anim*7)%4]:0,P.x,P.y-(ride?2:0));
+    if(ride)CottageTravel.paint(g,ride,P.x,P.y,P.dir,true);
     if(FISH.on&&FISH.phase==='bite'){
       const x=Math.round(P.x)-9,y=Math.round(P.y)-29;
       drawBang(g,P.x,P.y-39,'#ff6b6b');
@@ -3795,7 +3914,7 @@ function render(time){
     if(cat.dir<0){g.save();g.translate(x+9,y-14);g.scale(-1,1);g.drawImage(s,0,0);g.restore();}else g.drawImage(s,x-9,y-14);
   }});
   ents.sort((a,b)=>a.key-b.key);for(const e of ents)e.draw(ctx,art);
-  if(unreadAlbumPostcard()||hasNeighborMail()){
+  if(readyVehicles().length||unreadAlbumPostcard()||hasNeighborMail()){
     const x=7*16+4,y=10*16-16+(Math.sin(time*4)>0?1:0);
     ctx.fillStyle='#714c48';ctx.fillRect(x-1,y-1,10,8);
     ctx.fillStyle='#fff1cd';ctx.fillRect(x,y,8,6);
@@ -3841,7 +3960,8 @@ function update(dt){
     if(has('ArrowLeft','KeyA','left'))dx-=1;if(has('ArrowRight','KeyD','right'))dx+=1;
     if(has('ArrowUp','KeyW','up'))dy-=1;if(has('ArrowDown','KeyS','down'))dy+=1;
   }
-  const sp=64*(state.need.energy<15?0.6:1)*dt;
+  const ride=activeRide(),speed=ride?CottageTravel.catalog[ride].speed:1;
+  const sp=64*(state.need.energy<15?0.6:1)*speed*dt;
   let moving=false;
   if(dx||dy){
     walkRoute=[];
@@ -3974,7 +4094,7 @@ snapPets();
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
   const box=document.createElement('div');
-  box.style.cssText='position:fixed;left:12px;top:64px;z-index:15;background:rgba(30,24,36,.92);color:#fff6e6;border:2px solid #ffd45e;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:5px;font:12px/1.3 system-ui,sans-serif;max-width:170px';
+  box.style.cssText='position:fixed;right:12px;bottom:12px;max-height:55vh;overflow:auto;z-index:15;background:rgba(30,24,36,.92);color:#fff6e6;border:2px solid #ffd45e;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:5px;font:12px/1.3 system-ui,sans-serif;max-width:170px';
   const head=document.createElement('button');head.type='button';head.textContent='🛠 测试面板 ▾';
   head.style.cssText='all:unset;cursor:pointer;font-weight:700;color:#ffd45e';box.append(head);
   const body=document.createElement('div');body.style.cssText='display:flex;flex-direction:column;gap:4px';box.append(body);

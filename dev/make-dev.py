@@ -103,7 +103,7 @@ PANEL = r'''
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
   const box=document.createElement('div');
-  box.style.cssText='position:fixed;left:12px;top:64px;z-index:15;background:rgba(30,24,36,.92);color:#fff6e6;border:2px solid #ffd45e;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:5px;font:12px/1.3 system-ui,sans-serif;max-width:170px';
+  box.style.cssText='position:fixed;right:12px;bottom:12px;max-height:55vh;overflow:auto;z-index:15;background:rgba(30,24,36,.92);color:#fff6e6;border:2px solid #ffd45e;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:5px;font:12px/1.3 system-ui,sans-serif;max-width:170px';
   const head=document.createElement('button');head.type='button';head.textContent='🛠 测试面板 ▾';
   head.style.cssText='all:unset;cursor:pointer;font-weight:700;color:#ffd45e';box.append(head);
   const body=document.createElement('div');body.style.cssText='display:flex;flex-direction:column;gap:4px';box.append(body);
