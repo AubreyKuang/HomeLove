@@ -549,15 +549,15 @@ Object.assign(window.HL_LANG.ja.ui, {
   "sharedFishingKeepsake": "月夜のふたり釣り",
   "sharedFishingDetails": "{day} {time} · {fish} · {size} cm",
   "sharedFishingRecall": "一緒に釣った {size} cm の{fish}、覚えてる？ あの夜は池が静かだったね。",
-  "capsuleIntro": "ガラスの中にはドレス入りのカプセル。集めた数は {owned}/{total}。毎回新しいドレスが出るよ。",
+  "capsulePoolIntro": "集めた数は {owned}/{total}。毎回違うデザインが出るよ。",
   "capsuleFree": "回す（初回無料）",
   "capsuleTrade": "{item}を {cost} 個使って回す（所持 {count} 個）",
-  "capsuleComplete": "ドレスをすべて集めた。クローゼットで着替えられるよ。",
+  "capsuleComplete": "このコレクションはすべて集めたよ。クローゼットで確認できる。",
   "capsuleWon": "カプセルが開いた！「{dress}」がクローゼットに加わった。",
   "capsuleTry": "試着する",
   "capsuleKeep": "しまっておく",
   "capsuleTag": "ガチャ",
-  "capsuleLocked": "家の外のガチャで手に入るドレス。"
+  "capsuleLocked": "このデザインは家の外のガチャで手に入るよ。"
 });
 Object.assign(window.HL_LANG.ja.clothes, {
   "roseGown": "バラのフリルドレス",
@@ -571,7 +571,7 @@ Object.assign(window.HL_LANG.ja.clothes, {
   "deepSeaGown": "深海のマーメイドドレス",
   "snowCapeDress": "雪ベルベットのケープドレス"
 });
-window.HL_LANG.ja.objects.capsule = {"name": "ドレスガチャ", "verb": "ドレスガチャを回す"};
+window.HL_LANG.ja.objects.capsule = {"name": "ガチャ", "verb": "ガチャを見る"};
 
 // Neighbor letters
 Object.assign(window.HL_LANG.ja.ui, {
@@ -603,4 +603,21 @@ Object.assign(window.HL_LANG.ja.ui, {
   "requestLetter_by": "夜の池を描いてる。月光魚のうろこか、ランプに照らした星の石の色を見たい。",
   "requestThanks_by": "……絵の具が乾いたら見せるよ。",
   "requestRecall_by": "あの{item}のおかげで、あの晩の水面の色が描けた。"
+});
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "capsuleChoosePool": "どちらのガチャを回す？ ドレスと髪型は別々に集められるよ。",
+  "capsulePool_dress": "ドレス {owned}/{total}",
+  "capsulePool_hair": "髪型 {owned}/{total}",
+  "capsuleView": "クローゼットで見る",
+  "capsuleTryHair": "この髪型を試す",
+  "capsuleHairTab": "ガチャ髪型"
+});
+Object.assign(window.HL_LANG.ja.clothes, {
+  "cloudBob": "雲のボブ",
+  "ribbonBraid": "リボンの横編み",
+  "doubleBuns": "ツインお団子",
+  "waterfallWaves": "滝のウェーブロング",
+  "highPonytail": "高めポニーテール",
+  "curlyPixie": "妖精カールショート"
 });

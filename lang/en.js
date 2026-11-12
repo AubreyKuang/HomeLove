@@ -549,15 +549,15 @@ Object.assign(window.HL_LANG.en.ui, {
   "sharedFishingKeepsake": "Fishing by Moonlight",
   "sharedFishingDetails": "{day} {time} · {fish} · {size} cm",
   "sharedFishingRecall": "Remember the {size} cm {fish} we caught together? The pond was so still that night.",
-  "capsuleIntro": "Dress capsules fill the glass globe. Collected {owned}/{total}. Every turn gives you a new design.",
+  "capsulePoolIntro": "Collected {owned}/{total}. Every draw gives you a new design.",
   "capsuleFree": "Turn the knob (first capsule is free)",
   "capsuleTrade": "Trade {cost} × {item} for a capsule ({count} owned)",
-  "capsuleComplete": "You have collected every gown. Find them in your wardrobe.",
+  "capsuleComplete": "This collection is complete. Browse it in the wardrobe.",
   "capsuleWon": "The capsule popped open! {dress} has been added to your wardrobe.",
   "capsuleTry": "Try it on",
   "capsuleKeep": "Save it for later",
   "capsuleTag": "Capsule",
-  "capsuleLocked": "This gown comes from the capsule machine outside."
+  "capsuleLocked": "This design comes from the capsule machine outside."
 });
 Object.assign(window.HL_LANG.en.clothes, {
   "roseGown": "Rose Ruffle Gown",
@@ -571,7 +571,7 @@ Object.assign(window.HL_LANG.en.clothes, {
   "deepSeaGown": "Deep Sea Mermaid Gown",
   "snowCapeDress": "Snow Velvet Cape Dress"
 });
-window.HL_LANG.en.objects.capsule = {"name": "Dress Capsule Machine", "verb": "Use the dress capsule machine"};
+window.HL_LANG.en.objects.capsule = {"name": "Capsule Machine", "verb": "Use the capsule machine"};
 
 // Neighbor letters
 Object.assign(window.HL_LANG.en.ui, {
@@ -603,4 +603,21 @@ Object.assign(window.HL_LANG.en.ui, {
   "requestLetter_by": "I’m painting the pond at night. I’d like to look at a moonfish’s scales or see how a star stone looks under the lamp.",
   "requestThanks_by": "I’ll show you the painting once the paint dries.",
   "requestRecall_by": "The {item} you brought helped me find the color of the water that night."
+});
+
+Object.assign(window.HL_LANG.en.ui, {
+  "capsuleChoosePool": "Which collection would you like to draw from?",
+  "capsulePool_dress": "Gowns {owned}/{total}",
+  "capsulePool_hair": "Hairstyles {owned}/{total}",
+  "capsuleView": "View in wardrobe",
+  "capsuleTryHair": "Try the hairstyle",
+  "capsuleHairTab": "Capsule hair"
+});
+Object.assign(window.HL_LANG.en.clothes, {
+  "cloudBob": "Cloud Bob",
+  "ribbonBraid": "Ribbon Side Braid",
+  "doubleBuns": "Double Buns",
+  "waterfallWaves": "Waterfall Waves",
+  "highPonytail": "High Ponytail",
+  "curlyPixie": "Curly Pixie"
 });
