@@ -480,3 +480,89 @@ Object.assign(window.HL_LANG.ja.npcs.xm, {"cook": "クッキーを焼いてる�
 Object.assign(window.HL_LANG.ja.npcs.xy, {"cook": "特盛チャーハン作ってる！腹いっぱいにしてやるからな！", "sweep": "モップがけもトレーニングだ！このスピード見てろよ！", "gym": "98、99、100！お前も何セットかやる？", "cuddle": "星野はあなたをぎゅっと腕の中に閉じこめた。「充電中！邪魔すんなよ！」", "night": "星野は頭をかいて、耳まで真っ赤になった。「あのさ……今夜、ずっと抱きしめて寝てもいい？」", "morningAfter": "星野はもう朝ランから帰ってきて、髪がまだ濡れている。「おはよ！お前の好きな朝飯、買ってきたぜ！」"});
 Object.assign(window.HL_LANG.ja.npcs.jy, {"cook": "麺ゆでてる。期待すんな、食えはする。", "sweep": "……掃除機の音がでかかったから、サンプリングしといた。", "gym": "腕立てしてる。ギターも腕力いるんだよ。", "cuddle": "江嶼はあなたにもたれて、ギターを爪弾いた。あなたのためだけに書いた、あの曲だ。", "night": "江嶼はギターを脇に置いた。「今夜はもう弾かない。……こっち来い」", "morningAfter": "江嶼はまだ寝ぼけたまま、あなたを腕の中に引き戻した。「あと五分」"});
 Object.assign(window.HL_LANG.ja.npcs.by, {"cook": "……見るな。料理を練習中だ。焦げたのは俺の分だ。", "sweep": "絵の具は片付けた。床も拭いた。お前がうるさく言うからな。", "gym": "絵を描くにも体力がいる。……じろじろ見るな。", "cuddle": "白夜は何も言わずにあなたをマフラーでくるみ、強く抱きしめた。", "night": "白夜はアトリエの明かりを消した。「今夜は、星はいい」", "morningAfter": "珍しく早起きした白夜が、あなたの寝顔をスケッチしている。「……動くな。まだ描き終わってない」"});
+
+// Garden and pond
+Object.assign(window.HL_LANG.ja.ui, {
+  "plantCrop": "種をまく",
+  "harvestCrop": "{crop}を収穫",
+  "tendCrop": "{crop}の世話",
+  "plantTip": "種を選ぼう。種は自由に使えて、水をやると翌朝に育つよ。",
+  "plantOption": "{crop}を植える（水やりが必要な夜：{days}）",
+  "cropPlanted": "{crop}を植えた。水やりを忘れずに。",
+  "cropWet": "{crop}に水をやった。収穫まであと {days} 夜（水やり済みの今夜を含む）。",
+  "cropDry": "{crop}に水が必要。収穫まで水やりをあと {days} 夜。",
+  "cropPicked": "{crop}を収穫した（持ち物に {count} 個）。",
+  "waterPlot": "この区画に水をやる",
+  "waterGarden": "乾いた区画すべてに水をやる（{count} 区画）",
+  "wateredPlots": "{count} 区画に水をやった。",
+  "clearPlot": "作物を抜く",
+  "clearPlotAsk": "{crop}を抜いて、この区画を空ける？",
+  "reeds": "ヨシの岸辺",
+  "openWater": "開けた水辺",
+  "fishAt": "{spot}で釣る",
+  "reedsHint": "池の西側。ヨシの陰には小魚がよくいる。",
+  "openWaterHint": "池の東側。開けた水辺には大きな魚がよく来る。",
+  "pondDayHint": "昼間は黄金ゴイが釣れるよ。",
+  "pondNightHint": "夜は月光魚が釣れ、星の石も見つけやすい。",
+  "castPlain": "エサなしで投げる",
+  "castBait": "イチゴをエサにする（持ち物に {count} 個）",
+  "fishRecord": "{i}が釣れた！ {size} cm、日記の新記録。",
+  "fishSized": "{i}が釣れた！ {size} cm。",
+  "pondLog": "池の釣り日記",
+  "pondRecord": "{count} 匹 · 最長 {size} cm · 初めて釣れた日：{day} 日目",
+  "fishHint": "昼も夜もヨシのそばでよく釣れる。",
+  "carpHint": "昼間に東側の開けた水辺を試してみよう。",
+  "moonfishHint": "日が暮れてから。開けた水辺とイチゴのエサがおすすめ。",
+  "cookStew": "カボチャの煮込み（ニンジン ×1、カボチャ ×1）",
+  "cookCarp": "黄金ゴイのロースト（黄金ゴイ ×1）",
+  "cookMoonfish": "月光魚のスープ（月光魚 ×1）"
+});
+Object.assign(window.HL_LANG.ja.items, {
+  "carrot": {
+    "name": "ニンジン",
+    "desc": "水をやると翌朝に収穫できる。料理や贈り物に。"
+  },
+  "pumpkin": {
+    "name": "カボチャ",
+    "desc": "水やりをした夜を三回過ごすと収穫できる。ニンジンと一緒に煮込もう。"
+  },
+  "carp": {
+    "name": "黄金ゴイ",
+    "desc": "昼に釣れる大きな魚。ローストに向いている。"
+  },
+  "moonfish": {
+    "name": "月光魚",
+    "desc": "夜にだけ現れる魚。スープにできる。"
+  }
+});
+
+// Shared fishing and dress capsules
+Object.assign(window.HL_LANG.ja.ui, {
+  "sharedFishingInvite": "くれた月光魚、覚えてる？ 今夜は水面が静かだね。一緒にもう一匹待ってみない？",
+  "sharedFishingTalk": "今夜の池の誘いについて話す",
+  "sharedFishingAccept": "一緒に池へ行く",
+  "sharedFishingLater": "また今度",
+  "sharedFishingDeferred": "じゃあ、また今度。日が暮れたら迎えに来るよ。",
+  "sharedFishingCast": "一緒に待とう。浮きに「！」が出たら {k} で引き上げて。",
+  "sharedFishingCaught": "{i}だ。{size} cm。今夜のこと、日記に残そう。",
+  "sharedFishingRetry": "もう一度投げる",
+  "sharedFishingKeepsake": "月夜のふたり釣り",
+  "sharedFishingDetails": "{day} {time} · {fish} · {size} cm",
+  "sharedFishingRecall": "一緒に釣った {size} cm の{fish}、覚えてる？ あの夜は池が静かだったね。",
+  "capsuleIntro": "ガラスの中にはドレス入りのカプセル。集めた数は {owned}/{total}。毎回新しいドレスが出るよ。",
+  "capsuleFree": "回す（初回無料）",
+  "capsuleTrade": "{item}を {cost} 個使って回す（所持 {count} 個）",
+  "capsuleComplete": "ドレスが4着そろった。クローゼットで着替えられるよ。",
+  "capsuleWon": "カプセルが開いた！「{dress}」がクローゼットに加わった。",
+  "capsuleTry": "試着する",
+  "capsuleKeep": "しまっておく",
+  "capsuleTag": "ガチャ",
+  "capsuleLocked": "家の外のガチャで手に入るドレス。"
+});
+Object.assign(window.HL_LANG.ja.clothes, {
+  "roseGown": "バラのフリルドレス",
+  "moonGown": "星夜のトレーンドレス",
+  "lilyGown": "スズランのパールドレス",
+  "peacockGown": "孔雀の金刺繍ドレス"
+});
+window.HL_LANG.ja.objects.capsule = {"name": "ドレスガチャ", "verb": "ドレスガチャを回す"};

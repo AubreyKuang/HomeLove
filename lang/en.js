@@ -480,3 +480,89 @@ Object.assign(window.HL_LANG.en.npcs.xm, {"cook": "I’m baking cookies! The fir
 Object.assign(window.HL_LANG.en.npcs.xy, {"cook": "Making a giant plate of egg fried rice! You won’t go hungry!", "sweep": "Mopping counts as training! Watch how fast I go!", "gym": "98, 99, 100! Wanna do a few sets too?", "cuddle": "Xingye wraps you up in his arms. “Recharging. Do not disturb!”", "night": "Xingye scratches his head, ears bright red. “Um… tonight, can I hold you the whole night?”", "morningAfter": "Xingye’s already back from his run, hair still damp. “Morning! I got your favorite breakfast!”"});
 Object.assign(window.HL_LANG.en.npcs.jy, {"cook": "Boiling noodles. Don’t expect much, but it’s edible.", "sweep": "…The vacuum was so loud I recorded a sample.", "gym": "Doing push-ups. Guitar needs strong arms.", "cuddle": "Jiang Yu leans against you, strumming idly: the song he wrote just for you.", "night": "Jiang Yu sets his guitar aside. “No more playing tonight. …Come here.”", "morningAfter": "Jiang Yu, still half asleep, pulls you back into his arms. “Five more minutes.”"});
 Object.assign(window.HL_LANG.en.npcs.by, {"cook": "…Don’t look. I’m learning to cook. The burnt piece is mine.", "sweep": "I put my paints away and mopped the floor. Only because you nagged.", "gym": "Painting takes stamina too. …Stop staring at me.", "cuddle": "Bai Ye wraps you in his scarf. He doesn’t say a word, but he holds you tight.", "night": "Bai Ye switches off the studio light. “The stars can wait tonight.”", "morningAfter": "For once Bai Ye is up early, sketching your sleeping face. “…Don’t move. I’m not done.”"});
+
+// Garden and pond
+Object.assign(window.HL_LANG.en.ui, {
+  "plantCrop": "Plant seeds",
+  "harvestCrop": "Harvest {crop}",
+  "tendCrop": "Tend {crop}",
+  "plantTip": "Pick a seed. Seeds are freely available, and plants grow overnight after watering.",
+  "plantOption": "Plant {crop} ({days} watered nights)",
+  "cropPlanted": "Planted {crop}. Remember to water it.",
+  "cropWet": "{crop} is watered. {days} watered nights left, including tonight.",
+  "cropDry": "{crop} needs water. {days} watered nights left.",
+  "cropPicked": "Harvested {crop} ({count} in the bag).",
+  "waterPlot": "Water this plot",
+  "waterGarden": "Water all dry plots ({count})",
+  "wateredPlots": "Watered {count} plots.",
+  "clearPlot": "Pull up plant",
+  "clearPlotAsk": "Pull up the {crop} and clear this plot?",
+  "reeds": "Reed bank",
+  "openWater": "Open water",
+  "fishAt": "Fish at {spot}",
+  "reedsHint": "On the west bank, small fish shelter under the reeds.",
+  "openWaterHint": "The east bank faces open water, where bigger fish are more common.",
+  "pondDayHint": "Golden carp come out in daylight.",
+  "pondNightHint": "Moonfish come out after dark, and star stones are easier to find.",
+  "castPlain": "Cast without bait",
+  "castBait": "Use a strawberry as bait ({count} in the bag)",
+  "fishRecord": "Caught {i}, {size} cm! A new diary record.",
+  "fishSized": "Caught {i}, {size} cm!",
+  "pondLog": "Pond journal",
+  "pondRecord": "Caught {count} · Best {size} cm · First caught on day {day}",
+  "fishHint": "Common by the reeds, day or night.",
+  "carpHint": "Try the open water on the east bank during the day.",
+  "moonfishHint": "Come after dark. Open water and strawberry bait both help.",
+  "cookStew": "Cook pumpkin stew (1 carrot, 1 pumpkin)",
+  "cookCarp": "Roast golden carp (1 golden carp)",
+  "cookMoonfish": "Make moonfish soup (1 moonfish)"
+});
+Object.assign(window.HL_LANG.en.items, {
+  "carrot": {
+    "name": "Carrot",
+    "desc": "Ready after one watered night. Cook it or give it away."
+  },
+  "pumpkin": {
+    "name": "Pumpkin",
+    "desc": "Ready after three watered nights. Good in a stew with carrot."
+  },
+  "carp": {
+    "name": "Golden carp",
+    "desc": "A large daytime fish. Try roasting it."
+  },
+  "moonfish": {
+    "name": "Moonfish",
+    "desc": "A night fish that makes a comforting soup."
+  }
+});
+
+// Shared fishing and dress capsules
+Object.assign(window.HL_LANG.en.ui, {
+  "sharedFishingInvite": "Remember the moonfish you gave me? The pond is so still tonight. Want to go and wait for another together?",
+  "sharedFishingTalk": "Talk about tonight at the pond",
+  "sharedFishingAccept": "Go to the pond together",
+  "sharedFishingLater": "Another evening",
+  "sharedFishingDeferred": "Another evening, then. I'll look for you after dark.",
+  "sharedFishingCast": "I'll wait with you. When “!” appears above the float, press {k} to reel in.",
+  "sharedFishingCaught": "Look, {i}, {size} cm. This evening is worth keeping in your diary.",
+  "sharedFishingRetry": "Cast again",
+  "sharedFishingKeepsake": "Fishing by Moonlight",
+  "sharedFishingDetails": "{day} {time} · {fish} · {size} cm",
+  "sharedFishingRecall": "Remember the {size} cm {fish} we caught together? The pond was so still that night.",
+  "capsuleIntro": "Dress capsules fill the glass globe. Collected {owned}/{total}. Every turn gives you a new design.",
+  "capsuleFree": "Turn the knob (first capsule is free)",
+  "capsuleTrade": "Trade {cost} × {item} for a capsule ({count} owned)",
+  "capsuleComplete": "You have all four gowns. Find them in your wardrobe.",
+  "capsuleWon": "The capsule popped open! {dress} has been added to your wardrobe.",
+  "capsuleTry": "Try it on",
+  "capsuleKeep": "Save it for later",
+  "capsuleTag": "Capsule",
+  "capsuleLocked": "This gown comes from the capsule machine outside."
+});
+Object.assign(window.HL_LANG.en.clothes, {
+  "roseGown": "Rose Ruffle Gown",
+  "moonGown": "Starlit Train Gown",
+  "lilyGown": "Lily Pearl Gown",
+  "peacockGown": "Gilded Peacock Gown"
+});
+window.HL_LANG.en.objects.capsule = {"name": "Dress Capsule Machine", "verb": "Use the dress capsule machine"};

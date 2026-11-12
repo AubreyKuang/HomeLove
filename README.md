@@ -39,13 +39,18 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 
 - **过日子**：时间会流逝（现实 1 秒 = 游戏 2 分钟），有白天、傍晚和夜晚。三条状态要照顾：⚡精力（去小床睡觉）、🍙饱腹（去小圆桌吃饭）、💗心情。熬到凌晨 2 点或精力耗光会直接睡着。
 - **换装**：7 类衣物（肤色、发型、上衣、下装、鞋子、头饰、配饰），大部分有 12 种颜色，可以转身查看四个方向，可以随机搭配，最多收藏 6 套。在院子里采 3 朵花能解锁花环。
-- **收集和制作**：采花，摘草莓，在小圆桌用草莓烤饼干，在书桌写情书，在池塘钓鱼（看到「！」立刻收竿，晚上更容易钓到稀有的星星石）。
+- **礼裙扭蛋机**：走到门口信箱右边按 E。首抽免费，之后每抽可用 2 个贝壳或 3 朵花。蔷薇千层、星夜拖尾、铃兰珍珠和孔雀金纹四款礼裙各有不同的像素裙摆与细节。每次抽到新款，打开后可以直接试穿，衣柜里也能改色和存搭配。
+- **收集和制作**：在花园采花，在小圆桌用草莓烤饼干，在书桌写情书。菜园和池塘的收成也可以在灶台做饭，或者作为礼物送给居民。
+- **种田**：到院子右侧菜地按 E 播种或照料。胡萝卜、草莓和南瓜分别需要 1、2、3 个浇过水的夜晚。草莓收过后，再浇水过一晚还能结果。一天没浇水，作物会等着你。种得多时可以一次浇完所有缺水的菜地。
+- **钓鱼**：面朝池塘按 E 选钓法。西侧芦苇边常见小鱼，东侧开阔水面更容易钓到金鳞鲤或月光鱼。白天找金鳞鲤，天黑再来找月光鱼。草莓鱼饵能缩短等待、延长收竿时间，也更容易钓到这两种鱼。看到「！」后趁进度条走完前收竿，鱼的首次钓获日期和最长尺寸会记进日记。
+- **月下同钓**：第一次送白夜月光鱼后，过两天晚上 19:00–23:30 到院子里。他会走过来邀请你去池塘。可以改天再去，鱼跑了也可以再抛一竿。一起钓到的第一条鱼会留下像素纪念卡，写着时间、鱼名和尺寸，白夜后来还可能在聊天时提起它。
 - **恋爱和攻略**：
   - 每天可以和每个人聊天（有问答）、互动（夸奖、开玩笑、撩一下、牵手、拥抱、亲亲）、送礼物、一起做事（散步、钓鱼、看书、运动、看星星），以及约会（池塘、花园、星空野餐、在家做饭）。
   - 每个人吃的那一套都不一样：喜欢的颜色、衣服、礼物、话题、活动和约会地点各不相同。穿上对方喜欢的风格再去聊天，好感涨得更多。
   - 试过的东西会记进日记的「攻略笔记」，用 😍😊🙂😐😣 表示对方的反应。
   - 好感进度：2♥ 解锁一起做事，4♥ 撩一下，6♥ 约会，7♥ 牵手，8♥ 告白（心情要在 40 以上），恋人 9♥ 亲亲，10♥ 邀请同居。
   - 有了恋人还去撩别人、约别人，被恋人看到会吃醋扣好感（见下面的「修罗场」）。
+- **生活回忆**：居民会记住共同经历，日记可以收藏像素纪念卡。见[玩法、测试与截图](#生活回忆玩法测试与截图)。
 - **宠物**：小路边的领养站可以领养小猫、小狗、小鸟、小兔（每种 3 种毛色，最多养 3 只），从候选名字里给它取名。宠物会跟着你走，也可以让它在原地等你。每天可以摸摸、喂它爱吃的东西、陪它玩；亲密度高了，早上会叼礼物回来。每位居民也有偏爱的小动物，带着对的宠物去聊天会额外加好感。
 - **同居生活**：小屋扩建了，右边多了厨房（冰箱、灶台、台面）和健身角，卧室换成了双人床。好感满 10♥ 邀请恋人搬进来后，TA 会按时间表过日子：早上 7 点和傍晚 5 点半做饭（做好的饭放在小圆桌上，去吃就能回饱腹和心情），上午扫地，下午在健身角锻炼。TA 干活时可以过去帮忙，平时可以依偎在一起；晚上 9 点以后可以「今晚一起睡」，画面淡出，第二天早上会有专属的晨间对白。你自己也可以用灶台做菜、在健身角运动，恋人在家会一起帮忙。
 - **金手指**：院子角落藏着一个闪闪发光的道具。用了以后，顾言、陆星野、江屿、白夜的好感度直接满格，当天还会全都跑来找你、跟着你转。捡到后可以马上用，也可以收进背包，之后在日记里点「使用」。
@@ -130,7 +135,9 @@ You live in a small cottage with a pond, a strawberry patch and a flower garden.
 
 - **Daily life**: time flows (1 real second = 2 game minutes) from morning to late night. Keep an eye on ⚡ energy (sleep in bed), 🍙 fullness (eat at the table) and 💗 mood. Stay up past 2 a.m. or run out of energy and you'll pass out.
 - **Dress-up**: 7 categories (skin, hair, tops, bottoms, shoes, headwear, extras), most in 12 colors. Turn the preview to see all four sides, roll a random outfit, and save up to 6 looks. Pick 3 flowers to unlock the flower wreath.
-- **Gathering and crafting**: pick flowers, harvest strawberries, bake cookies, write love letters at the desk, and fish at the pond (reel in the moment you see “!”; rare Star Stones bite more at night).
+- **Garden and pond**: plant, water, and harvest strawberries, carrots, and pumpkins. Fish the reed bank or the open water by day or night, optionally using a strawberry as bait. Reel in when “!” appears. The diary keeps your first catch date and best size for each species. Give your harvest away or try it at the stove.
+- **Dress capsules**: the machine beside the mailbox gives you a free first draw. Later draws cost two shells or three flowers. Collect four distinct gowns, try them on, and recolor them in the wardrobe.
+- **Fishing by moonlight**: give Bai Ye a moonfish. Starting two days later, he can come find you in the yard between 19:00 and 23:30. Your first catch together earns a dated keepsake with the species and size.
 - **Romance**:
   - Each day you can chat (with questions), interact (compliment, joke, flirt, hold hands, hug, kiss), give a gift, do an activity together (walk, fish, read, sport, stargaze) and go on a date (pond, garden, starlit picnic, cooking at home).
   - Everyone has their own taste in colors, clothes, gifts, topics, activities and date spots. Dress the way they like before you chat and affection grows faster.
@@ -201,7 +208,9 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 
 - **暮らし**：時間が流れます（現実の 1 秒 = ゲーム内 2 分）。⚡体力（ベッドで眠る）、🍙満腹（テーブルで食事）、💗気分の 3 つに気を配りましょう。深夜 2 時を過ぎるか体力が尽きると、その場で寝てしまいます。
 - **着せ替え**：7 カテゴリ（肌の色、髪型、トップス、ボトムス、くつ、帽子・髪飾り、小物）、ほとんどが 12 色。4 方向から確認でき、ランダムコーデや最大 6 着までのお気に入り保存も。花を 3 本摘むと花かんむりが解放されます。
-- **集める・作る**：花摘み、イチゴの収穫、クッキー作り、机でラブレターを書く、池で釣り（「！」が出たらすぐ竿を上げる。夜は珍しい星の石がかかりやすい）。
+- **畑と釣り**：イチゴ、ニンジン、カボチャを植え、水やりして収穫。昼夜で釣れる魚が変わり、イチゴをエサにもできる。「！」が出たら竿を上げよう。初めて釣れた日と最大サイズは日記に残る。収穫物や魚は料理や贈り物に使える。
+- **ドレスガチャ**：郵便受けのそばにあるガチャは初回無料。次からは貝殻2個か花3本で回せる。4着のドレスが重複せずに手に入り、試着や色替えもできる。
+- **月夜のふたり釣り**：白夜に月光魚を贈ると、2日後から19:00〜23:30に庭へ釣りに誘いに来ることがある。一緒に釣った最初の魚は、日付や魚の名前、大きさとともに記念カードに残る。
 - **恋愛**：
   - 毎日、おしゃべり（質問つき）、ふれあい（褒める、冗談、ドキッとさせる、手をつなぐ、ハグ、キス）、プレゼント、一緒に過ごす（散歩、釣り、読書、運動、星空観察）、デート（池、花壇、星空ピクニック、おうち料理）ができます。
   - 好きな色、服、プレゼント、話題、遊び、デート先は人それぞれ。相手好みの服で話しかけると好感度が上がりやすくなります。
@@ -267,6 +276,7 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 | Path | 内容 / What it is |
 |---|---|
 | `index.html` | 游戏本体：绘图、地图、角色、各种系统 / The whole game: drawing, map, characters, systems |
+| `cottage-activities.js` | 作物生长、钓获规则和鱼类记录 / Crop growth, fishing rules, and catch records |
 | `lang/zh.js` | 简体中文文本（源语言）/ Simplified Chinese text (source) |
 | `lang/en.js` | 英文文本 / English text |
 | `lang/ja.js` | 日文文本 / Japanese text |
@@ -284,3 +294,66 @@ All player-facing text lives in `lang/<code>.js`. To add a language, copy `lang/
 ```bash
 node tools/check-lang.js <code>
 ```
+
+## NPC 记忆系统与测试
+
+居民会记住玩家送礼、约会和表白的结果。记忆会调整后续聊天的好感收益。礼物和约会对象等信息保存在结构化字段中。
+
+记忆由确定性 JavaScript 规则生成，无需 LLM 或 API 密钥。客观事件与角色主观记忆分开存储，记忆引用来源事件 ID，并记录情绪、确信程度和获知方式。连续事件序号用于拒绝重复处理和检测序号缺口。
+
+每位 NPC 最多保留 32 条短期记忆、50 条长期记忆。重要程度由统一权重计算，同类重复经历可合并为长期印象。当前人生摘要选取最多 8 条长期记忆。记忆随现有 LocalStorage 存档保存，旧存档在产生新记忆时初始化相关数据。
+
+### 运行回归测试
+
+在项目根目录使用支持内置测试运行器的 Node.js（本次验证使用 Node.js 22）运行：
+
+```sh
+node --test tests/*.test.cjs
+```
+
+回归测试覆盖入口脚本语法、主观视角与信息隔离、事件去重与序号缺口、结构化记忆合并、短期容量和来源保留、确信程度、20 次 JSON 保存读回，以及该游戏的实际互动函数入口。测试调用实际代码，并模拟所需的渲染、计时器或其他外部依赖。
+
+### 当前边界
+
+- 这是基础记忆版本。Working Memory 继续使用既有角色运行状态，尚未实现完整的当前行动恢复。
+- 长期记忆超过 50 条时按重要程度和时间截断，人生摘要也有上限，尚不能保证所有重要人生经历永久保留。
+- 事件记录支持记忆来源追踪和去重，尚未实现世界状态的事件重放。
+- 已实现 LocalStorage 主档与上一有效快照回退。IndexedDB、多快照历史、完整存档版本迁移和导入导出尚未实现。
+- 回归测试验证了结构化记忆的 JSON 读写。浏览器刷新后恢复新版纪念卡的流程仍待验收。
+
+## 生活回忆玩法、测试与截图
+
+以下玩法以仓库代码为准。在线版由 GitHub Pages 的 `gh-pages` 分支部署。下载仓库后可打开 `index.html` 游玩，或打开带独立存档和测试面板的 `dev.html`。
+
+| 玩法 | 在游戏里怎么触发 |
+|---|---|
+| 初次约会 | 完成约会后，NPC 会保存第一次约会的地点和日期。以后每天第一次聊天时，有 40% 概率提起这次约会。 |
+| 礼物 | NPC 会记住礼物和自己的反应。聊天时有机会提到具体礼物，累计记忆也会影响聊天的好感收益。 |
+| 生日 | 日记标出每个 28 天周期的生日。当天可以在对话里祝福。已经认识且达到 3♥ 的居民会记得你有没有来祝福。 |
+| 病中探望 | 生病当天的对话菜单会出现「探望生病的居民」。已经认识且达到 3♥ 的居民会记得你有没有来探望。 |
+| 吃醋 | 现有恋人在附近撞见玩家撩别人、牵手或约会时，会扣 6 点好感并记住。这个机制目前以当场目击为触发条件。 |
+| 主动招呼 | 认识后的居民来访时段会在原时间前后浮动最多 45 个游戏分钟。居民在场且距离合适时，有机会主动走近打招呼。 |
+| 像素纪念卡 | 初次约会、生日祝福和病中探望会在日记留下带角色头像的卡片。每次完成约会还有 5% 概率解锁「难忘约会」。 |
+| 换装点评 | 居民有过一次穿搭记录后，下次见面会留意换装，按各自偏好点评。穿喜欢的搭配聊天还能提高好感收益。 |
+
+### 本次测试
+
+- 12 项 Node 回归通过，覆盖旧存档迁移、作物生长、鱼饵与钓获、礼裙扭蛋抽取、白夜邀约、纪念卡和 NPC 记忆。英语和日语语言包检查通过。
+- 使用固定随机值调用主分支的游戏函数，验证后续约会保留第一次约会地点、聊天能提起该地点、稀有卡可触发、近处恋人才会目击，以及换装后有点评。
+- 在 Chrome 在线测试版完成池塘约会，确认攻略笔记出现。主分支新版界面的浏览器测试尚未完成。
+
+### 玩法截图
+
+| 池塘约会 | 日记里的关系与攻略笔记 |
+|---|---|
+| ![池塘约会中与江屿的对话选项](docs/screenshots/romance.png) | ![日记里的居民好感、喜好和互动笔记](docs/screenshots/diary.png) |
+
+| 衣柜里的穿搭偏好 | 恋人目击后吃醋 |
+|---|---|
+| ![衣柜里带爱心标记的衣物与颜色](docs/screenshots/wardrobe.png) | ![陆星野撞见玩家和江屿互动后吃醋](docs/screenshots/jealous.png) |
+
+新版纪念卡和 NPC 回忆对白的截图待浏览器验收后补上。
+
+本次在线版实测：完成顾言的池塘约会后，日记出现「池塘约会」攻略笔记。
+
+![在线测试版的日记显示顾言的池塘约会攻略笔记](https://github.com/user-attachments/assets/f1397e92-d2ad-4212-b436-7d755aeee81f)
