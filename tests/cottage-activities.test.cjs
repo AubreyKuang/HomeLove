@@ -21,6 +21,57 @@ function runSection(runtime, start, end) {
   vm.runInContext(html.slice(from, to), runtime);
 }
 
+test('neighbor letters rotate among familiar residents and cannot be farmed on delivery day', () => {
+  const {activities} = game();
+  const relations = {gy: {met: true}, xm: {met: true}, xy: {met: false}};
+  const request = activities.nextRequest(1,null,relations);
+  assert.equal(request.resident,'gy');
+  request.status = 'accepted';
+  assert.equal(activities.nextRequest(2,request,relations),null);
+  const inventory = {cookie: 1, berry: 0, flower: 0};
+  assert.equal(activities.fulfillRequest(request,'xm',3,inventory,'cookie'),null);
+  assert.equal(activities.fulfillRequest(request,'gy',3,inventory,'berry'),null);
+  assert.equal(activities.fulfillRequest(request,'gy',3,inventory,'cookie'),'flower');
+  assert.equal(activities.fulfillRequest(request,'gy',3,inventory,'cookie'),null);
+  assert.deepEqual(inventory,{cookie: 0, berry: 0, flower: 2});
+  const saved = activities.loadRequest(JSON.parse(JSON.stringify(request)));
+  assert.equal(activities.nextRequest(3,saved,relations),null);
+  assert.equal(activities.nextRequest(4,saved,relations).resident,'xm');
+  assert.equal(activities.fulfillRequest({...request,status:'accepted'},'gy',4,inventory,'cookie'),null);
+  assert.equal(activities.loadRequest({day:1,resident:'unknown',status:'accepted'}),null);
+});
+
+test('mailbox and delivery handlers persist acceptance, first keepsake and memory', () => {
+  const n = {id:'gy'};
+  const state = {day:1,neighborRequest:null,rel:{gy:{met:true}},inv:{berry:2,cookie:0,flower:0}};
+  const life = {cards:{}}, memories = [];
+  let options, saved;
+  const runtime = game({
+    state,npcs:[n],D:{},ITEM_ICONS:{berry:'🍓',cookie:'🍪',flower:'🌼'},
+    tr:key=>key,itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,say(){},updateHud(){},
+    talk(_who,_lines,choices){options=choices;},
+    save(){saved=JSON.parse(JSON.stringify(state.neighborRequest));},
+    lifeOf:()=>life,rememberPlayer(...args){memories.push(args);},
+    addPts(_who,points){assert.equal(points,6);runtime.save();}
+  });
+  runSection(runtime,'function checkMail(','function petCat(');
+  assert.equal(runtime.hasNeighborMail(),true);
+  runtime.checkMail();
+  assert.equal(saved.status,'offered');
+  options[0].fn();
+  assert.equal(saved.status,'accepted');
+  const request=runtime.acceptedNeighborRequest(n);
+  assert.ok(request);
+  runtime.offerNeighborDelivery(n,request);
+  assert.equal(options[1].disabled,true);
+  options[0].fn();
+  assert.equal(saved.status,'delivered');
+  assert.equal(life.cards.neighborRequest,1);
+  assert.equal(memories[0][1],'neighborRequest');
+  assert.equal(state.inv.flower,2);
+  assert.equal(runtime.hasNeighborMail(),false);
+});
+
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {
   const {activities} = game();
   const fresh = activities.loadGarden();
