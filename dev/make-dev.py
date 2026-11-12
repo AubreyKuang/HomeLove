@@ -18,7 +18,7 @@ PANEL = r'''
   const dev={lock:false};
   const N=()=>state.need;
   const canPreview=()=>{
-    if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){
+    if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||mapOpen||FISH.on){
       notify('先回到游戏画面再预览');return false;
     }
     return true;

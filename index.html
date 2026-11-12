@@ -134,6 +134,14 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .sw{width:30px;height:30px;border:3px solid var(--line);border-radius:6px;padding:0}
 .sw.on{box-shadow:0 0 0 3px var(--sel),3px 3px 0 3px var(--shadow)}
 
+.village-panel{width:min(720px,100%)}
+.village-body{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px;align-items:start;padding:14px;overflow:auto}
+#villageOverview{width:100%;height:auto;image-rendering:pixelated;border:3px solid var(--line);border-radius:6px}
+#villageStops{display:grid;gap:6px}
+.village-stop{display:flex;align-items:center;gap:8px;text-align:left}
+.village-stop small{display:block;font-weight:500;color:var(--muted)}
+.village-dot{width:10px;height:10px;flex:0 0 10px;border:1px solid var(--line)}
+@media(max-width:520px){.village-body{grid-template-columns:1fr}.village-panel{height:auto;max-height:90vh}#villageOverview{max-height:34vh;object-fit:contain}}
 .diarypanel{width:min(860px,100%)}
 #btnAlbum{position:relative}
 #btnAlbum[data-new]::after{content:attr(data-new);position:absolute;top:-7px;right:-5px;padding:1px 4px;color:#fff9eb;background:#a55356;border:2px solid #fff1d5;font-size:10px;line-height:1.2;pointer-events:none}
@@ -240,6 +248,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
   <div class="chip" data-i18n-title="bagTitle">🎒<span class="n" id="cBag">0</span></div>
 </div>
 <div id="hudR">
+  <button class="pbtn" id="btnMap" type="button" data-i18n="villageMap"></button>
   <button class="pbtn primary" id="btnWardrobe" type="button" data-i18n="btnWardrobe"></button>
   <button class="pbtn" id="btnAlbum" type="button" data-i18n="btnAlbum"></button>
   <button class="pbtn" id="btnDiary" type="button" data-i18n="btnDiary"></button>
@@ -298,6 +307,16 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
   </div>
 </div>
 
+<div id="villageMap" class="overlay hidden" role="dialog" aria-modal="true" data-i18n-aria="villageMap">
+  <div class="dpanel px village-panel">
+    <div class="dhead"><h2 data-i18n="villageMap"></h2><button class="pbtn" id="villageClose" type="button" data-i18n="close"></button></div>
+    <div class="village-body">
+      <canvas id="villageOverview" width="192" height="136" aria-hidden="true"></canvas>
+      <div id="villageStops"></div>
+    </div>
+  </div>
+</div>
+
 <div id="diary" class="overlay hidden" role="dialog" aria-modal="true" data-i18n-aria="diary">
   <div class="dpanel px diarypanel">
     <div class="dhead">
@@ -344,15 +363,16 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js?v=snow-fishing-1"></script>
 <script src="resident-stories.js"></script>
-<script src="lang/zh.js?v=snow-fishing-1" charset="utf-8"></script>
-<script src="lang/en.js?v=snow-fishing-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=snow-fishing-1" charset="utf-8"></script>
+<script src="village-map.js"></script>
+<script src="lang/zh.js?v=village-1" charset="utf-8"></script>
+<script src="lang/en.js?v=village-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=village-1" charset="utf-8"></script>
 
 <script>
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const TILE = 16, MW = 28, MH = 20, TIME_RATE = 2; // 2 game minutes per real second
+const TILE = 16, MW = VillageMap.width, MH = VillageMap.height, TIME_RATE = 2; // 2 game minutes per real second
 
 /* ---------------- helpers ---------------- */
 function hexToRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
@@ -964,6 +984,7 @@ const SFX={
   page:t=>noise(t,0.18,{vol:0.05,freq:3200,type:'highpass'}),
   whoosh:t=>{noise(t,0.3,{vol:0.05,freq:900,q:0.7});noise(t+0.05,0.25,{vol:0.04,freq:2400,q:0.7});},
   click:t=>tone(2200,t,0.03,{type:'square',vol:0.03}),
+  villageSong:t=>[60,64,67,72,69,67,64].forEach((n,i)=>bell(mtof(n),t+i*.22,.12)),
   magic:t=>{[0,4,7,11,12,16,19,23,24,28].forEach((s,i)=>bell(mtof(72+s),t+i*0.06,0.07));noise(t,1.2,{vol:0.03,freq:6000,type:'highpass'});},
   start:t=>[72,79,84].forEach((m,i)=>bell(mtof(m),t+i*0.12,0.09)),
   cat:t=>{const o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();o.type='triangle';f.type='lowpass';f.frequency.value=1800;
@@ -1033,7 +1054,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
+  villageVisits:{},bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS='homelove-save-v1';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
@@ -1054,6 +1075,7 @@ function applySave(s){
   state.position=s.position;
   if(s.o&&typeof s.o==='object')Object.assign(state.o,s.o);
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
+  state.villageVisits=VillageMap.loadVisits(s.villageVisits,state.day);
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
   state.snowFishing=SnowFishing.load(s.snowFishing,state.day);
@@ -1099,7 +1121,7 @@ const anyCouple=()=>NPCS.some(n=>rel(n).couple);
 const bagCount=()=>Object.values(state.inv).reduce((a,b)=>a+b,0);
 
 /* ---------------- map ---------------- */
-const G=0,PATH=1,FLOOR=2,WALLF=3,WALL=4,DOOR=5,WATER=6,DIRT=7;
+const G=0,PATH=1,FLOOR=2,WALLF=3,WALL=4,DOOR=5,WATER=6,DIRT=7,STONE=8,BRIDGE=9,COURT=10,DECK=11;
 const map=new Uint8Array(MW*MH),solid=new Uint8Array(MW*MH);
 const at=(x,y)=>(x<0||y<0||x>=MW||y>=MH)?-1:map[y*MW+x];
 const setT=(x,y,t)=>{map[y*MW+x]=t;};
@@ -1108,6 +1130,7 @@ fillT(2,2,15,2,WALLF);fillT(2,2,1,8,WALL);fillT(16,2,1,8,WALL);fillT(11,2,1,8,WA
 fillT(6,10,1,10,PATH);fillT(6,12,10,1,PATH);
 for(let y=1;y<9;y++)for(let x=15;x<26;x++){const dx=(x+.5-21.5)/4.2,dy=(y+.5-4.5)/2.6;if(dx*dx+dy*dy<=1)setT(x,y,WATER);}
 fillT(17,13,6,2,DIRT);
+VillageMap.layout(fillT,{PATH,WATER,STONE,BRIDGE,COURT,DECK});
 for(let i=0;i<MW*MH;i++){const t=map[i];if(t===WALLF||t===WALL||t===WATER)solid[i]=1;}
 const block=(x,y)=>{solid[y*MW+x]=1;};
 
@@ -1115,7 +1138,10 @@ let trees=[];
 for(let x=0;x<MW;x++){trees.push([x,0]);trees.push([x,MH-1]);}
 for(let y=1;y<MH-1;y++){trees.push([0,y]);trees.push([MW-1,y]);}
 [[25,10],[3,15],[9,17],[12,15],[26,16],[21,18],[14,18]].forEach(t=>trees.push(t));
-trees=trees.filter(([x,y])=>!(x===6&&y===MH-1));
+for(let x=1;x<28;x++)trees.push([x,19]);
+for(let y=1;y<19;y++)trees.push([27,y]);
+trees.push(...VillageMap.plantings);
+trees=trees.filter(([x,y])=>!VillageMap.gates.some(([gx,gy])=>x===gx&&y===gy));
 trees.forEach(([x,y])=>block(x,y));
 const bushes=[[11,11],[13,10],[2,12],[26,2],[1,7],[16,18]];
 bushes.forEach(([x,y])=>block(x,y));
@@ -1125,6 +1151,11 @@ for(let y=11;y<=16;y++){if(y!==12)fenceSet.add('15,'+y);fenceSet.add('24,'+y);}
 const isF=(x,y)=>fenceSet.has(x+','+y);
 const fences=[...fenceSet].map(s=>s.split(',').map(Number));
 fences.forEach(([x,y])=>block(x,y));
+VillageMap.props.forEach(p=>{
+  for(let y=p.y;y<p.y+p.h;y++)for(let x=p.x;x<p.x+p.w;x++)block(x,y);
+});
+const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>p.id!=='lamp'&&p.id!=='hoop'&&p.id!=='fountain'&&
+  tx>=p.x&&tx<p.x+p.w&&ty>=p.y&&ty<p.y+p.h);
 const ICE_HOLES=[[19,6],[23,6]];
 const isIceHole=(x,y)=>ICE_HOLES.some(([tx,ty])=>tx===x&&ty===y);
 const plotIndex=(tx,ty)=>(tx>=17&&tx<=22&&ty>=13&&ty<=14)?(ty-13)*6+(tx-17):-1;
@@ -1306,6 +1337,8 @@ function paintGround(season){
     }
     if(t===DIRT){
       R(px,py+1,16,14,winter?'#c0b8b0':'#a57449');for(let r=0;r<14;r+=4)R(px,py+1+r+3,16,1,winter?'#a8a4a5':'#8a5d39');
+    } else if(t>=STONE){
+      VillageMap.tile(g,px,py,['stone','bridge','court','deck'][t-STONE],winter);
     } else if(t===PATH){
       R(px,py,16,16,winter?'#d9dee1':'#e2cb9f');
       for(let i=0;i<4;i++){const a=rnd()*13|0,b=rnd()*14|0;R(px+a,py+b,3,2,winter?'#cbd4da':'#d0b383');R(px+a,py+b,2,1,winter?'#eef3f1':'#ecdcb8');}
@@ -1347,6 +1380,7 @@ function paintGround(season){
       if(rnd()<.18&&at(x,y-1)===WATER&&at(x,y+1)===WATER){R(px+5,py+6,6,4,'#5aa64a');R(px+6,py+6,4,1,'#76c262');R(px+8,py+8,3,2,'#5db6de');}
     }
   }
+  VillageMap.courtLines(g);
   R(13*16+1,7*16+2,3*16-2,2*16-4,'#3f7a6e');R(13*16+2,7*16+3,3*16-4,2*16-6,'#6fae9e');for(let i=0;i<5;i++)R(13*16+4,7*16+6+i*5,3*16-8,1,'#86c2b2');
   R(84,100,56,40,'#b54c48');R(86,102,52,36,'#f2c46b');R(88,104,48,32,'#e0786a');
   for(let i=0;i<5;i++){const cx=94+i*9;R(cx,118,3,3,'#f2c46b');R(cx+1,117,1,5,'#f2c46b');R(cx-1,119,5,1,'#f2c46b');}
@@ -1377,7 +1411,7 @@ const P={x:4*16+8,y:6*16+10,dir:'down',moving:false,anim:0};
 let walkRoute=[];
 playerReady=true;
 if(state.position&&Number.isFinite(state.position.x)&&Number.isFinite(state.position.y)){
-  Object.assign(P,state.position);
+  if(!blocked(state.position.x,state.position.y))Object.assign(P,state.position);
 }
 window.addEventListener('pagehide',save);
 
@@ -1468,19 +1502,27 @@ function visitWindow(n){
 }
 const present=n=>{
   if(xiaomanRoute(n)&&!XiaomanStory.visits(state.xiaoman,state.day))return false;
-  return rel(n).livesIn||summoned(n)||calling(n)||fishingInvitationReady(n)||(state.time>=visitWindow(n).start&&state.time<visitWindow(n).end);
+  return rel(n).livesIn||summoned(n)||calling(n)||fishingInvitationReady(n)||inCottageWindow(n)||!!villageDuty(n);
 };
+const inCottageWindow=n=>{
+  const {start,end}=visitWindow(n);
+  return state.time>=start&&state.time<end;
+};
+function villageDuty(n){
+  if(rel(n).livesIn||summoned(n)||calling(n)||fishingInvitationReady(n)||inCottageWindow(n))return null;
+  return VillageMap.duty(n.id,state.time);
+}
 // An unannounced visit: the resident shows up at any hour and comes looking for you, even indoors.
 const calling=n=>CottageBonds.calling(state.bonds,n.id,state.day,state.time);
 function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||calling(n)||t===FLOOR||t===DOOR);}
-function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)||calling(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn)return n.spots;const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
+function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)||calling(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn){const duty=villageDuty(n);return duty?[duty.anchor]:n.spots;}const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
 function placeHome(n){const s=pick(HOME_IN);n.x=s[0]*16+8;n.y=s[1]*16+12;n.state='here';n.path=null;n.idle=10;n.leaving=false;}
 function updNpc(n,dt){
   const r=rel(n);
   if(FISH.on&&(FISH.companion===n||FISH.snow&&n.id==='xy'))return;
   if(snowDining&&(n.id==='xy'||n.id==='gy'))return;
-  const invitation=fishingInvitationReady(n);
-  if(n.state==='here'&&!n.leaving&&!n.working&&r.met&&!D.modal&&!busy&&!startOpen&&!dressOpen&&!diaryOpen&&!albumOpen&&!FISH.on){
+  const invitation=fishingInvitationReady(n),duty=villageDuty(n);
+  if(n.state==='here'&&!n.leaving&&!n.working&&r.met&&!D.modal&&!busy&&!startOpen&&!dressOpen&&!diaryOpen&&!albumOpen&&!mapOpen&&!FISH.on){
     if(invitation&&seekFishingInvitation(n))return;
     const distance=Math.hypot(n.x-P.x,n.y-P.y);
     const scene=xiaomanScene(n);
@@ -1498,21 +1540,27 @@ function updNpc(n,dt){
       n.seekingPlayer=false;r.done.visit=true;n.path=null;n.idle=12;
       const line=outfitScore(n)>=4?nt(n).outfitHi:nt(n).greet[Math.min(2,Math.floor(hearts(r)/3))];
       say(nm(n),line);save();
-    }else if(!invitation&&!r.done.visit&&!n.path&&distance<115&&distance>=43&&Math.random()<dt*.08){
+    }else if(!duty&&!invitation&&!r.done.visit&&!n.path&&distance<115&&distance>=43&&Math.random()<dt*.08){
       const spot=nearPlayerTiles().sort((a,b)=>Math.hypot(a[0]*16+8-P.x,a[1]*16+12-P.y)-Math.hypot(b[0]*16+8-P.x,b[1]*16+12-P.y))[0];
       if(spot){npcGo(n,spot[0],spot[1]);n.seekingPlayer=!!n.path?.length;}
     }
   }
   if(n.state==='away'){
     if(r.livesIn){placeHome(n);return;}
-    if(present(n)&&(invitation||summoned(n)||calling(n)||state.time<visitWindow(n).end-40)){
-      n.x=6*16+8;n.y=19*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;
+    if(present(n)&&(duty||invitation||summoned(n)||calling(n)||state.time<visitWindow(n).end-40)){
+      const [x,y]=duty?.anchor??VillageMap.gates[0];
+      n.x=x*16+8;n.y=y*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;n.lastVillageDuty=duty;
       const drop=state.bonds.dropIn;
       if(calling(n)&&!drop.arrived){drop.arrived=true;sfx('ding');notify(tr('dropInArrive',{n:nm(n)}));}
     }
     return;
   }
   if((D.modal||busy)&&D.npc===n){n.moving=false;n.anim=0;return;}
+  if(duty!==n.lastVillageDuty&&present(n)){
+    n.lastVillageDuty=duty;n.leaving=false;n.path=null;n.idle=0;
+    if(duty)npcGo(n,...duty.anchor);
+    else if(!invitation&&!summoned(n)&&!calling(n)&&!r.livesIn)npcGo(n,...pick(n.spots));
+  }
   if(!present(n)&&!n.leaving){n.leaving=true;npcGo(n,6,19);if(!n.path){n.state='away';n.x=n.y=-100;return;}}
   if(n.path&&n.path.length){
     const [tx,ty]=n.path[0],gx=tx*16+8,gy=ty*16+12,dx=gx-n.x,dy=gy-n.y,d=Math.hypot(dx,dy),sp=38*dt;
@@ -1830,6 +1878,7 @@ const toastEl=$('#toast');let toastTimer=0;
 function notify(txt){if(!txt)return;toastEl.textContent=txt;toastEl.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.add('hidden'),2600);}
 
 /* ---------------- life sim ---------------- */
+let mapOpen=false;
 let busy=false,dressOpen=false,diaryOpen=false,albumOpen=false,startOpen=true,target=null;
 const fadeEl=$('#fade');
 function busyFade(mid,end){busy=true;fadeEl.style.opacity='1';setTimeout(()=>{mid&&mid();fadeEl.style.opacity='0';setTimeout(()=>{busy=false;end&&end();},450);},650);}
@@ -2662,6 +2711,10 @@ function npcMenu(n,back){
   if(!story&&h>=8&&!r.couple&&!anyCouple())opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
+  const duty=villageDuty(n);
+  if(duty&&Math.hypot(n.x-duty.anchor[0]*16-8,n.y-duty.anchor[1]*16-12)<52){
+    opts.unshift(villageActivityOption(duty.id,n));
+  }
   if(n.id==='xy'&&state.snowFishing.invited&&CottageActivities.seasonOf(state.day)==='winter')
     opts.unshift({label:tr('worldTitle_snowRace'),fn:()=>openSnowFishing()});
   if(fishingInvitationReady(n))opts.unshift({label:tr('sharedFishingTalk'),fn:()=>offerFishingInvitation(n)});
@@ -2993,6 +3046,90 @@ function resolveWorldEvent(n,kind,choice,plotIndex){
 }
 
 /* ---------------- interaction ---------------- */
+/* ---------------- village activities ---------------- */
+function villageInteraction(id){
+  const trades=VillageMap.exchanges[id];
+  if(trades){
+    const opts=VillageMap.marketOpen(state.time)?trades.map(offer=>({
+      label:tr('villageTrade',{take:itemLabel(offer.take),count:offer.count,give:itemLabel(offer.give),amount:offer.amount}),
+      disabled:state.inv[offer.take]<offer.count,fn:()=>tradeAtVillage(id,offer)
+    })):[];
+      talk(tr('village_'+id),[tr(opts.length?'villageMarketOffer':'villageMarketClosed')],opts.concat({label:tr('walkAway'),fn:null}));
+    return;
+  }
+  if(id==='guide'){openVillageMap();return;}
+  const n=npcs.find(person=>person.id===VillageMap.places[id].resident);
+  const here=villageDuty(n)?.id===id&&n.state==='here'&&Math.hypot(n.x-P.x,n.y-P.y)<100;
+  const opts=[];
+  if(here)opts.push({label:tr('talkTo',{n:nm(n)}),fn:()=>npcMenu(n)});
+  opts.push(villageActivityOption(id,here?n:null),{label:tr('walkAway'),fn:null});
+  talk(tr('village_'+id),[tr('villageIntro_'+id)],opts);
+}
+function tradeAtVillage(id,offer){
+  if(!VillageMap.marketOpen(state.time)||!VillageMap.trade(state.inv,offer))return;
+  if(!save()){
+    state.inv[offer.take]+=offer.count;
+    state.inv[offer.give]-=offer.amount;
+    talk(tr('village_'+id),[tr('villageTradeFailed')]);return;
+  }
+  sfx('pickup');updateHud();villageInteraction(id);
+}
+function villageActivityOption(id,n){
+  const played=state.villageVisits[id]===state.day;
+  const disabled=played||(id==='cafe'&&(!VillageMap.marketOpen(state.time)||state.inv.shell<1))||
+    (id==='court'&&state.need.energy<10);
+  return {label:tr(played?'villageDone':'villageAction_'+id),disabled,fn:()=>doVillageActivity(id,n)};
+}
+function doVillageActivity(id,n){
+  if(villageActivityOption(id,n).disabled)return;
+  const N=state.need;
+  if(id==='cafe'){state.inv.shell--;N.hunger=clampN(N.hunger+18);}
+  if(id==='court'){advanceTime(20);N.energy=clampN(N.energy-8);}
+  N.mood=clampN(N.mood+(n?9:5));
+  state.villageVisits[id]=state.day;
+  if(n){D.npc=n;addPts(n,4);}else save();
+  updateHud();sfx(id==='stage'?'villageSong':'ding');
+  talk(n?nm(n):tr('village_'+id),[tr((n?'villageTogether_':'villageResult_')+id)]);
+}
+function closeVillageMap(){
+  mapOpen=false;$('#villageMap').classList.add('hidden');cv.focus({preventScroll:true});
+}
+function openVillageMap(){
+  if(mapOpen||startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on)return;
+  mapOpen=true;walkRoute=[];keys.clear();touchKeys.clear();
+  const mapEl=$('#villageMap'),box=$('#villageStops');
+  const art=SEASON_ART[CottageActivities.seasonOf(state.day)];
+  const mapCanvas=$('#villageOverview'),g=mapCanvas.getContext('2d');
+  g.imageSmoothingEnabled=false;g.drawImage(art.ground,0,0,mapCanvas.width,mapCanvas.height);
+  for(const prop of VillageMap.props){
+    g.fillStyle='#785b55';g.fillRect(prop.x*4,prop.y*4,prop.w*4,prop.h*4);
+  }
+  box.replaceChildren();
+  for(const [id,place] of Object.entries(VillageMap.places)){
+    const [x,y]=place.tile;
+    g.fillStyle='#6b4e4e';g.fillRect(x*4-1,y*4-1,6,6);
+    g.fillStyle=place.color;g.fillRect(x*4,y*4,4,4);
+    const button=el('button','pbtn village-stop');button.type='button';
+    const dot=el('span','village-dot');dot.style.background=place.color;
+    const words=el('span',null,tr('village_'+id));
+    const n=place.resident&&npcs.find(person=>person.id===place.resident);
+    if(n)words.append(el('small',null,nm(n)+' · '+fmt(place.hours[0])+'–'+fmt(place.hours[1])));
+    if(id==='market')words.append(el('small',null,'09:00–18:00'));
+    button.append(dot,words);
+    button.onclick=()=>{
+      closeVillageMap();
+      if(!setWalkDestination(place.anchor[0]*16+8,place.anchor[1]*16+10))notify(tr('villageNoRoute'));
+    };
+    box.append(button);
+  }
+  g.fillStyle='#fff4db';g.fillRect(Math.floor(P.x/4)-2,Math.floor((P.y-2)/4)-2,5,5);
+  g.fillStyle='#914557';g.fillRect(Math.floor(P.x/4)-1,Math.floor((P.y-2)/4)-1,3,3);
+  mapEl.classList.remove('hidden');$('#villageClose').focus();
+}
+$('#btnMap').addEventListener('click',openVillageMap);
+$('#villageClose').addEventListener('click',closeVillageMap);
+$('#villageMap').addEventListener('click',e=>{if(e.target.id==='villageMap')closeVillageMap();});
+
 function findTarget(){
   const visitor=visitorTarget();
   if(visitor)return visitor;
@@ -3009,14 +3146,16 @@ function findTarget(){
   const o=objAt(tx,ty);
   if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&unreadAlbumPostcard()?tr('albumMailPrompt'):o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
     x:(o.tx+o.tw/2)*16,y:o.py-5};
+  const prop=villagePropAt(tx,ty);
+  if(prop)return {kind:'village',id:prop.id,verb:tr('village_'+prop.id),x:(prop.x+prop.w/2)*16,y:prop.y*16-9};
   const wx=Math.floor((P.x+d[0]*16)/16),wy=Math.floor((P.y-3+d[1]*16)/16);
-  if(at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:winter?tr(isIceHole(wx,wy)?'iceAction':'iceLook'):tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
+  if(wx<28&&wy<10&&at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:winter?tr(isIceHole(wx,wy)?'iceAction':'iceLook'):tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
   return null;
 }
 function interact(){
   if(D.modal){advance();return;}
   if(FISH.on){reel();return;}
-  if(busy||dressOpen||diaryOpen||albumOpen||startOpen)return;
+  if(busy||dressOpen||diaryOpen||albumOpen||mapOpen||startOpen)return;
   const t=findTarget();if(!t)return;
   walkRoute=[];
   D.npc=null;
@@ -3028,6 +3167,7 @@ function interact(){
   else if(t.kind==='flower')pickFlower(t.f);
   else if(t.kind==='plot')tendPlot(t.i);
   else if(t.kind==='fish')fishMenu(t.tx,t.ty);
+  else if(t.kind==='village')villageInteraction(t.id);
   else t.o.act();
 }
 
@@ -3045,7 +3185,7 @@ function updateHud(){
 }
 const promptEl=$('#prompt');let promptText='';
 function updatePrompt(){
-  const txt=(!target||busy||dressOpen||diaryOpen||albumOpen||startOpen||D.modal||FISH.on)?'':target.verb;
+  const txt=(!target||busy||dressOpen||diaryOpen||albumOpen||mapOpen||startOpen||D.modal||FISH.on)?'':target.verb;
   if(txt===promptText)return;promptText=txt;
   if(!txt){promptEl.classList.add('hidden');return;}
   promptEl.innerHTML='';const k=document.createElement('kbd');k.textContent=actKey();promptEl.append(k,document.createTextNode(txt));promptEl.classList.remove('hidden');
@@ -3074,6 +3214,7 @@ const keys=new Set(),touchKeys=new Set();
 const has=(...ks)=>ks.some(k=>keys.has(k)||touchKeys.has(k));
 addEventListener('keydown',e=>{
   if(startOpen){if(e.code==='Enter'&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('.langpick'))){e.preventDefault();begin();}return;}
+  if(mapOpen){if(e.code==='Escape'||e.code==='KeyG'){e.preventDefault();closeVillageMap();}return;}
   if(dressOpen){if(e.code==='Escape'||e.code==='KeyC'){e.preventDefault();closeDress();}else if(e.code==='KeyQ')rot(-1);else if(e.code==='KeyR')rot(1);return;}
   if(albumOpen){if(e.code==='Escape'||e.code==='KeyB'){e.preventDefault();closeAlbum();}return;}
   if(diaryOpen){if(e.code==='Escape'||e.code==='KeyJ'){e.preventDefault();closeDiary();}return;}
@@ -3098,13 +3239,13 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   if(e.code==='Escape'||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code))walkRoute=[];
   keys.add(e.code);
-  if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);}
+  if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);if(e.code==='KeyG')openVillageMap();}
 });
 addEventListener('keyup',e=>keys.delete(e.code));
 addEventListener('blur',()=>{keys.clear();touchKeys.clear();});
 document.querySelectorAll('#pad button').forEach(b=>{
   const k=b.dataset.k;
-  const on=e=>{e.preventDefault();if(D.modal||FISH.on)return;touchKeys.add(k);b.classList.add('on');try{b.setPointerCapture(e.pointerId);}catch(_){}};
+  const on=e=>{e.preventDefault();if(D.modal||FISH.on||mapOpen)return;touchKeys.add(k);b.classList.add('on');try{b.setPointerCapture(e.pointerId);}catch(_){}};
   const off=()=>{touchKeys.delete(k);b.classList.remove('on');};
   b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('lostpointercapture',off);
 });
@@ -3116,7 +3257,7 @@ $('#btnLang').addEventListener('click',()=>{cycleLang();cv.focus({preventScroll:
 $('#btnSound').addEventListener('click',()=>{setSound(!sndOn);cv.focus({preventScroll:true});});
 $('#btnSound').textContent=sndOn?'🔊':'🔇';
 let startLabel=state.seen?'resume':'start';
-$('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on)return;startOpen=true;startLabel='continue';$('#btnStart').textContent=tr(startLabel);$('#start').classList.remove('hidden');$('#btnStart').focus();});
+$('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOpen||albumOpen||mapOpen||FISH.on)return;startOpen=true;startLabel='continue';$('#btnStart').textContent=tr(startLabel);$('#start').classList.remove('hidden');$('#btnStart').focus();});
 {const box=$('#langPick');LANG_ORDER.forEach(c=>{const b=el('button','pbtn',PACKS[c].meta.label);b.type='button';b.dataset.lang=c;b.lang=PACKS[c].meta.htmlLang;b.onclick=()=>setLang(c);box.append(b);});}
 let helloShown=false;
 function begin(){audioInit();if(AC&&sndOn)AC.resume().then(()=>sfx('start')).catch(()=>{});startOpen=false;state.seen=true;save();$('#start').classList.add('hidden');cv.focus({preventScroll:true});
@@ -3194,7 +3335,7 @@ function rewardNewLook(){
   state.need.mood=clampN(state.need.mood+8);
   updateHud();notify(tr('newLook'));
 }
-function openDress(){if(dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('whoosh');dressOpen=true;dressStartKey=outfitKey(state.o);keys.clear();touchKeys.clear();$('#dress').classList.remove('hidden');renderPicker();renderLooks();drawPreview();$('#dClose').focus();}
+function openDress(){if(mapOpen||dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('whoosh');dressOpen=true;dressStartKey=outfitKey(state.o);keys.clear();touchKeys.clear();$('#dress').classList.remove('hidden');renderPicker();renderLooks();drawPreview();$('#dClose').focus();}
 function closeDress(){
   sfx('whoosh');dressOpen=false;$('#dress').classList.add('hidden');cv.focus({preventScroll:true});
   if(outfitKey(state.o)!==dressStartKey){rewardNewLook();save();}
@@ -3333,7 +3474,7 @@ function renderDiary(){
   b.append(s1,s4,s2,pondLog,s3);
   renderRewind(b);
 }
-function openDiary(){if(dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
+function openDiary(){if(mapOpen||dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
 function closeDiary(){sfx('page');diaryOpen=false;$('#diary').classList.add('hidden');cv.focus({preventScroll:true});}
 $('#diaryClose').addEventListener('click',closeDiary);
 $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();});
@@ -3488,7 +3629,7 @@ function markAlbumTabSeen(cards){
   updateAlbumBadge();
 }
 function openAlbum(tab){
-  if(albumOpen||dressOpen||diaryOpen||startOpen||busy||D.modal||FISH.on)return;
+  if(mapOpen||albumOpen||dressOpen||diaryOpen||startOpen||busy||D.modal||FISH.on)return;
   const cards=albumCards();
   const unread=cards.filter(card=>!state.album.seen.includes(card.key));
   albumTab=tab??(unread[0]?.kind==='postcard'?'postcards':'events');
@@ -3520,7 +3661,7 @@ function cameraOrigin(){
   return [Math.round(x*scale)/scale,Math.round(y*scale)/scale];
 }
 cv.addEventListener('click',e=>{
-  if(e.button!==0||startOpen||dressOpen||diaryOpen||albumOpen||D.modal||busy||FISH.on)return;
+  if(e.button!==0||startOpen||dressOpen||diaryOpen||albumOpen||mapOpen||D.modal||busy||FISH.on)return;
   const bounds=cv.getBoundingClientRect();
   if(!bounds.width||!bounds.height)return;
   const [cx,cy]=cameraOrigin();
@@ -3543,6 +3684,24 @@ function drawWindows(g,night){
 }
 function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);}
 function drawPerson(g,o,dir,fr,px,py){const x=Math.round(px),y=Math.round(py);g.fillStyle='rgba(40,30,30,.22)';g.fillRect(x-5,y-1,10,2);g.fillRect(x-4,y+1,8,1);blitChar(g,o,dir,fr,x-10,y-25);}
+function drawVillageWork(g,n,time){
+  const duty=villageDuty(n);
+  if(!duty||n.moving||Math.hypot(n.x-duty.anchor[0]*16-8,n.y-duty.anchor[1]*16-12)>18)return;
+  const x=Math.round(n.x),y=Math.round(n.y),t=reducedMotion?0:time;
+  const rect=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
+  if(duty.id==='cafe'){
+    rect(5,-12,4,4,'#f4dbb5');rect(9,-11,1,2,'#f4dbb5');
+    rect(6,-14-(Math.floor(t*2)%2),1,2,'#e1d8c8');
+  }else if(duty.id==='court'){
+    const bounce=Math.round(Math.abs(Math.sin(t*4))*10);
+    rect(7,-3-bounce,4,4,'#ae6848');rect(8,-3-bounce,2,1,'#f2b276');
+  }else if(duty.id==='stage'){
+    rect(-7,-12,5,4,'#ba8459');rect(-3,-13,6,2,'#d6a579');
+    const note=Math.floor(t*2)%6;rect(8,-20-note,3,2,'#e7c5e7');rect(10,-24-note,1,5,'#e7c5e7');
+  }else{
+    rect(6,-11,5,4,'#f2dfbd');rect(7,-10,3,1,'#8da5bc');
+  }
+}
 function drawTunnel(g,x,y,winter){
   const r=(a,b,w,h,color)=>{g.fillStyle=color;g.fillRect(x+a,y+b,w,h);};
   r(0,7,16,8,'rgba(150,220,211,.26)');
@@ -3555,7 +3714,7 @@ function drawTunnel(g,x,y,winter){
 const reducedMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
 function drawSeasonParticles(g,time,winter){
   const t=reducedMotion?0:time;
-  for(let i=0;i<(winter?68:18);i++){
+  for(let i=0;i<(winter?154:43);i++){
     const x=(hash2(i,7)*MW*TILE+t*(winter?4:11))%(MW*TILE)|0;
     const y=(hash2(i,13)*MH*TILE+t*(7+hash2(i,31)*7))%(MH*TILE)|0;
     const tile=at(x>>4,y>>4);
@@ -3610,6 +3769,11 @@ function render(time){
     ctx.fillStyle='#2a1e24';ctx.fillRect(bx-2,by-2,5,5);ctx.fillStyle='#ffffff';ctx.fillRect(bx-1,by-1,3,1);ctx.fillStyle='#e8384f';ctx.fillRect(bx-1,by,3,2);
     if(FISH.phase==='bite'){ctx.fillStyle='#e2f6fc';ctx.fillRect(bx-5,by+3,3,1);ctx.fillRect(bx+3,by+3,3,1);}}
   const ents=[];
+  for(const prop of VillageMap.props){
+    const x=prop.x*16,y=(prop.y+prop.h)*16;
+    if(x+prop.w*16>cx&&x<cx+vw&&y>cy&&y-50<cy+vh)
+      ents.push({key:y-1,draw:g=>VillageMap.paintProp(g,prop,winter,dark>.5,time)});
+  }
   for(const s of statics)if(s.x+s.w>cx&&s.x<cx+vw&&s.y+s.h>cy&&s.y<cy+vh)ents.push(s);
   ents.push({key:P.y,draw:g=>{
     drawPerson(g,state.o,P.dir,P.moving?WALK[Math.floor(P.anim*7)%4]:0,P.x,P.y);
@@ -3620,7 +3784,7 @@ function render(time){
       g.fillStyle='#ffcf67';g.fillRect(x+1,y+1,Math.ceil(16*FISH.t/FISH.window),2);
     }
   }});
-  for(const n of npcs){if(n.state==='away')continue;ents.push({key:n.y,draw:g=>{drawPerson(g,n.outfit,n.dir,n.moving?WALK[Math.floor(n.anim*6)%4]:0,n.x,personY(n,time));drawChoreProps(g,n,time);
+  for(const n of npcs){if(n.state==='away')continue;ents.push({key:n.y,draw:g=>{drawPerson(g,n.outfit,n.dir,n.moving?WALK[Math.floor(n.anim*6)%4]:0,n.x,personY(n,time));drawChoreProps(g,n,time);drawVillageWork(g,n,time);
     const r=rel(n);if(r.couple)drawHeart(g,n.x,n.y-33+(Math.sin(time*3)>0?-1:0),0.95);else if(!r.met)drawBang(g,n.x,n.y-36+(Math.sin(time*4)>0?-1:0));}});}
   for(const p of state.pets)ents.push({key:p.y,draw:g=>drawPet(g,p,time)});
   if(!state.goldFound){const gx=GOLD_TILE[0]*16+8,gy=GOLD_TILE[1]*16+12;ents.push({key:gy,draw:g=>{const b=Math.sin(time*3)>0?-1:0;g.fillStyle='rgba(40,30,30,.18)';g.fillRect(gx-4,gy-1,8,2);g.drawImage(SPR.gold,gx-6,gy-15+b);
@@ -3640,12 +3804,16 @@ function render(time){
   }
   drawPuffs(ctx);
   for(const p of parts)drawHeart(ctx,p.x,p.y-p.t*14,Math.max(0,1-p.t/1.2));
-  if(target&&!busy&&!dressOpen&&!diaryOpen&&!albumOpen&&!startOpen&&!D.modal&&!FISH.on)drawArrow(ctx,target.x,target.y+(Math.sin(time*6)>0?-1:0));
+  if(target&&!busy&&!dressOpen&&!diaryOpen&&!albumOpen&&!mapOpen&&!startOpen&&!D.modal&&!FISH.on)drawArrow(ctx,target.x,target.y+(Math.sin(time*6)>0?-1:0));
   if(dark>0){
     const h=state.time/60,dusk=h>=17&&h<20;
     ctx.fillStyle=dusk?`rgba(${Math.round(60-40*dark)},${Math.round(30-8*dark)},60,${(0.52*dark).toFixed(3)})`:`rgba(20,22,62,${(0.52*dark).toFixed(3)})`;
     ctx.fillRect(cx,cy,vw,vh);
     ctx.globalCompositeOperation='lighter';
+    for(const lamp of VillageMap.props)if(lamp.id==='lamp'){
+      const x=lamp.x*16+8,y=lamp.y*16-5;
+      if(x>cx-25&&x<cx+vw+25&&y>cy-25&&y<cy+vh+25)glow(ctx,x,y,28,'rgba(255,204,128,.26)');
+    }
     if(state.lamp){glow(ctx,LAMP_POS[0],LAMP_POS[1]-8,72,`rgba(255,190,100,${(0.3*dark).toFixed(3)})`);glow(ctx,LAMP_POS[0],LAMP_POS[1]-14,16,`rgba(255,220,140,${(0.35*dark).toFixed(3)})`);}
     if(dark>0.5){glow(ctx,6*16+8,2*16+9,14,'rgba(150,170,255,0.15)');glow(ctx,9*16+8,2*16+9,14,'rgba(150,170,255,0.15)');glow(ctx,14*16+8,2*16+9,14,'rgba(150,170,255,0.15)');
       state.garden.forEach((plot,i)=>{
@@ -3666,7 +3834,7 @@ function render(time){
 /* ---------------- loop ---------------- */
 let hudT=0,saveT=0,stepT=0,bondsT=0;
 function update(dt){
-  const paused=startOpen||dressOpen||diaryOpen||albumOpen||D.modal||busy;
+  const paused=startOpen||dressOpen||diaryOpen||albumOpen||mapOpen||D.modal||busy;
   let dx=0,dy=0;
   if(paused||FISH.on)walkRoute=[];
   if(!paused&&!FISH.on){
