@@ -480,3 +480,89 @@ Object.assign(window.HL_LANG.zh.npcs.xm, {"cook": "我在烤小饼干！一会�
 Object.assign(window.HL_LANG.zh.npcs.xy, {"cook": "我在做超大份的蛋炒饭！保证你吃饱！", "sweep": "拖地也是一种训练！看我的速度！", "gym": "九十八、九十九、一百！你要不要也来几组？", "cuddle": "星野一把把你圈进怀里：「充电中，请勿打扰！」", "night": "星野挠了挠头，耳朵通红：「那个……今晚我能不能……一直抱着你睡？」", "morningAfter": "星野已经晨跑回来了，头发还湿着：「早！我买了你最爱吃的早餐！」"});
 Object.assign(window.HL_LANG.zh.npcs.jy, {"cook": "在煮面。别指望太多，但能吃。", "sweep": "……吸尘器声音太大，我顺便录了段采样。", "gym": "做几个俯卧撑，弹琴也要手臂有劲。", "cuddle": "江屿靠着你，随手拨着吉他，弹的是只为你写的那首歌。", "night": "江屿把吉他放到一边：「今晚不弹了。……过来。」", "morningAfter": "江屿还没睡醒，迷迷糊糊地把你往怀里带：「再睡五分钟。」"});
 Object.assign(window.HL_LANG.zh.npcs.by, {"cook": "……别看，我在学做饭。焦了的那块是我的。", "sweep": "我把颜料收拾好了。地板也擦了，虽然是被你念叨的。", "gym": "画画也要体力。……别一直盯着我看。", "cuddle": "白夜把你裹进围巾里，一句话也没说，但抱得很紧。", "night": "白夜关掉了画室的灯：「今晚的星星，不看也罢。」", "morningAfter": "白夜难得早起，正对着你的睡脸画速写：「……别动，还没画完。」"});
+
+// Garden and pond
+Object.assign(window.HL_LANG.zh.ui, {
+  "plantCrop": "播种",
+  "harvestCrop": "收获{crop}",
+  "tendCrop": "照料{crop}",
+  "plantTip": "选一种种子。种子随手可取，浇水后睡一晚，作物才会长大。",
+  "plantOption": "种{crop}（需浇水 {days} 晚）",
+  "cropPlanted": "种下了{crop}，记得浇水。",
+  "cropWet": "{crop}今天浇过水了，离成熟还需 {days} 个浇水的夜晚（含今晚）。",
+  "cropDry": "{crop}需要浇水，离成熟还有 {days} 个浇水的夜晚。",
+  "cropPicked": "收下了{crop}（背包里共 {count} 个）。",
+  "waterPlot": "浇这块地",
+  "waterGarden": "浇完所有缺水的菜地（{count} 块）",
+  "wateredPlots": "给 {count} 块地浇了水。",
+  "clearPlot": "拔掉作物",
+  "clearPlotAsk": "要拔掉这株{crop}，腾出菜地吗？",
+  "reeds": "芦苇边",
+  "openWater": "开阔水面",
+  "fishAt": "去{spot}钓鱼",
+  "reedsHint": "池塘西边，芦苇下常有小鱼。",
+  "openWaterHint": "池塘东边，水面宽，大鱼更常来。",
+  "pondDayHint": "白天能遇见金鳞鲤。",
+  "pondNightHint": "夜里能遇见月光鱼，也更容易钓到星星石。",
+  "castPlain": "直接下竿",
+  "castBait": "挂一颗草莓当鱼饵（背包有 {count} 颗）",
+  "fishRecord": "钓到{i}，{size} 厘米！刷新了日记纪录。",
+  "fishSized": "钓到{i}，{size} 厘米！",
+  "pondLog": "池塘手账",
+  "pondRecord": "钓到 {count} 条 · 最长 {size} 厘米 · 第 {day} 天初见",
+  "fishHint": "芦苇边常见，白天和夜里都能钓到。",
+  "carpHint": "白天试试东边的开阔水面。",
+  "moonfishHint": "天黑再来。东边水面和草莓鱼饵都能帮上忙。",
+  "cookStew": "煮南瓜炖菜（胡萝卜 ×1、南瓜 ×1）",
+  "cookCarp": "做香烤鲤鱼（金鳞鲤 ×1）",
+  "cookMoonfish": "做月光鱼汤（月光鱼 ×1）"
+});
+Object.assign(window.HL_LANG.zh.items, {
+  "carrot": {
+    "name": "胡萝卜",
+    "desc": "浇水过一晚即可收获，可下厨或送礼。"
+  },
+  "pumpkin": {
+    "name": "南瓜",
+    "desc": "浇水满三晚就会成熟。可以和胡萝卜一起炖。"
+  },
+  "carp": {
+    "name": "金鳞鲤",
+    "desc": "白天活跃的大鱼，适合烤着吃。"
+  },
+  "moonfish": {
+    "name": "月光鱼",
+    "desc": "夜里才出现的鱼，可以做成汤。"
+  }
+});
+
+// Shared fishing and dress capsules
+Object.assign(window.HL_LANG.zh.ui, {
+  "sharedFishingInvite": "还记得你送我的那条月光鱼吗？今天水面很静。要不要一起去池塘再等一条？",
+  "sharedFishingTalk": "聊聊今晚的池塘邀约",
+  "sharedFishingAccept": "一起去池塘",
+  "sharedFishingLater": "改天再去",
+  "sharedFishingDeferred": "那就改天。等天黑了，我再来找你。",
+  "sharedFishingCast": "我陪你等着。浮标冒出「！」的时候，按 {k} 收竿。",
+  "sharedFishingCaught": "是{i}，{size} 厘米。今晚的事，值得写进日记。",
+  "sharedFishingRetry": "再抛一竿",
+  "sharedFishingKeepsake": "月下同钓",
+  "sharedFishingDetails": "{day} {time} · {fish} · {size} 厘米",
+  "sharedFishingRecall": "还记得我们一起钓到的那条{size}厘米的{fish}吗？那晚池塘很静。",
+  "capsuleIntro": "玻璃罩里装着礼裙扭蛋。已收集 {owned}/{total}，每次都会抽到新款。",
+  "capsuleFree": "转一次（首次免费）",
+  "capsuleTrade": "用 {cost} 个{item}转一次（现有 {count}）",
+  "capsuleComplete": "四件礼裙都收齐了，随时可以去衣柜换穿。",
+  "capsuleWon": "扭蛋打开了！「{dress}」已收进衣柜。",
+  "capsuleTry": "现在试穿",
+  "capsuleKeep": "先收进衣柜",
+  "capsuleTag": "扭蛋",
+  "capsuleLocked": "这件礼裙可以在门口的扭蛋机抽到。"
+});
+Object.assign(window.HL_LANG.zh.clothes, {
+  "roseGown": "蔷薇千层礼裙",
+  "moonGown": "星夜拖尾礼裙",
+  "lilyGown": "铃兰珍珠礼裙",
+  "peacockGown": "孔雀金纹礼裙"
+});
+window.HL_LANG.zh.objects.capsule = {"name": "礼裙扭蛋机", "verb": "转动礼裙扭蛋机"};
