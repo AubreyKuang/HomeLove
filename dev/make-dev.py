@@ -32,7 +32,7 @@ PANEL = r'''
     lock(b){dev.lock=!dev.lock;b.textContent=(dev.lock?'🔒 状态锁满：开':'🔓 状态锁满：关');if(dev.lock){fillNeeds();updateHud();}},
     resetDay(){NPCS.forEach(n=>{rel(n).done={};});state.pets.forEach(p=>{p.done={};});state.plots.fill(false);flowers.forEach(f=>{f.picked=false;});state.picked=[];save();notify('🛠 今天的次数、花和草莓都重置了');},
     time(h){state.time=h*60;npcs.forEach(n=>{if(!rel(n).livesIn&&!summoned(n)){n.state='away';n.path=null;n.leaving=false;n.x=n.y=-100;}});updateHud();notify('🛠 时间跳到 '+fmt(state.time));},
-    wipe(){try{localStorage.removeItem(LS);}catch(e){}location.reload();},
+    wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
   const box=document.createElement('div');

@@ -293,6 +293,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <div id="fade"></div>
 
 <script src="npc-memory.js"></script>
+<script src="save-manager.js"></script>
 <script src="lang/zh.js" charset="utf-8"></script>
 <script src="lang/en.js" charset="utf-8"></script>
 <script src="lang/ja.js" charset="utf-8"></script>
@@ -686,10 +687,17 @@ const state={
 };
 const LS='homelove-save-v1';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
-function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+let playerReady=false;
+const validSave=s=>Number.isFinite(s.day)&&Number.isFinite(s.time)&&!!s.o&&!!s.rel&&!!s.inv;
+function save(){
+  if(playerReady)state.position={x:P.x,y:P.y,dir:P.dir};
+  return SaveManager.save(localStorage,LS,state,validSave);
+}
 function applySave(s){
   if(!s||typeof s!=='object')return;
   state.npcMemory=s.npcMemory;
+  state.life=s.life&&typeof s.life==='object'?s.life:{};
+  state.position=s.position;
   if(s.o&&typeof s.o==='object')Object.assign(state.o,s.o);
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
@@ -702,7 +710,8 @@ function applySave(s){
   if(Array.isArray(s.looks))state.looks=s.looks.filter(l=>l&&typeof l==='object').slice(0,6);
   if(s.rel)NPCS.forEach(n=>{const src=s.rel[n.id];if(src&&typeof src==='object'){const r=state.rel[n.id];Object.assign(r,src);if(!r.done||typeof r.done!=='object')r.done={};if(!r.notes||typeof r.notes!=='object')r.notes={};}});
 }
-try{applySave(JSON.parse(localStorage.getItem(LS)||'null'));}catch(e){}
+applySave(SaveManager.load(localStorage,LS,validSave));
+state.life ||= {};
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.data&&hot.data.o)applySave(hot.data);
 if(hot&&hot.snapshot){try{hot.snapshot(snapshot);}catch(e){}}
@@ -930,6 +939,12 @@ OBJS.forEach(o=>{const s=SPR[o.id];o.spr=s;const px=o.tx*16+Math.floor((o.tw*16-
 
 /* ---------------- player, cat, residents, particles ---------------- */
 const P={x:4*16+8,y:6*16+10,dir:'down',moving:false,anim:0};
+playerReady=true;
+if(state.position&&Number.isFinite(state.position.x)&&Number.isFinite(state.position.y)){
+  Object.assign(P,state.position);
+}
+window.addEventListener('pagehide',save);
+
 const WALK=[1,0,2,0];
 const DV={down:[0,1],up:[0,-1],left:[-1,0],right:[1,0]};
 const npcs=NPCS.map(d=>Object.assign({},d,{x:-100,y:-100,dir:'down',state:'away',path:null,idle:0,anim:0,moving:false,leaving:false}));
@@ -979,15 +994,33 @@ function bfs(sx,sy,gx,gy,indoor){
   if(prev[goal]===-1)return null;
   const path=[];for(let c=goal;c!==start;c=prev[c])path.push([c%MW,(c/MW)|0]);return path.reverse();
 }
-const present=n=>rel(n).livesIn||summoned(n)||(state.time>=n.arrive&&state.time<n.leave);
+function lifeOf(n){return state.life[n.id] ||= {cards:{}};}
+function birthdayOf(n){return 1+NPCS.indexOf(NPCS.find(npc=>npc.id===n.id))*4;}
+function visitWindow(n){
+  const r=rel(n);
+  const offset=r.met?((state.day*17+n.id.charCodeAt(0)*11)%91)-45:0;
+  return {start:n.arrive+offset,end:n.leave+offset};
+}
+const present=n=>rel(n).livesIn||summoned(n)||(state.time>=visitWindow(n).start&&state.time<visitWindow(n).end);
 function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||t===FLOOR||t===DOOR);}
 function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn)return n.spots;const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
 function placeHome(n){const s=pick(HOME_IN);n.x=s[0]*16+8;n.y=s[1]*16+12;n.state='here';n.path=null;n.idle=10;n.leaving=false;}
 function updNpc(n,dt){
   const r=rel(n);
+  if(n.state==='here'&&!n.leaving&&!n.working&&r.met&&!r.done.visit&&!D.modal&&!busy&&!startOpen&&!dressOpen&&!diaryOpen){
+    const distance=Math.hypot(n.x-P.x,n.y-P.y);
+    if(n.seekingPlayer&&distance<43){
+      n.seekingPlayer=false;r.done.visit=true;n.path=null;n.idle=12;
+      const line=outfitScore(n)>=4?nt(n).outfitHi:nt(n).greet[Math.min(2,Math.floor(hearts(r)/3))];
+      say(nm(n),line);save();
+    }else if(!n.path&&distance<115&&distance>=43&&Math.random()<dt*.08){
+      const spot=nearPlayerTiles().sort((a,b)=>Math.hypot(a[0]*16+8-P.x,a[1]*16+12-P.y)-Math.hypot(b[0]*16+8-P.x,b[1]*16+12-P.y))[0];
+      if(spot){npcGo(n,spot[0],spot[1]);n.seekingPlayer=!!n.path?.length;}
+    }
+  }
   if(n.state==='away'){
     if(r.livesIn){placeHome(n);return;}
-    if(present(n)&&(summoned(n)||state.time<n.leave-40)){n.x=6*16+8;n.y=19*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;}
+    if(present(n)&&(summoned(n)||state.time<visitWindow(n).end-40)){n.x=6*16+8;n.y=19*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;}
     return;
   }
   if((D.modal||busy)&&D.npc===n){n.moving=false;n.anim=0;return;}
@@ -1302,7 +1335,7 @@ function newDay(wake){
   state.day++;state.time=wake;flowers.forEach(f=>f.picked=false);state.picked=[];state.plots.fill(false);state.changedToday=false;
   NPCS.forEach(n=>{rel(n).done={};});
   state.pets.forEach(p=>{p.done={};});
-  npcs.forEach(n=>{n.state='away';n.path=null;n.leaving=false;n.x=n.y=-100;});
+  npcs.forEach(n=>{n.state='away';n.path=null;n.leaving=false;n.seekingPlayer=false;n.x=n.y=-100;});
 }
 function wakeAtBed(){P.x=8*16+8;P.y=5*16+12;P.dir='right';snapPets();}
 function bedMenu(){
@@ -1413,6 +1446,30 @@ function rememberPlayer(n,type,outcome,emotion,impact,object){
   },[{person:n.id,subject:'player',emotion,impact,
     interpretation:{type,outcome,object,perspective:'recipient'}}]);
 }
+function memoryLine(n,entry){
+  const data=entry.interpretation;
+  if(!data||typeof data!=='object')return '';
+  const where=Lp.dates[data.object]?.name||data.object;
+  const copy={
+    zh:{date:'还记得我们第一次约会吗？',gift:'你送我的礼物，我还记得。',birthday:'谢谢你记得我的生日。',visit:'那天我生病，你来看我，我很开心。',rival:'那天看到你和别人约会，我心里还有点难过。'},
+    en:{date:'I still remember our first date.',gift:'I remember your gift.',birthday:'Thank you for remembering my birthday.',visit:'I was glad you visited when I was sick.',rival:'It still stings to remember that date I saw.'},
+    ja:{date:'初めてのデート、今も覚えているよ。',gift:'プレゼント、今も覚えているよ。',birthday:'誕生日を覚えていてくれてありがとう。',visit:'お見舞いに来てくれてうれしかった。',rival:'あの日のことを思い出すと、まだ少しつらい。'}
+  }[LANG]||{};
+  const line=copy[data.type]||'';
+  const detail=data.type==='date'?where:data.type==='gift'?itemLabel(data.object):'';
+  return line&&detail?line+' '+detail:line;
+}
+function lifeText(zh,en,ja){return ({zh,en,ja})[LANG]||en;}
+function birthdayToday(n){return (state.day-1)%28+1===birthdayOf(n);}
+function sickToday(n){return state.day>3&&(state.day+NPCS.indexOf(NPCS.find(npc=>npc.id===n.id))*3)%17===0;}
+function markLife(n,type){
+  const r=rel(n);if(r.done[type])return;
+  r.done[type]=true;
+  rememberPlayer(n,type==='visitSick'?'visit':type,'completed',.9,95);
+  lifeOf(n).cards[type]=state.day;
+  addPts(n,8);
+  talk(nm(n),[memoryLine(n,NPCMemory.recall(state,n.id)[0])],null,()=>npcMenu(n,true));
+}
 function addPts(n,d){
   const r=rel(n),before=hearts(r);r.pts=Math.max(0,Math.min(100,r.pts+d));
   if(r.pts>=20)r.knowGift=true;if(r.pts>=40)r.knowStyle=true;
@@ -1428,7 +1485,7 @@ function milestone(n){
 function jealousCheck(n,next){
   const p=npcs.find(m=>m!==n&&rel(m).couple&&m.state!=='away'&&Math.hypot(m.x-P.x,m.y-P.y)<120);
   if(!p){if(next)next();return;}
-  D.npc=p;talk(nm(p),[nt(p).jealous],null,()=>{addPts(p,-6);if(next)next();});
+  D.npc=p;talk(nm(p),[nt(p).jealous],null,()=>{rememberPlayer(p,'rival','witnessed',-.9,95,n.id);addPts(p,-6);if(next)next();});
 }
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 function npcMenu(n,back){
@@ -1447,6 +1504,8 @@ function npcMenu(n,back){
   if(h>=8&&!r.couple&&!anyCouple())opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
+  if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
+  if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
   talk(nm(n),[greet],opts);
 }
@@ -1454,7 +1513,12 @@ function chat(n){
   const r=rel(n),T=nt(n);D.npc=n;
   if(r.done.chat){talk(nm(n),[T.tired],null,()=>npcMenu(n,true));return;}
   r.done.chat=true;advanceTime(15);
-  const lines=[];let gain=6+Math.round(NPCMemory.influence(state,n.id,'player'));const sc=outfitScore(n);
+  const first=state.life?.[n.id]?.firstDate;
+  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival'].includes(e.type));
+  const lines=[];
+  if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
+  else if(recalled&&Math.random()<.4){const line=memoryLine(n,recalled);if(line)lines.push(line);}
+  let gain=6+Math.round(NPCMemory.influence(state,n.id,'player'));const sc=outfitScore(n);
   if(sc>=4){lines.push(T.outfitHi);gain+=8;r.knowStyle=true;}else if(sc>=2){lines.push(T.outfitMid);gain+=4;}
   if(state.need.mood<25){lines.push(tr('tiredMood',{n:nm(n)}));gain-=3;}
   const pet=petSeenBy(n);if(pet){lines.push(tr('petLiked',{n:nm(n),p:pet.name}));gain+=4;note(n,'pet_'+pet.kind,12);}
@@ -1526,7 +1590,7 @@ function dateWith(n,loc){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];r.done.date=true;D.npc=n;
   busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
-      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
+      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{lifeOf(n).firstDate ||= {place:loc,day:state.day};lifeOf(n).cards.firstDate ||= state.day;if(Math.random()<.05)lifeOf(n).cards.rareDate ||= state.day;rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
 function confess(n){
   const r=rel(n);D.npc=n;r.done.confess=true;
@@ -1760,6 +1824,13 @@ function renderDiary(){
     const nl=el('div','rline');nl.append(document.createTextNode(tr('notes')));nl.append(notes.length?document.createTextNode(notes.join('  ')):el('em',null,tr('notesEmpty')));
     info.append(top,el('div','rsub',`${T.title} · `+(r.livesIn?tr('livesHere'):tr('visits',{a:fmt(n.arrive),b:fmt(n.leave)}))),hs,
       el('div','rline',today),el('div','rline',tr('favGift')+giftTxt),el('div','rline',tr('favStyle')+styleTxt),nl,el('div','rnext',nextHint(n)));
+    if(r.met){
+      const life=state.life[n.id],cards=life?.cards||{};
+      const labels={birthday:lifeText('生日快乐','Birthday','誕生日'),visitSick:lifeText('病中探望','A visit','お見舞い'),firstDate:lifeText('初次约会','First date','初デート'),rareDate:lifeText('难忘约会','Rare date','忘れられないデート')};
+      for(const [key,day] of Object.entries(cards)){
+        if(labels[key])info.append(el('span','pill love',`◆ ${labels[key]} · ${tr('day',{d:day})}`));
+      }
+    }
     card.append(c,info);grid.append(card);
   });
   s1.append(grid);
