@@ -1,4 +1,21 @@
 const CottageActivities = (() => {
+  const seasons=['spring','summer','autumn','winter'], seasonLength=7;
+  const seasonOf=(day=1)=>seasons[Math.floor((Math.max(1,day)-1)/seasonLength)%seasons.length];
+  const tunnelCost={shell:2};
+  const tunnelLimit=3;
+  const canGrow=(season,tunnels,index)=>season!=='winter'||tunnels.includes(index);
+  function loadTunnels(saved){
+    if(!Array.isArray(saved))return [];
+    return [...new Set(saved.filter(i=>Number.isInteger(i)&&i>=0&&i<12))].slice(0,tunnelLimit);
+  }
+  function installTunnel(tunnels,index,inv){
+    if(!Number.isInteger(index)||index<0||index>=12||tunnels.includes(index)||tunnels.length>=tunnelLimit||
+        Object.entries(tunnelCost).some(([item,count])=>!(inv[item]>=count)))return false;
+    for(const [item,count] of Object.entries(tunnelCost))inv[item]-=count;
+    tunnels.push(index);
+    return true;
+  }
+
   const crops = {
     berry: {days: 2, regrow: 1},
     carrot: {days: 1},
@@ -31,12 +48,13 @@ const CottageActivities = (() => {
     });
   }
 
-  function grow(garden) {
-    for (const plot of garden) {
-      if (!plot) continue;
-      if (plot.watered && !ripe(plot)) plot.growth++;
-      plot.watered = false;
-    }
+  function grow(garden,day=1,tunnels=[]) {
+    const season=seasonOf(day);
+    garden.forEach((plot,index)=>{
+      if(!plot)return;
+      if(plot.watered&&!ripe(plot)&&canGrow(season,tunnels,index))plot.growth++;
+      plot.watered=false;
+    });
   }
 
   function pickCrop(garden, index) {
@@ -48,6 +66,10 @@ const CottageActivities = (() => {
   }
 
   function rollCatch(spot, night, bait, roll) {
+    if(spot==='ice'){
+      const special=bait ? .52 : .34;
+      return roll<.04?'star':roll<special?(night?'moonfish':'carp'):roll<special+.16?'shell':'fish';
+    }
     const star = night ? .12 : .025;
     const species = night
       ? (spot === 'reeds' ? .18 : .28) + (bait ? .13 : 0)
@@ -127,6 +149,6 @@ const CottageActivities = (() => {
     return reward;
   }
 
-  return {crops, fish, seed, ripe, loadGarden, grow, pickCrop, rollCatch, loadFishLog, logFish,
+  return {seasons,seasonLength,seasonOf,tunnelCost,tunnelLimit,canGrow,loadTunnels,installTunnel,crops, fish, seed, ripe, loadGarden, grow, pickCrop, rollCatch, loadFishLog, logFish,
     requests, loadRequest, openRequest, nextRequest, fulfillRequest};
 })();
