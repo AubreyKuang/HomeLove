@@ -993,3 +993,23 @@ Object.assign(window.HL_LANG.ja.clothes, {
   "pearlMidi": "パールボタンのミディスカート",
   "petalWrap": "花びらの巻きスカート"
 });
+
+Object.assign(window.HL_LANG.ja.clothes, {
+  "auroraCourtGown": "オーロラ金刺繍の宮廷ドレス",
+  "rubyVelvetGown": "ルビー色のベルベットドレス",
+  "opalSwanGown": "オパールの白鳥ドレス",
+  "midnightConstellation": "真夜中の星座ドレス",
+  "camelliaSilkGown": "椿のサテンドレス",
+  "goldenMasquerade": "金の羽根の仮面舞踏会ドレス",
+  "forestWaistcoat": "森色のベスト",
+  "berryRibbonBlouse": "ベリー色のリボンブラウス",
+  "cocoaToggleCoat": "ココア色のダッフルコート",
+  "moonCollarCapelet": "三日月ケープトップ",
+  "velvetTierSkirt": "金縁ベルベットのティアードスカート",
+  "organzaBowSkirt": "リボン付きオーガンジースカート"
+});
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "capsuleAgain": "もう一回引く",
+  "capsuleNoMore": "コンプリート済み"
+});

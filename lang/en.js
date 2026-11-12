@@ -993,3 +993,23 @@ Object.assign(window.HL_LANG.en.clothes, {
   "pearlMidi": "Pearl Midi Skirt",
   "petalWrap": "Petal Wrap Skirt"
 });
+
+Object.assign(window.HL_LANG.en.clothes, {
+  "auroraCourtGown": "Aurora Gilded Court Gown",
+  "rubyVelvetGown": "Ruby Velvet Gown",
+  "opalSwanGown": "Opal Swan Gown",
+  "midnightConstellation": "Midnight Constellation Gown",
+  "camelliaSilkGown": "Camellia Satin Gown",
+  "goldenMasquerade": "Golden Masquerade Gown",
+  "forestWaistcoat": "Forest Waistcoat",
+  "berryRibbonBlouse": "Berry Ribbon Blouse",
+  "cocoaToggleCoat": "Cocoa Toggle Coat",
+  "moonCollarCapelet": "Crescent Capelet",
+  "velvetTierSkirt": "Gold-trimmed Velvet Skirt",
+  "organzaBowSkirt": "Organza Bow Skirt"
+});
+
+Object.assign(window.HL_LANG.en.ui, {
+  "capsuleAgain": "Draw again",
+  "capsuleNoMore": "Collection complete"
+});
