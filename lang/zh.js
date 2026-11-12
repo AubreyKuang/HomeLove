@@ -993,3 +993,23 @@ Object.assign(window.HL_LANG.zh.clothes, {
   "pearlMidi": "珍珠扣中长裙",
   "petalWrap": "花瓣裹身半裙"
 });
+
+Object.assign(window.HL_LANG.zh.clothes, {
+  "auroraCourtGown": "极光金绣宫廷裙",
+  "rubyVelvetGown": "红宝石天鹅绒礼裙",
+  "opalSwanGown": "欧泊天鹅羽裙",
+  "midnightConstellation": "午夜星图礼裙",
+  "camelliaSilkGown": "山茶缎面礼裙",
+  "goldenMasquerade": "金羽假面舞会裙",
+  "forestWaistcoat": "森绿小马甲",
+  "berryRibbonBlouse": "莓果丝带衬衫",
+  "cocoaToggleCoat": "可可牛角扣外套",
+  "moonCollarCapelet": "月牙披肩上衣",
+  "velvetTierSkirt": "金边丝绒层叠裙",
+  "organzaBowSkirt": "绸结欧根纱半裙"
+});
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "capsuleAgain": "再来一抽",
+  "capsuleNoMore": "本池已抽齐"
+});
