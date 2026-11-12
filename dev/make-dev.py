@@ -32,6 +32,24 @@ PANEL = r'''
     lock(b){dev.lock=!dev.lock;b.textContent=(dev.lock?'🔒 状态锁满：开':'🔓 状态锁满：关');if(dev.lock){fillNeeds();updateHud();}},
     resetDay(){NPCS.forEach(n=>{rel(n).done={};});state.pets.forEach(p=>{p.done={};});flowers.forEach(f=>{f.picked=false;});state.picked=[];save();notify('🛠 今天的互动次数和花朵已重置');},
     time(h){state.time=h*60;npcs.forEach(n=>{if(!rel(n).livesIn&&!summoned(n)){n.state='away';n.path=null;n.leaving=false;n.x=n.y=-100;}});updateHud();notify('🛠 时间跳到 '+fmt(state.time));},
+    previewEvent(kind){
+      if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){notify('先回到游戏画面再预览事件');return;}
+      const event=state.events[kind];
+      if(event.done){notify('这个存档已完成该事件，可以在收藏里回看');return;}
+      if(kind==='ufo'){
+        const {x,y,start}=CottageEvents.landing;
+        state.time=start;
+        Object.assign(P,{x:x-19,y,dir:'right'});walkRoute=[];snapPets();
+        event.checked=event.found=state.day;
+        event.minute=start;
+        notify(tr('worldUfoArrival'));
+      }else{
+        event.found ||= state.day;
+        const n=npcs.find(person=>person.id==='xm');
+        npcMenu(n);
+      }
+      save();updateHud();
+    },
     wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
@@ -53,6 +71,9 @@ PANEL = r'''
   [[7,'07:00'],[10,'10:00'],[13,'13:00'],[16,'16:00'],[18,'18:00'],[21,'21:00']].forEach(([h,l])=>{const b=document.createElement('button');b.type='button';b.textContent=l;
     b.style.cssText='cursor:pointer;padding:2px 4px;border-radius:4px;border:1px solid #6b5a72;background:#3d3248;color:#fff6e6;font:inherit';
     b.onclick=()=>{A.time(h);cv.focus({preventScroll:true});};row.append(b);});
+  btn('🛸 预览飞船来客',()=>A.previewEvent('ufo'));
+  btn('🍾 预览漂流瓶',()=>A.previewEvent('bottle'));
+  btn('🌱 预览无名种子',()=>A.previewEvent('seed'));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;
