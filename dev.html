@@ -330,12 +330,12 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 
 <script src="npc-memory.js"></script>
 <script src="save-manager.js"></script>
-<script src="cottage-activities.js?v=cottage-events-1"></script>
-<script src="cottage-events.js"></script>
+<script src="cottage-activities.js?v=seasons-1"></script>
+<script src="cottage-events.js?v=xiaoman-1"></script>
 <script src="memory-album.js"></script>
-<script src="lang/zh.js?v=cottage-events-1" charset="utf-8"></script>
-<script src="lang/en.js?v=cottage-events-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=cottage-events-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=seasons-1" charset="utf-8"></script>
+<script src="lang/en.js?v=seasons-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=seasons-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -862,7 +862,7 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),
+  garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),xiaoman:XiaomanStory.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()]))
 };
@@ -883,12 +883,14 @@ function applySave(s){
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
+  state.xiaoman=XiaomanStory.load(s.xiaoman,state.day);
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
   if(Array.isArray(s.pets))state.pets=s.pets.filter(p=>p&&['cat','dog','bird','rabbit'].includes(p.kind)&&typeof p.name==='string').slice(0,3).map(p=>({kind:p.kind,ci:p.ci|0,name:p.name,bond:+p.bond||0,mode:p.mode==='stay'?'stay':'follow',done:(p.done&&typeof p.done==='object')?p.done:{},hx:p.hx,hy:p.hy,x:0,y:0,dir:1,anim:0}));
   if(s.need)['energy','hunger','mood'].forEach(k=>{if(typeof s.need[k]==='number')state.need[k]=clampN(s.need[k]);});
   if(s.inv)Object.keys(state.inv).forEach(k=>{if(typeof s.inv[k]==='number')state.inv[k]=Math.max(0,s.inv[k]);});
   if(Array.isArray(s.picked))state.picked=s.picked.filter(n=>typeof n==='number');
   state.garden=CottageActivities.loadGarden(s.garden,s.plots);
+  state.tunnels=CottageActivities.loadTunnels(s.tunnels);
   state.fishLog=CottageActivities.loadFishLog(s.fishLog);
   state.neighborRequest=CottageActivities.loadRequest(s.neighborRequest);
   for(const pool of Object.values(CAPSULE_POOLS)){
@@ -946,6 +948,8 @@ for(let y=11;y<=16;y++){if(y!==12)fenceSet.add('15,'+y);fenceSet.add('24,'+y);}
 const isF=(x,y)=>fenceSet.has(x+','+y);
 const fences=[...fenceSet].map(s=>s.split(',').map(Number));
 fences.forEach(([x,y])=>block(x,y));
+const ICE_HOLES=[[19,6],[23,6]];
+const isIceHole=(x,y)=>ICE_HOLES.some(([tx,ty])=>tx===x&&ty===y);
 const plotIndex=(tx,ty)=>(tx>=17&&tx<=22&&ty>=13&&ty<=14)?(ty-13)*6+(tx-17):-1;
 
 const objName=id=>Lp.objects[id].name;
@@ -977,16 +981,39 @@ flowers.forEach((f,i)=>{f.col=FLOWER_COLS[i%FLOWER_COLS.length];f.picked=state.p
 
 /* ---------------- sprites ---------------- */
 const SPR={};
-function mkTree(v){return spr(26,34,(R,g)=>{
+const SEASON_ART={
+  spring:{grass:['#a8d985','#90c875','#c1e6a1'],tree:['#668e54','#82b36e','#c4df8c','#f2a9bf']},
+  summer:{grass:['#8fd16f','#76bb5a','#a9e08a'],tree:['#3f8a46','#55a552','#72c062','#f5d477']},
+  autumn:{grass:['#d8b86e','#bd9a58','#ebd28d'],tree:['#a66c3e','#d69a42','#f0bc59','#e07648']},
+  winter:{grass:['#e6eff4','#cadce8','#f9fbf5'],tree:['#607e7a','#779693','#bbd6dd','#eef5f4']}
+};
+function mkTree(v,season){return spr(26,34,(R,g)=>{
   R(11,22,4,10,'#8a5a36');R(11,22,1,10,'#a06c42');R(14,22,1,10,'#6e4528');R(9,31,8,1,'#6e4528');
-  ell(g,13,13,11,10,'#3f8a46');ell(g,12,11,9,8,'#55a552');ell(g,10,8,5,4,'#72c062');
+  const [shadow,leaf,light,accent]=SEASON_ART[season].tree;
+  ell(g,13,13,11,10,shadow);ell(g,12,11,9,8,v===2&&season==='autumn'?'#c07b43':leaf);
+  ell(g,10,8,5,4,light);
   const rnd=mulberry32(v*99+7);
-  for(let i=0;i<10;i++)R(4+(rnd()*18|0),5+(rnd()*14|0),1,1,'#3f8a46');
+  for(let i=0;i<10;i++)R(4+(rnd()*18|0),5+(rnd()*12|0),1,1,shadow);
+  if(season==='winter'){
+    R(6,6,10,2,accent);R(4,8,17,2,accent);R(5,10,8,2,light);R(14,9,7,2,accent);
+    R(3,31,20,2,light);R(5,30,15,1,accent);return;
+  }
+  if(season==='spring'||season==='autumn'){
+    for(let i=0;i<9;i++){const x=5+(rnd()*16|0),y=6+(rnd()*12|0);R(x,y,2,2,accent);R(x,y,1,1,light);}
+    return;
+  }
   if(v===1)for(let i=0;i<7;i++){const x=5+(rnd()*16|0),y=6+(rnd()*12|0);R(x,y,2,2,'#f6a5c0');R(x,y,1,1,'#ffd6e4');}
   if(v===2)for(let i=0;i<5;i++){const x=5+(rnd()*16|0),y=8+(rnd()*10|0);R(x,y,2,2,'#e85f5f');R(x,y,1,1,'#ff9a8a');}
 });}
-SPR.trees=[mkTree(0),mkTree(1),mkTree(2)];
-SPR.bush=spr(18,15,(R,g)=>{ell(g,9,8,8,6,'#4f9a4a');ell(g,8,7,6,4,'#6bb85c');R(5,9,1,1,'#e85f5f');R(12,6,1,1,'#e85f5f');R(10,10,1,1,'#e85f5f');});
+for(const season of CottageActivities.seasons){
+  const [shadow,leaf,light,accent]=SEASON_ART[season].tree;
+  SEASON_ART[season].trees=[mkTree(0,season),mkTree(1,season),mkTree(2,season)];
+  SEASON_ART[season].bush=spr(18,15,(R,g)=>{
+    ell(g,9,8,8,6,shadow);ell(g,8,7,6,4,leaf);
+    if(season==='winter'){R(4,4,10,3,light);R(6,3,7,2,accent);}
+    else{R(5,9,1,1,accent);R(12,6,1,1,accent);R(10,10,1,1,accent);}
+  });
+}
 SPR.wardrobe=spr(32,34,R=>{
   R(2,3,28,29,'#a86a40');R(1,1,30,3,'#8c5532');R(1,1,30,1,'#b97a4c');
   R(4,6,11,24,'#c4844f');R(17,6,11,24,'#c4844f');
@@ -1087,23 +1114,25 @@ SPR.adopt=spr(18,24,R=>{
 });
 
 /* ---------------- ground ---------------- */
-function paintGround(){
+function paintGround(season){
+  const [grass,shadeGrass,lightGrass]=SEASON_ART[season].grass;
+  const winter=season==='winter';
   const c=mk(MW*TILE,MH*TILE),g=c.getContext('2d');
   const R=(x,y,w,h,col)=>{g.fillStyle=col;g.fillRect(x,y,w,h);};
   for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
     const t=map[y*MW+x],px=x*16,py=y*16,rnd=mulberry32((x*73856093)^(y*19349663)^1234);
     if(t===G||t===DIRT){
-      R(px,py,16,16,'#8fd16f');
-      for(let i=0;i<5;i++){const a=rnd()*15|0,b=rnd()*14|0;R(px+a,py+b,1,2,'#76bb5a');R(px+a+1,py+b+1,1,1,'#76bb5a');}
-      for(let i=0;i<3;i++)R(px+(rnd()*15|0),py+(rnd()*15|0),1,1,'#a9e08a');
+      R(px,py,16,16,grass);
+      for(let i=0;i<5;i++){const a=rnd()*15|0,b=rnd()*14|0;R(px+a,py+b,1,2,shadeGrass);R(px+a+1,py+b+1,1,1,shadeGrass);}
+      for(let i=0;i<3;i++)R(px+(rnd()*15|0),py+(rnd()*15|0),1,1,lightGrass);
       if(rnd()<.1){const a=rnd()*13|0,b=rnd()*13|0;R(px+a,py+b,1,1,'#fffbe8');R(px+a+2,py+b+1,1,1,'#ffe08a');}
     }
     if(t===DIRT){
-      R(px,py+1,16,14,'#a57449');for(let r=0;r<14;r+=4)R(px,py+1+r+3,16,1,'#8a5d39');
+      R(px,py+1,16,14,winter?'#c0b8b0':'#a57449');for(let r=0;r<14;r+=4)R(px,py+1+r+3,16,1,winter?'#a8a4a5':'#8a5d39');
     } else if(t===PATH){
-      R(px,py,16,16,'#e2cb9f');
-      for(let i=0;i<4;i++){const a=rnd()*13|0,b=rnd()*14|0;R(px+a,py+b,3,2,'#d0b383');R(px+a,py+b,2,1,'#ecdcb8');}
-      const e='#c9a978',isP=t2=>t2===PATH||t2===DOOR||t2===-1;
+      R(px,py,16,16,winter?'#d9dee1':'#e2cb9f');
+      for(let i=0;i<4;i++){const a=rnd()*13|0,b=rnd()*14|0;R(px+a,py+b,3,2,winter?'#cbd4da':'#d0b383');R(px+a,py+b,2,1,winter?'#eef3f1':'#ecdcb8');}
+      const e=winter?'#bdced8':'#c9a978',isP=t2=>t2===PATH||t2===DOOR||t2===-1;
       if(!isP(at(x,y-1)))R(px,py,16,1,e);if(!isP(at(x,y+1)))R(px,py+15,16,1,e);
       if(!isP(at(x-1,y)))R(px,py,1,16,e);if(!isP(at(x+1,y)))R(px+15,py,1,16,e);
     } else if(t===FLOOR||t===DOOR){
@@ -1118,6 +1147,18 @@ function paintGround(){
       if(y===9){R(px,py,16,6,'#8c5a3c');R(px,py,16,1,'#a8724c');R(px,py+6,16,10,'#d49f6c');
         for(let r=0;r<3;r++){R(px,py+6+r*3+2,16,1,'#b8844f');const off=r%2?4:0;for(let i=off;i<16;i+=8)R(px+i,py+6+r*3,1,2,'#b8844f');}}
       else{R(px,py,16,16,'#8c5a3c');R(px+3,py,10,16,'#a8724c');R(px+3,py,1,16,'#bf8a5f');}
+    } else if(t===WATER&&winter){
+      R(px,py,16,16,'#a9d1e3');
+      for(let i=0;i<3;i++)R(px+(rnd()*12|0),py+(rnd()*14|0),4,1,'#c9e7ec');
+      if((x+y)%3===0){R(px+2,py+5,5,1,'#83b9d1');R(px+7,py+6,3,1,'#83b9d1');R(px+10,py+7,4,1,'#d6eef0');}
+      if(at(x,y-1)!==WATER)R(px,py,16,2,'#eff6f6');
+      if(at(x,y+1)!==WATER)R(px,py+14,16,2,'#eff6f6');
+      if(at(x-1,y)!==WATER)R(px,py,2,16,'#eff6f6');
+      if(at(x+1,y)!==WATER)R(px+14,py,2,16,'#eff6f6');
+      if(isIceHole(x,y)){
+        R(px+3,py+5,10,6,'#e6f4ee');R(px+5,py+4,6,8,'#e6f4ee');
+        R(px+5,py+6,6,4,'#3d7797');R(px+4,py+7,8,2,'#3d7797');R(px+6,py+7,4,1,'#79c6d7');
+      }
     } else if(t===WATER){
       R(px,py,16,16,'#5db6de');
       for(let i=0;i<3;i++)R(px+(rnd()*12|0),py+(rnd()*14|0),4,1,'#7fcbe9');
@@ -1135,7 +1176,7 @@ function paintGround(){
   R(98,161,12,6,'#c95b4f');R(99,163,10,1,'#e8877a');
   return c;
 }
-const ground=paintGround();
+for(const season of CottageActivities.seasons)SEASON_ART[season].ground=paintGround(season);
 const waterTiles=[];for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(map[y*MW+x]===WATER)waterTiles.push([x,y]);
 
 /* ---------------- entities ---------------- */
@@ -1148,8 +1189,8 @@ function drawFence(g,x,y){
   F(5,1,6,18,ol);F(6,2,4,16,'#dcae7a');F(6,2,4,1,'#f4d8b0');F(9,3,1,15,'#b9895a');
 }
 const statics=[];
-trees.forEach(([x,y])=>{const s=SPR.trees[Math.floor(hash2(x,y)*7)%3===0?(hash2(y,x)<.5?1:2):0];statics.push({key:y*16+14,x:x*16-5,y:y*16-19,w:26,h:34,draw:g=>g.drawImage(s,x*16-5,y*16-19)});});
-bushes.forEach(([x,y])=>statics.push({key:y*16+14,x:x*16-1,y:y*16+1,w:18,h:15,draw:g=>g.drawImage(SPR.bush,x*16-1,y*16+1)}));
+trees.forEach(([x,y])=>{const v=Math.floor(hash2(x,y)*7)%3===0?(hash2(y,x)<.5?1:2):0;statics.push({key:y*16+14,x:x*16-5,y:y*16-19,w:26,h:34,draw:(g,art)=>g.drawImage(art.trees[v],x*16-5,y*16-19)});});
+bushes.forEach(([x,y])=>statics.push({key:y*16+14,x:x*16-1,y:y*16+1,w:18,h:15,draw:(g,art)=>g.drawImage(art.bush,x*16-1,y*16+1)}));
 fences.forEach(([x,y])=>statics.push({key:y*16+12,x:x*16,y:y*16-8,w:16,h:24,draw:g=>drawFence(g,x,y)}));
 OBJS.forEach(o=>{const s=SPR[o.id];o.spr=s;const px=o.tx*16+Math.floor((o.tw*16-s.width)/2),py=(o.ty+o.th)*16-s.height;o.px=px;o.py=py;
   statics.push({key:(o.ty+o.th)*16-1,x:px,y:py,w:s.width,h:s.height,draw:g=>g.drawImage(s,px,py)});});
@@ -1248,7 +1289,10 @@ function visitWindow(n){
   const offset=r.met?((state.day*17+n.id.charCodeAt(0)*11)%91)-45:0;
   return {start:n.arrive+offset,end:n.leave+offset};
 }
-const present=n=>rel(n).livesIn||summoned(n)||fishingInvitationReady(n)||(state.time>=visitWindow(n).start&&state.time<visitWindow(n).end);
+const present=n=>{
+  if(xiaomanRoute(n)&&!XiaomanStory.visits(state.xiaoman,state.day))return false;
+  return rel(n).livesIn||summoned(n)||fishingInvitationReady(n)||(state.time>=visitWindow(n).start&&state.time<visitWindow(n).end);
+};
 function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||t===FLOOR||t===DOOR);}
 function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn)return n.spots;const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
 function placeHome(n){const s=pick(HOME_IN);n.x=s[0]*16+8;n.y=s[1]*16+12;n.state='here';n.path=null;n.idle=10;n.leaving=false;}
@@ -1259,6 +1303,8 @@ function updNpc(n,dt){
   if(n.state==='here'&&!n.leaving&&!n.working&&r.met&&!D.modal&&!busy&&!startOpen&&!dressOpen&&!diaryOpen&&!albumOpen&&!FISH.on){
     if(invitation&&seekFishingInvitation(n))return;
     const distance=Math.hypot(n.x-P.x,n.y-P.y);
+    const scene=xiaomanScene(n);
+    if(dt>0&&scene&&distance<36&&present(n)){startXiaomanScene(n,scene);return;}
     if(!invitation&&!r.done.visit&&n.seekingPlayer&&distance<43){
       n.seekingPlayer=false;r.done.visit=true;n.path=null;n.idle=12;
       const line=outfitScore(n)>=4?nt(n).outfitHi:nt(n).greet[Math.min(2,Math.floor(hearts(r)/3))];
@@ -1599,7 +1645,7 @@ function advanceTime(m){state.time+=m;decay(m,false);}
 const partnerHome=()=>npcs.find(n=>rel(n).livesIn);
 function newDay(wake){
   for(const n of npcs)rememberMissedOccasions(n);
-  state.day++;state.time=wake;flowers.forEach(f=>f.picked=false);state.picked=[];CottageActivities.grow(state.garden);state.changedToday=false;
+  state.day++;state.time=wake;flowers.forEach(f=>f.picked=false);state.picked=[];CottageActivities.grow(state.garden,state.day,state.tunnels);state.changedToday=false;
   deliverAlbumPostcard();
   NPCS.forEach(n=>{rel(n).done={};});
   state.pets.forEach(p=>{p.done={};});
@@ -1712,12 +1758,14 @@ function tryCapsuleItem(pool,item){
 }
 function openCapsuleWardrobe(pool){curCat=pool.tab;openDress();}
 function deliverAlbumPostcard(){
-  const postcard=MemoryAlbum.nextPostcard(state.day,ALBUM_RESIDENTS.filter(id=>state.rel[id].met),state.album);
+  const postcard=MemoryAlbum.nextPostcard(state.day,ALBUM_RESIDENTS.filter(id=>state.rel[id].met&&(id!=='xm'||!state.xiaoman?.answer)),state.album);
   if(postcard)state.album.postcards.push(postcard);
 }
 function unreadAlbumPostcard(){
   const special=state.events&&CottageEvents.postcard(state.events,state.day);
   if(special&&!state.album.seen.includes(special.key))return special;
+  const xiaoman=state.xiaoman&&XiaomanStory.postcard(state.xiaoman,state.day);
+  if(xiaoman&&!state.album.seen.includes(xiaoman.key))return xiaoman;
   return state.album?.postcards.findLast(card=>!state.album.seen.includes(MemoryAlbum.postcardKey(card)));
 }
 function checkMail(){
@@ -1729,20 +1777,23 @@ function checkMail(){
     {label:tr('albumOtherMail'),back:true,fn:checkNeighborMail}
   ]);
 }
+function neighborMailRelations(){
+  return state.xiaoman?.answer?{...state.rel,xm:{met:false}}:state.rel;
+}
 function checkNeighborMail(){
   const current=CottageActivities.openRequest(state.neighborRequest,state.day);
-  const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
+  const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,neighborMailRelations());
   if(request){
     if(!current){state.neighborRequest=request;save();}
     readNeighborRequest(request);
     return;
   }
-  const fans=npcs.filter(n=>hearts(rel(n))>=5&&!rel(n).livesIn);
+  const fans=npcs.filter(n=>hearts(rel(n))>=5&&!rel(n).livesIn&&(n.id!=='xm'||!state.xiaoman?.answer));
   if(fans.length&&Math.random()<.6)say(objName('mailbox'),nt(pick(fans)).mail);else say(objName('mailbox'),pick(Lp.letters));
 }
 function hasNeighborMail(){
   return CottageActivities.openRequest(state.neighborRequest,state.day)?.status==='offered'||
-    !!CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
+    !!CottageActivities.nextRequest(state.day,state.neighborRequest,neighborMailRelations());
 }
 function neighborRequestItems(request){
   const {items}=CottageActivities.requests[request.resident];
@@ -1801,7 +1852,8 @@ function pickFlower(f){
   if(state.flowersTotal===3)say(tr('garden'),tr('flower3'));
   else say(tr('garden'),tr('flowerGot',{x:state.inv.flower})+(state.flowersTotal<3?' '+tr('flowerMore',{x:3-state.flowersTotal}):''));
 }
-function plotVerb(plot){
+function plotVerb(plot,index){
+  if(!CottageActivities.canGrow(CottageActivities.seasonOf(state.day),state.tunnels||[],index)&&!CottageActivities.ripe(plot))return tr('winterPlot');
   if(!plot)return tr('plantCrop');
   if(plot.crop==='mysteryBloom'&&CottageActivities.ripe(plot))return tr('worldSeedLook');
   return tr(CottageActivities.ripe(plot)?'harvestCrop':'tendCrop',{crop:itemLabel(plot.crop)});
@@ -1817,8 +1869,12 @@ function tendPlot(i){
     return;
   }
   const opts=[];
+  const season=CottageActivities.seasonOf(state.day),tunnels=state.tunnels||[];
+  const warm=CottageActivities.canGrow(season,tunnels,i);
+  const cost=CottageActivities.tunnelCost.shell;
   let line=tr('plantTip');
-  if(!plot){
+  if(!warm)line=tr('winterPlotTip');
+  else if(!plot){
     for(const [crop,{days,event}] of Object.entries(CottageActivities.crops)){
       if(event)continue;
       opts.push({label:tr('plantOption',{crop:itemLabel(crop),days}),fn:()=>{
@@ -1832,7 +1888,7 @@ function tendPlot(i){
   }else{
     const days=CottageActivities.crops[plot.crop].days-plot.growth;
     line=tr(plot.watered?'cropWet':'cropDry',{crop:itemLabel(plot.crop),days});
-    const dry=state.garden.filter(p=>p&&!p.watered&&!CottageActivities.ripe(p));
+    const dry=state.garden.filter((p,index)=>p&&!p.watered&&!CottageActivities.ripe(p)&&CottageActivities.canGrow(season,tunnels,index));
     if(!plot.watered)opts.push({label:tr('waterPlot'),fn:()=>waterPlots([plot])});
     if(dry.length>1||(plot.watered&&dry.length))opts.push({label:tr('waterGarden',{count:dry.length}),fn:()=>waterPlots(dry)});
     opts.push({label:tr('clearPlot'),fn:()=>talk(tr('farm'),[tr('clearPlotAsk',{crop:itemLabel(plot.crop)})],[
@@ -1840,6 +1896,15 @@ function tendPlot(i){
       {label:tr('optBack'),back:true,fn:()=>tendPlot(i)}
     ])});
   }
+  if(state.tunnels&&!tunnels.includes(i)){
+    if(tunnels.length<CottageActivities.tunnelLimit){
+      opts.push({label:tr('winterBuild',{cost}),disabled:state.inv.shell<cost,fn:()=>{
+        if(!CottageActivities.installTunnel(tunnels,i,state.inv))return;
+        sfx('ding');save();updateHud();tendPlot(i);
+      }});
+    }else if(!warm)line=tr('winterPlotLimit');
+  }
+  if(tunnels.includes(i))line=tr('winterCovered')+' '+line;
   talk(tr('farm'),[line],opts.concat({label:tr('walkAway'),fn:null}));
 }
 function waterPlots(plots){
@@ -1907,8 +1972,11 @@ function goFishingTogether(n){
 }
 function fishMenu(tx,ty){
   if(state.need.energy<5){say(tr('pond'),tr('tooTired'));return;}
-  const spot=pondSpot(tx);
-  talk(tr(spot),[tr(spot==='reeds'?'reedsHint':'openWaterHint'),tr(darkness()>.5?'pondNightHint':'pondDayHint')],[
+  const winter=CottageActivities.seasonOf(state.day)==='winter';
+  if(winter&&!isIceHole(tx,ty)){say(tr('pond'),tr('iceBlocked'));return;}
+  const spot=winter?'ice':pondSpot(tx);
+  const lines=winter?[tr('iceHint')]:[tr(spot==='reeds'?'reedsHint':'openWaterHint'),tr(darkness()>.5?'pondNightHint':'pondDayHint')];
+  talk(tr(spot),lines,[
     {label:tr('castPlain'),fn:()=>startFish(tx,ty,false)},
     {label:tr('castBait',{count:state.inv.berry}),disabled:state.inv.berry<1,fn:()=>startFish(tx,ty,true)},
     {label:tr('walkAway'),fn:null}
@@ -1916,7 +1984,9 @@ function fishMenu(tx,ty){
 }
 function startFish(tx,ty,bait,companion=null){
   if(FISH.on||state.need.energy<5||(bait&&state.inv.berry<1))return;
-  const night=darkness()>.5,spot=pondSpot(tx);
+  const winter=CottageActivities.seasonOf(state.day)==='winter';
+  if(winter&&!isIceHole(tx,ty))return;
+  const night=darkness()>.5,spot=winter?'ice':pondSpot(tx);
   if(bait){state.inv.berry--;updateHud();save();}
   sfx('cast');
   Object.assign(FISH,{on:true,phase:'wait',t:1.4+Math.random()*(bait?1.2:2.6),tx,ty,bait,night,spot,companion});
@@ -2000,6 +2070,7 @@ function rememberPlayer(n,type,outcome,emotion,impact,object){
 function memoryLine(n,entry){
   const data=entry.interpretation;
   if(!data||typeof data!=='object')return '';
+  if(data.type==='xiaomanConfession'&&data.object==='friends')return tr('xmRecallFriends');
   if(['worldUfo','worldBottle','worldSeed'].includes(data.type))return tr(data.type+'Recall_'+data.object);
   if(data.type==='neighborRequest')return tr('requestRecall_'+n.id,{item:itemLabel(data.object)});
   if(data.type==='sharedFishing')return tr('sharedFishingRecall',{
@@ -2024,7 +2095,7 @@ function birthdayToday(n){return (state.day-1)%28+1===birthdayOf(n);}
 function sickToday(n){return state.day>3&&(state.day+NPCS.indexOf(NPCS.find(npc=>npc.id===n.id))*3)%17===0;}
 function rememberMissedOccasions(n){
   const relationship=rel(n);
-  if(!relationship.met||hearts(relationship)<3)return;
+  if(!relationship.met||hearts(relationship)<3||(n.id==='xm'&&state.xiaoman?.answer))return;
   if(birthdayToday(n)&&!relationship.done.birthday)rememberPlayer(n,'birthday','missed',-.48,75);
   if(sickToday(n)&&!relationship.done.visitSick)rememberPlayer(n,'visit','missed',-.30,68);
 }
@@ -2043,6 +2114,7 @@ function addPts(n,d){
   const h=hearts(r);sfx(d<0?'sad':h>before?'levelup':'heart');notify(tr('ptsToast',{e:d>=0?'💗':'💔',n:nm(n),d:(d>=0?'+':'')+d,h})+(h>before?' '+tr('levelUp'):''));save();
 }
 function milestone(n){
+  if(xiaomanRoute(n))return;
   const r=rel(n),h=hearts(r),T=nt(n);
   if(h>=3&&!r.m3){r.m3=true;D.npc=n;talk(nm(n),T.m3);return;}
   if(h>=6&&!r.m6){r.m6=true;D.npc=n;talk(nm(n),T.m6,null,()=>notify(tr('unlockDate',{n:nm(n)})));return;}
@@ -2056,25 +2128,28 @@ function jealousCheck(n,next){
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 function npcMenu(n,back){
   const r=rel(n),h=hearts(r),T=nt(n);D.npc=n;
-  const alreadyMet=r.met;
+  const alreadyMet=r.met,story=xiaomanRoute(n),friends=story&&state.xiaoman.answer==='friends';
   let greet;
   if(back)greet=tr('backGreet');
   else if(!r.met){r.met=true;greet=T.first;save();}
   else if(r.livesIn)greet=n.working?T[n.working]:pick(T.homeLines);
+  else if(friends)greet=tr('xmFriendGreet');
   else greet=r.couple?T.greetCouple:T.greet[Math.min(2,Math.floor(h/3))];
   const opts=[
     {label:doneTag(r,'chat',tr('optChat')),fn:()=>chat(n)},
     {label:tr('optSocial'),fn:()=>socialMenu(n)},
     {label:doneTag(r,'gift',tr('optGift')),fn:()=>giftMenu(n)}];
   opts.push(h>=2?{label:doneTag(r,'act',tr('optAct')),disabled:!!r.done.act,fn:()=>actMenu(n)}:{label:tr('optActLocked'),disabled:true});
-  if(r.m6)opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
-  if(h>=8&&!r.couple&&!anyCouple())opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
+  if(!story&&r.m6)opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
+  if(!story&&h>=8&&!r.couple&&!anyCouple())opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
   if(fishingInvitationReady(n))opts.unshift({label:tr('sharedFishingTalk'),fn:()=>offerFishingInvitation(n)});
   const request=acceptedNeighborRequest(n);
   if(request)opts.unshift({label:tr('requestHandIn'),fn:()=>offerNeighborDelivery(n,request)});
   opts.unshift(...worldNpcOptions(n,back));
+  const scene=xiaomanScene(n);
+  if(scene)opts.unshift({label:tr('xmTalk'),fn:()=>startXiaomanScene(n,scene)});
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
   if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
@@ -2095,7 +2170,7 @@ function chat(n){
   if(r.done.chat){talk(nm(n),[T.tired],null,()=>npcMenu(n,true));return;}
   r.done.chat=true;advanceTime(15);
   const first=state.life?.[n.id]?.firstDate;
-  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest','worldUfo','worldBottle','worldSeed'].includes(e.type));
+  const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest','worldUfo','worldBottle','worldSeed','xiaomanConfession'].includes(e.type));
   const lines=[];
   if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
   else if(recalled&&Math.random()<.4){const line=memoryLine(n,recalled);if(line)lines.push(line);}
@@ -2103,9 +2178,10 @@ function chat(n){
   if(sc>=4){lines.push(T.outfitHi);gain+=8;r.knowStyle=true;}else if(sc>=2){lines.push(T.outfitMid);gain+=4;}
   if(state.need.mood<25){lines.push(tr('tiredMood',{n:nm(n)}));gain-=3;}
   const pet=petSeenBy(n);if(pet){lines.push(tr('petLiked',{n:nm(n),p:pet.name}));gain+=4;note(n,'pet_'+pet.kind,12);}
-  lines.push(pick(r.couple?T.chatCouple:T.chat[Math.min(2,Math.floor(hearts(r)/3))]));
+  const friends=xiaomanRoute(n)&&state.xiaoman.answer==='friends';
+  lines.push(friends?tr('xmFriendChat'):pick(r.couple?T.chatCouple:T.chat[Math.min(2,Math.floor(hearts(r)/3))]));
   const after=()=>{addPts(n,gain);state.need.mood=clampN(state.need.mood+5);updateHud();milestone(n);};
-  if(Math.random()<0.55){const qi=Math.floor(Math.random()*T.questions.length),q=T.questions[qi];
+  if(!friends&&Math.random()<0.55){const qi=Math.floor(Math.random()*T.questions.length),q=T.questions[qi];
     talk(nm(n),lines.concat([q.q]),q.opts.map(([label,reply],oi)=>({label,fn:()=>{gain+=n.qv[qi][oi];D.npc=n;talk(nm(n),[reply],null,after);}})));}
   else talk(nm(n),lines,null,after);
 }
@@ -2113,9 +2189,11 @@ function socialMenu(n){
   const r=rel(n),h=hearts(r);D.npc=n;
   const o=[
     {label:doneTag(r,'praise',tr('optPraise',{n:nm(n)})),disabled:!!r.done.praise,fn:()=>socialAct(n,'praise')},
-    {label:doneTag(r,'joke',tr('optJoke')),disabled:!!r.done.joke,fn:()=>socialAct(n,'joke')},
-    h>=4?{label:doneTag(r,'flirt',tr('optFlirt')),disabled:!!r.done.flirt,fn:()=>socialAct(n,'flirt')}:{label:tr('optFlirtLocked'),disabled:true}];
-  if(h>=7||r.couple)o.push({label:doneTag(r,'hand',tr('optHand')),disabled:!!r.done.hand,fn:()=>intimate(n,'hand')});
+    {label:doneTag(r,'joke',tr('optJoke')),disabled:!!r.done.joke,fn:()=>socialAct(n,'joke')}];
+  if(!xiaomanRoute(n)){
+    o.push(h>=4?{label:doneTag(r,'flirt',tr('optFlirt')),disabled:!!r.done.flirt,fn:()=>socialAct(n,'flirt')}:{label:tr('optFlirtLocked'),disabled:true});
+    if(h>=7||r.couple)o.push({label:doneTag(r,'hand',tr('optHand')),disabled:!!r.done.hand,fn:()=>intimate(n,'hand')});
+  }
   if(r.couple){o.push({label:doneTag(r,'hug',tr('optHug')),disabled:!!r.done.hug,fn:()=>intimate(n,'hug')});
     o.push(h>=9?{label:doneTag(r,'kiss',tr('optKiss')),disabled:!!r.done.kiss,fn:()=>intimate(n,'kiss')}:{label:tr('optKissLocked'),disabled:true});}
   o.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
@@ -2181,6 +2259,7 @@ function dateWith(n,loc){
       D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
 function confess(n){
+  if(xiaomanRoute(n))return;
   const r=rel(n);D.npc=n;r.done.confess=true;
   talk(tr('you'),[tr('confessStart')],null,()=>{
     D.npc=n;
@@ -2191,6 +2270,50 @@ function confess(n){
   });
 }
 function moveIn(n){const r=rel(n);D.npc=n;talk(nm(n),nt(n).moveIn,null,()=>{r.livesIn=true;n.path=null;n.idle=5;save();notify(tr('movedIn',{n:nm(n)}));});}
+
+/* ---------------- Xiaoman’s story ---------------- */
+function xiaomanRoute(n){
+  return n.id==='xm'&&!rel(n).couple&&!rel(n).livesIn;
+}
+function xiaomanScene(n){
+  if(!xiaomanRoute(n)||!rel(n).met)return null;
+  return XiaomanStory.next(state.xiaoman,state.day,hearts(rel(n)));
+}
+function startXiaomanScene(n,scene){
+  if(xiaomanScene(n)!==scene)return;
+  const story=state.xiaoman;
+  story.offered=state.day;
+  n.path=null;n.idle=20;n.seekingPlayer=false;
+  D.npc=n;save();
+  const choices=scene==='confession'?[
+    {label:tr('xmChooseFriends'),fn:()=>finishXiaoman(n,'friends')},
+    {label:tr('xmChooseSpace'),fn:()=>finishXiaoman(n,'space')}
+  ]:[
+    {label:tr('xmAccept_'+scene),fn:()=>{
+      story[scene]=state.day;
+      const dialogue=()=>{D.npc=n;talk(nm(n),[tr('xmScene_'+scene)]);};
+      if(scene==='flowers'){
+        busyFade(()=>{
+          Object.assign(P,{x:19*16+8,y:7*16+12,dir:'up'});
+          Object.assign(n,{x:20*16+8,y:7*16+12,dir:'up',state:'here',path:null,leaving:false,moving:false,idle:20});
+          snapPets();addPts(n,5);updateHud();
+        },dialogue);
+      }else{addPts(n,5);updateHud();dialogue();}
+    }}
+  ];
+  choices.push({label:tr('xmLater'),back:true,fn:()=>say(nm(n),tr('xmWait'))});
+  talk(nm(n),scene==='confession'?[tr('xmConfess1'),tr('xmConfess2')]:[tr('xmInvite_'+scene)],choices);
+}
+function finishXiaoman(n,answer){
+  const story=state.xiaoman;
+  if(story.answer)return;
+  story.answer=answer;story.answered=state.day;
+  if(state.neighborRequest?.resident==='xm'&&['offered','accepted'].includes(state.neighborRequest.status))state.neighborRequest=null;
+  rememberPlayer(n,'xiaomanConfession',answer,-.35,100,answer);
+  n.state='away';n.path=null;n.x=n.y=-100;
+  save();updateHud();
+  D.npc=n;talk(nm(n),[tr('xmPlayer_'+answer),tr('world_xmConfession_'+answer)]);
+}
 
 /* ---------------- cottage events ---------------- */
 function updateNightVisitor(){
@@ -2294,7 +2417,7 @@ function bloomMenu(i){
   if(!seed.done){
     talk(tr('farm'),[tr('worldSeedBloomed')],[
       {label:tr('worldSeedKeep'),fn:()=>resolveWorldEvent(n,'seed','keep')},
-      {label:tr('worldSeedReturn'),fn:()=>resolveWorldEvent(n,'seed','return',i)},
+      ...(state.xiaoman.answer==='space'?[]:[{label:tr('worldSeedReturn'),fn:()=>resolveWorldEvent(n,'seed','return',i)}]),
       {label:tr('walkAway'),fn:null}
     ]);
     return;
@@ -2310,8 +2433,12 @@ function bloomMenu(i){
 function resolveWorldEvent(n,kind,choice,plotIndex){
   if(!CottageEvents.finish(state.events,kind,state.day,choice))return;
   if(kind==='seed'&&choice==='return')state.garden[plotIndex]=null;
-  rememberPlayer(n,kind==='bottle'?'worldBottle':'worldSeed',choice,.8,80,choice);
-  addPts(n,5);updateHud();
+  if(state.xiaoman.answer==='space')save();
+  else{
+    rememberPlayer(n,kind==='bottle'?'worldBottle':'worldSeed',choice,.8,80,choice);
+    addPts(n,5);
+  }
+  updateHud();
   talk(kind==='seed'?tr('farm'):nm(n),[tr('world_'+kind+'_'+choice)]);
 }
 
@@ -2324,15 +2451,16 @@ function findTarget(){
   const pt=petAt(fx,fy);if(pt)return {kind:'pet',p:pt,verb:tr('petVerb',{p:pt.name}),x:pt.x,y:pt.y-20};
   if(Math.hypot(cat.x-fx,cat.y-4-fy)<13)return {kind:'cat',verb:tr('petCat'),x:cat.x,y:cat.y-20};
   const tx=Math.floor(fx/16),ty=Math.floor(fy/16),mx=Math.floor(P.x/16),my=Math.floor((P.y-2)/16);
-  const fl=flowers.find(f=>!f.picked&&((f.tx===tx&&f.ty===ty)||(f.tx===mx&&f.ty===my)));
+  const winter=CottageActivities.seasonOf(state.day)==='winter';
+  const fl=!winter&&flowers.find(f=>!f.picked&&((f.tx===tx&&f.ty===ty)||(f.tx===mx&&f.ty===my)));
   if(fl)return {kind:'flower',f:fl,verb:tr('pickFlower'),x:fl.tx*16+8,y:fl.ty*16-2};
-  for(const [ax,ay] of [[tx,ty],[mx,my]]){const pi=plotIndex(ax,ay);if(pi>=0)return {kind:'plot',i:pi,verb:plotVerb(state.garden[pi]),x:ax*16+8,y:ay*16+2};}
+  for(const [ax,ay] of [[tx,ty],[mx,my]]){const pi=plotIndex(ax,ay);if(pi>=0)return {kind:'plot',i:pi,verb:plotVerb(state.garden[pi],pi),x:ax*16+8,y:ay*16+2};}
   if(!state.goldFound&&[[tx,ty],[mx,my]].some(([a,b])=>a===GOLD_TILE[0]&&b===GOLD_TILE[1]))return {kind:'gold',verb:tr('goldVerb'),x:GOLD_TILE[0]*16+8,y:GOLD_TILE[1]*16-4};
   const o=objAt(tx,ty);
   if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&unreadAlbumPostcard()?tr('albumMailPrompt'):o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
     x:(o.tx+o.tw/2)*16,y:o.py-5};
   const wx=Math.floor((P.x+d[0]*16)/16),wy=Math.floor((P.y-3+d[1]*16)/16);
-  if(at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
+  if(at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:winter?tr(isIceHole(wx,wy)?'iceAction':'iceLook'):tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
   return null;
 }
 function interact(){
@@ -2359,7 +2487,7 @@ const fmt=m=>{const h=Math.floor(m/60)%24,mm=Math.floor(m%60);return String(h).p
 function darkness(){const h=state.time/60;if(h<5)return 1;if(h<7)return 1-(h-5)/2;if(h<17)return 0;if(h<20)return (h-17)/3;return 1;}
 function updateHud(){
   const h=state.time/60,icon=h>=19||h<5?'🌙':h>=17?'🌇':'☀️';
-  $('#chipTime').textContent=`${icon} ${tr('day',{d:state.day})} ${fmt(state.time)}`;
+  $('#chipTime').textContent=`${icon} ${tr(CottageActivities.seasonOf(state.day))} · ${tr('day',{d:state.day})} ${fmt(state.time)}`;
   const N=state.need;
   [['bE','barE',N.energy,'energy'],['bH','barH',N.hunger,'hunger'],['bM','barM',N.mood,'mood']].forEach(([b,w,v,t])=>{$('#'+b).style.width=v.toFixed(0)+'%';$('#'+w).classList.toggle('low',v<20);$('#'+w).title=tr(t)+' '+Math.round(v);});
   $('#cBag').textContent=bagCount();
@@ -2542,6 +2670,7 @@ $('#btnSave').addEventListener('click',()=>{
 /* ---------------- diary ---------------- */
 function statusOf(r){const s=Lp.status;if(r.livesIn)return s.livesIn;if(r.couple)return s.couple;const h=hearts(r);if(h>=8)return s.h8;if(h>=6)return s.h6;if(h>=3)return s.h3;if(h>=1)return s.h1;return r.met?s.met:s.none;}
 function nextHint(n){
+  if(xiaomanRoute(n))return tr(state.xiaoman.answer==='friends'?'xmHintFriends':state.xiaoman.answer==='space'?'xmHintSpace':'xmHint');
   const r=rel(n),h=hearts(r);
   if(!r.met)return tr('hintMeet',{t:fmt(n.arrive),n:nm(n)});
   if(r.livesIn)return tr('hintLives');
@@ -2570,16 +2699,16 @@ function renderDiary(){
   npcs.forEach(n=>{
     const r=rel(n),h=hearts(r),T=nt(n),card=el('div','rcard'),c=mk(20,26);blitChar(c.getContext('2d'),n.outfit,'down',0,0,0);
     const info=el('div','rinfo'),top=el('div','rtop');
-    top.append(el('b',null,r.met?T.name:tr('unknownName')),el('span','pill'+(r.couple?' love':''),statusOf(r)));
+    top.append(el('b',null,r.met?T.name:tr('unknownName')),el('span','pill'+(r.couple?' love':''),(xiaomanRoute(n)&&state.xiaoman.answer?tr('xmStatus_'+state.xiaoman.answer):statusOf(r))));
     const hs=el('div','hearts');hs.setAttribute('aria-label',tr('heartsAria',{x:h}));for(let i=0;i<10;i++)hs.append(el('span',i<h?'on':'','♥'));
     const dn=k=>r.done[k]?'✓':'○';
-    const today=tr('today')+`${dn('chat')} ${tr('tChat')}　${dn('gift')} ${tr('tGift')}　${dn('act')} ${tr('tAct')}`+(r.m6?`　${dn('date')} ${tr('tDate')}`:'');
+    const today=tr('today')+`${dn('chat')} ${tr('tChat')}　${dn('gift')} ${tr('tGift')}　${dn('act')} ${tr('tAct')}`+(r.m6&&!xiaomanRoute(n)?`　${dn('date')} ${tr('tDate')}`:'');
     const gf=Object.entries(n.gifts).sort((a,b)=>b[1]-a[1]);
     const giftTxt=r.knowGift?tr('favGiftVal',{a:ITEM_ICONS[gf[0][0]]+itemLabel(gf[0][0]),b:ITEM_ICONS[gf[1][0]]+itemLabel(gf[1][0])}):tr('unknown2');
     const styleTxt=r.knowStyle?listJoin(n.likeColors.map(i=>Lp.colors[i]))+' · '+listJoin(n.likeItems.map(itemName)):tr('unknown4');
     const notes=Object.entries(r.notes).map(([k,v])=>{const nmk=k.startsWith('gift_')?ITEM_ICONS[k.slice(5)]+itemLabel(k.slice(5)):k.startsWith('pet_')?PET_ICON[k.slice(4)]+Lp.pets.kinds[k.slice(4)].name:(Lp.notes[k]||k);return nmk+faceOf(v);});
     const nl=el('div','rline');nl.append(document.createTextNode(tr('notes')));nl.append(notes.length?document.createTextNode(notes.join('  ')):el('em',null,tr('notesEmpty')));
-    info.append(top,el('div','rsub',`${T.title} · `+(r.livesIn?tr('livesHere'):tr('visits',{a:fmt(n.arrive),b:fmt(n.leave)}))),hs,
+    info.append(top,el('div','rsub',`${T.title} · `+(r.livesIn?tr('livesHere'):xiaomanRoute(n)&&state.xiaoman.answer?tr('xmVisits_'+state.xiaoman.answer):tr('visits',{a:fmt(n.arrive),b:fmt(n.leave)}))),hs,
       el('div','rline',today),el('div','rline',tr('favGift')+giftTxt),el('div','rline',tr('favStyle')+styleTxt),nl,el('div','rnext',nextHint(n)));
     if(r.met){
       const life=state.life[n.id],cards=life?.cards||{};
@@ -2649,7 +2778,7 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day)).sort((a,b)=>b.day-a.day);
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -2659,6 +2788,17 @@ function updateAlbumBadge(){
 function albumScene(card,n){
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.event?.startsWith('xm')){
+    MemoryAlbum.paint(g,card.event==='xmPostcard'?'home':'garden');
+    blitChar(g,n.outfit,'down',0,29,22);
+    if(card.event==='xmFlowers'||card.choice==='friends')CottageEvents.bloom(g,62,34);
+    else{
+      g.fillStyle='#a87379';g.fillRect(58,32,15,10);
+      g.fillStyle='#f7dabc';g.fillRect(59,32,13,8);
+      g.fillStyle='#db9d9e';g.fillRect(64,35,3,2);
+    }
+    return art;
+  }
   if(card.event){
     MemoryAlbum.paint(g,card.event==='seed'?'garden':card.event==='bottle'?'pond':'stars');
     if(card.event==='seed'){
@@ -2687,6 +2827,7 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.event?.startsWith('xm'))return tr(card.choice?'world_xmConfession_'+card.choice:'xmCard_'+card.event);
   if(card.event)return tr(card.choice?'world_'+card.event+'_'+card.choice:'worldUfoPostcard');
   if(card.kind==='postcard')return tr('postcard_'+n.id+'_'+card.variant);
   if(card.kind==='sharedFishing'&&Object.hasOwn(CottageActivities.fish,card.info?.kind)){
@@ -2798,18 +2939,40 @@ function drawWindows(g,night){
 }
 function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);}
 function drawPerson(g,o,dir,fr,px,py){const x=Math.round(px),y=Math.round(py);g.fillStyle='rgba(40,30,30,.22)';g.fillRect(x-5,y-1,10,2);g.fillRect(x-4,y+1,8,1);blitChar(g,o,dir,fr,x-10,y-25);}
+function drawTunnel(g,x,y,winter){
+  const r=(a,b,w,h,color)=>{g.fillStyle=color;g.fillRect(x+a,y+b,w,h);};
+  r(0,7,16,8,'rgba(150,220,211,.26)');
+  r(1,5,14,2,'rgba(198,239,234,.66)');
+  r(4,3,8,2,'rgba(214,244,238,.82)');
+  r(0,7,1,8,'#5f8e88');r(15,7,1,8,'#5f8e88');
+  r(1,13,3,2,'#5f8e88');r(12,13,3,2,'#5f8e88');
+  if(winter){r(5,2,6,1,'#ffffff');r(3,4,10,1,'#e7f4f4');}
+}
+const reducedMotion=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function drawSeasonParticles(g,time,winter){
+  const t=reducedMotion?0:time;
+  for(let i=0;i<(winter?68:18);i++){
+    const x=(hash2(i,7)*MW*TILE+t*(winter?4:11))%(MW*TILE)|0;
+    const y=(hash2(i,13)*MH*TILE+t*(7+hash2(i,31)*7))%(MH*TILE)|0;
+    const tile=at(x>>4,y>>4);
+    if(tile===FLOOR||tile===DOOR||tile===WALL||tile===WALLF)continue;
+    g.fillStyle=winter?(i%3===0?'#d5e6f1':'#fbfdf8'):(i%2===0?'#d89248':'#b87043');
+    g.fillRect(x,y,i%3===0?2:1,1);
+  }
+}
 function render(time){
   ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#2a2230';ctx.fillRect(0,0,cv.width,cv.height);
   const S=scale,vw=cv.width/S,vh=cv.height/S,dark=darkness();
   const [cx,cy]=cameraOrigin();
   ctx.setTransform(S,0,0,S,-cx*S,-cy*S);ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(ground,0,0);
+  const season=CottageActivities.seasonOf(state.day),art=SEASON_ART[season],winter=season==='winter';
+  ctx.drawImage(art.ground,0,0);
   if(walkRoute.length){
     const [x,y]=walkRoute.at(-1).map(Math.round);
     ctx.fillStyle='#704844';ctx.fillRect(x-4,y-4,8,4);
     ctx.fillStyle='#ffe1a2';ctx.fillRect(x-3,y-3,6,2);
   }
-  for(const [x,y] of waterTiles){const h=hash2(x,y);if(Math.sin(time*1.6+h*40)>0.82){ctx.fillStyle='#e2f6fc';ctx.fillRect(x*16+3+(h*8|0),y*16+4+(hash2(y,x)*8|0),3,1);}}
+  if(!winter)for(const [x,y] of waterTiles){const h=hash2(x,y);if(Math.sin(time*1.6+h*40)>0.82){ctx.fillStyle='#e2f6fc';ctx.fillRect(x*16+3+(h*8|0),y*16+4+(hash2(y,x)*8|0),3,1);}}
   drawWindows(ctx,dark>0.5);
   state.garden.forEach((plot,i)=>{
     if(!plot)return;
@@ -2826,7 +2989,11 @@ function render(time){
       :plot.growth?SPR.berryLeaf:SPR.sprout;
     ctx.drawImage(sprout,x,y);
   });
-  for(const f of flowers)if(!f.picked){const sway=Math.sin(time*2+f.tx)>0.6?1:0;ctx.drawImage(SPR.flower[f.col],f.tx*16+sway,f.ty*16);}
+  for(const i of state.tunnels){
+    const x=(17+i%6)*16,y=(13+Math.floor(i/6))*16;
+    drawTunnel(ctx,x,y,winter);
+  }
+  if(!winter)for(const f of flowers)if(!f.picked){const sway=Math.sin(time*2+f.tx)>0.6?1:0;ctx.drawImage(SPR.flower[f.col],f.tx*16+sway,f.ty*16);}
   if(FISH.on){const bx=FISH.tx*16+8,by=FISH.ty*16+8+(FISH.phase==='bite'?2:(Math.sin(time*3)>0?1:0));
     ctx.strokeStyle='rgba(255,245,216,.65)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(P.x,P.y-12);ctx.lineTo(bx,by);ctx.stroke();
     ctx.fillStyle='#2a1e24';ctx.fillRect(bx-2,by-2,5,5);ctx.fillStyle='#ffffff';ctx.fillRect(bx-1,by-1,3,1);ctx.fillStyle='#e8384f';ctx.fillRect(bx-1,by,3,2);
@@ -2852,7 +3019,7 @@ function render(time){
     g.fillStyle='rgba(40,30,30,.2)';g.fillRect(x-5,y-1,10,2);
     if(cat.dir<0){g.save();g.translate(x+9,y-14);g.scale(-1,1);g.drawImage(s,0,0);g.restore();}else g.drawImage(s,x-9,y-14);
   }});
-  ents.sort((a,b)=>a.key-b.key);for(const e of ents)e.draw(ctx);
+  ents.sort((a,b)=>a.key-b.key);for(const e of ents)e.draw(ctx,art);
   if(unreadAlbumPostcard()||hasNeighborMail()){
     const x=7*16+4,y=10*16-16+(Math.sin(time*4)>0?1:0);
     ctx.fillStyle='#714c48';ctx.fillRect(x-1,y-1,10,8);
@@ -2877,11 +3044,12 @@ function render(time){
           ctx.fillStyle='#fff0bc';ctx.fillRect(x,y,1,1);
         }
       });
-      for(const f of fireflies){const fx=f.x+Math.sin(time*f.s+f.p)*10,fy=f.y+Math.cos(time*f.s*.7+f.p)*7,a=(Math.sin(time*2.4*f.s+f.p)+1)/2*dark;
+      if(!winter)for(const f of fireflies){const fx=f.x+Math.sin(time*f.s+f.p)*10,fy=f.y+Math.cos(time*f.s*.7+f.p)*7,a=(Math.sin(time*2.4*f.s+f.p)+1)/2*dark;
         if(a>.3){glow(ctx,fx,fy,5,`rgba(255,240,140,${(a*.5).toFixed(2)})`);ctx.fillStyle=`rgba(255,250,190,${a.toFixed(2)})`;ctx.fillRect(Math.round(fx),Math.round(fy),1,1);}}}
     ctx.globalCompositeOperation='source-over';
     drawNightVisitor(ctx,time);
   }
+  if(winter||season==='autumn')drawSeasonParticles(ctx,time,winter);
 }
 
 /* ---------------- loop ---------------- */
@@ -2933,6 +3101,12 @@ snapPets();
 (function(){
   const dev={lock:false};
   const N=()=>state.need;
+  const canPreview=()=>{
+    if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){
+      notify('先回到游戏画面再预览');return false;
+    }
+    return true;
+  };
   const fillNeeds=()=>{N().energy=N().hunger=N().mood=100;};
   const A={
     gold(){state.inv.gold=(state.inv.gold||0)+1;state.goldFound=true;updateHud();save();notify('🛠 金手指 +1（日记 › 背包 › 使用）');},
@@ -2949,7 +3123,7 @@ snapPets();
     resetDay(){NPCS.forEach(n=>{rel(n).done={};});state.pets.forEach(p=>{p.done={};});flowers.forEach(f=>{f.picked=false;});state.picked=[];save();notify('🛠 今天的互动次数和花朵已重置');},
     time(h){state.time=h*60;npcs.forEach(n=>{if(!rel(n).livesIn&&!summoned(n)){n.state='away';n.path=null;n.leaving=false;n.x=n.y=-100;}});updateHud();notify('🛠 时间跳到 '+fmt(state.time));},
     previewEvent(kind){
-      if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){notify('先回到游戏画面再预览事件');return;}
+      if(!canPreview())return;
       const event=state.events[kind];
       if(event.done){notify('这个存档已完成该事件，可以在收藏里回看');return;}
       if(kind==='ufo'){
@@ -2965,6 +3139,32 @@ snapPets();
         npcMenu(n);
       }
       save();updateHud();
+    },
+    previewSeason(season){
+      if(!canPreview())return;
+      const {seasons,seasonLength,seasonOf}=CottageActivities;
+      if(seasonOf(state.day)!==season){
+        const start=seasons.indexOf(season)*seasonLength+1,year=seasons.length*seasonLength;
+        let day=Math.floor((state.day-1)/year)*year+start;
+        if(day<=state.day)day+=year;
+        state.day=day-1;newDay(9*60);
+      }
+      state.time=9*60;
+      save();updateHud();
+    },
+    previewXiaoman(){
+      if(!canPreview())return;
+      const n=npcs.find(person=>person.id==='xm'),story=state.xiaoman;
+      if(!xiaomanRoute(n)||story.answer){notify('这个存档的小满剧情已经有了结局');return;}
+      const date=!story.ribbon?2:!story.flowers?story.ribbon+1:story.flowers+2;
+      const heartsNeeded=!story.ribbon?3:!story.flowers?5:7;
+      if(state.day<date){
+        state.day=date-1;newDay(10*60);
+      }
+      const r=rel(n);r.met=true;r.pts=Math.max(r.pts,heartsNeeded*10);
+      story.offered=0;
+      const scene=xiaomanScene(n);
+      if(scene)startXiaomanScene(n,scene);
     },
     wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
@@ -2990,6 +3190,12 @@ snapPets();
   btn('🛸 预览飞船来客',()=>A.previewEvent('ufo'));
   btn('🍾 预览漂流瓶',()=>A.previewEvent('bottle'));
   btn('🌱 预览无名种子',()=>A.previewEvent('seed'));
+  const seasons=document.createElement('div');seasons.style.cssText='display:flex;flex-wrap:wrap;gap:3px';body.append(seasons);
+  for(const [index,label] of ['春','夏','秋','冬'].entries()){
+    const b=document.createElement('button');b.type='button';b.textContent=label;b.title='预览四季';
+    b.onclick=()=>{A.previewSeason(CottageActivities.seasons[index]);cv.focus({preventScroll:true});};seasons.append(b);
+  }
+  btn('🎀 预览小满剧情',A.previewXiaoman);
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;

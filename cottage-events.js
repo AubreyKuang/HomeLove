@@ -101,3 +101,44 @@ const CottageEvents = (() => {
   }
   return {load,discover,finish,landed,landing,postcard,cards,ship,alien,bloom,bottle};
 })();
+
+const XiaomanStory = (() => {
+  function load(saved,day=1){
+    const date=value=>Number.isInteger(value)&&value>=1&&value<=day?value:0;
+    const ribbon=date(saved?.ribbon);
+    const flowers=ribbon&&date(saved?.flowers)>=ribbon?date(saved.flowers):0;
+    const answer=flowers&&date(saved?.answered)>=flowers&&['friends','space'].includes(saved?.answer)?saved.answer:null;
+    return {ribbon,flowers,answer,answered:answer?date(saved.answered):0,offered:date(saved?.offered)};
+  }
+
+  function next(story,day,hearts){
+    if(story.answer||story.offered===day)return null;
+    if(!story.ribbon)return day>=2&&hearts>=3?'ribbon':null;
+    if(!story.flowers)return day>=story.ribbon+1&&hearts>=5?'flowers':null;
+    return day>=story.flowers+2&&hearts>=7?'confession':null;
+  }
+
+  function visits(story,day){
+    if(story.answer==='space')return false;
+    if(story.answer!=='friends')return true;
+    const elapsed=day-story.answered;
+    return elapsed>=7&&(elapsed-7)%5===0;
+  }
+
+  function postcard(story,day){
+    return story?.answer==='friends'&&day>=story.answered+7
+      ?{key:'world:xmPostcard',kind:'postcard',resident:'xm',day:story.answered+7,event:'xmPostcard'}:null;
+  }
+
+  function cards(story,day){
+    const cards=[];
+    for(const [event,when] of [['xmRibbon',story.ribbon],['xmFlowers',story.flowers],['xmConfession',story.answered]]){
+      if(when)cards.push({key:'world:'+event,kind:'world_'+event,resident:'xm',day:when,event,
+        ...(event==='xmConfession'?{choice:story.answer}:{})});
+    }
+    const mail=postcard(story,day);
+    if(mail)cards.push(mail);
+    return cards;
+  }
+  return {load,next,visits,postcard,cards};
+})();

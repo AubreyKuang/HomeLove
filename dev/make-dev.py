@@ -17,6 +17,12 @@ PANEL = r'''
 (function(){
   const dev={lock:false};
   const N=()=>state.need;
+  const canPreview=()=>{
+    if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){
+      notify('先回到游戏画面再预览');return false;
+    }
+    return true;
+  };
   const fillNeeds=()=>{N().energy=N().hunger=N().mood=100;};
   const A={
     gold(){state.inv.gold=(state.inv.gold||0)+1;state.goldFound=true;updateHud();save();notify('🛠 金手指 +1（日记 › 背包 › 使用）');},
@@ -33,7 +39,7 @@ PANEL = r'''
     resetDay(){NPCS.forEach(n=>{rel(n).done={};});state.pets.forEach(p=>{p.done={};});flowers.forEach(f=>{f.picked=false;});state.picked=[];save();notify('🛠 今天的互动次数和花朵已重置');},
     time(h){state.time=h*60;npcs.forEach(n=>{if(!rel(n).livesIn&&!summoned(n)){n.state='away';n.path=null;n.leaving=false;n.x=n.y=-100;}});updateHud();notify('🛠 时间跳到 '+fmt(state.time));},
     previewEvent(kind){
-      if(startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on){notify('先回到游戏画面再预览事件');return;}
+      if(!canPreview())return;
       const event=state.events[kind];
       if(event.done){notify('这个存档已完成该事件，可以在收藏里回看');return;}
       if(kind==='ufo'){
@@ -49,6 +55,32 @@ PANEL = r'''
         npcMenu(n);
       }
       save();updateHud();
+    },
+    previewSeason(season){
+      if(!canPreview())return;
+      const {seasons,seasonLength,seasonOf}=CottageActivities;
+      if(seasonOf(state.day)!==season){
+        const start=seasons.indexOf(season)*seasonLength+1,year=seasons.length*seasonLength;
+        let day=Math.floor((state.day-1)/year)*year+start;
+        if(day<=state.day)day+=year;
+        state.day=day-1;newDay(9*60);
+      }
+      state.time=9*60;
+      save();updateHud();
+    },
+    previewXiaoman(){
+      if(!canPreview())return;
+      const n=npcs.find(person=>person.id==='xm'),story=state.xiaoman;
+      if(!xiaomanRoute(n)||story.answer){notify('这个存档的小满剧情已经有了结局');return;}
+      const date=!story.ribbon?2:!story.flowers?story.ribbon+1:story.flowers+2;
+      const heartsNeeded=!story.ribbon?3:!story.flowers?5:7;
+      if(state.day<date){
+        state.day=date-1;newDay(10*60);
+      }
+      const r=rel(n);r.met=true;r.pts=Math.max(r.pts,heartsNeeded*10);
+      story.offered=0;
+      const scene=xiaomanScene(n);
+      if(scene)startXiaomanScene(n,scene);
     },
     wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
@@ -74,6 +106,12 @@ PANEL = r'''
   btn('🛸 预览飞船来客',()=>A.previewEvent('ufo'));
   btn('🍾 预览漂流瓶',()=>A.previewEvent('bottle'));
   btn('🌱 预览无名种子',()=>A.previewEvent('seed'));
+  const seasons=document.createElement('div');seasons.style.cssText='display:flex;flex-wrap:wrap;gap:3px';body.append(seasons);
+  for(const [index,label] of ['春','夏','秋','冬'].entries()){
+    const b=document.createElement('button');b.type='button';b.textContent=label;b.title='预览四季';
+    b.onclick=()=>{A.previewSeason(CottageActivities.seasons[index]);cv.focus({preventScroll:true});};seasons.append(b);
+  }
+  btn('🎀 预览小满剧情',A.previewXiaoman);
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;
