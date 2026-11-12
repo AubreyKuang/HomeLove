@@ -229,14 +229,15 @@ test('first moonfish gift schedules a night invitation, retry, and one shared ca
 
 test('capsule pools share the free draw, grant new items, and refund failed saves', () => {
   const state = {capsuleDresses: [], capsuleHairs: [], inv: {shell: 2, flower: 6}, o: {top: 'tee'}};
-  let options, preview, canSave=true;
+  let options, preview, canSave=true, wardrobeOpens=0;
   const runtime = game({
     state, D: {}, HAIRS: [], pick: choices => choices[0],
     unlocked: item => [...state.capsuleDresses,...state.capsuleHairs].includes(item.id),
     tr: key => key, itemLabel: key => key, itemName: key => key, objName: key => key,
     talk(_speaker, _lines, choices, _onEnd, art) { options = choices; preview = art; },
     el: () => ({setAttribute() {}, append() {}}), mk: () => ({getContext() {}}), blitChar() {},
-    lifeText: zh=>zh, openDress() {}, changed() {}, save(){return canSave;}, updateHud() {}, sfx() {}
+    lifeText: zh=>zh, openDress(){wardrobeOpens++;}, rewardNewLook(){}, say(){},
+    save(){return canSave;}, updateHud() {}, sfx() {}
   });
   runSection(runtime,'const CAPSULE_DRESSES=','const TOPS=');
   runSection(runtime,'const CAPSULE_HAIRS=','function torso(');
@@ -252,7 +253,7 @@ test('capsule pools share the free draw, grant new items, and refund failed save
   options[0].fn();
   assert.equal(state.o.top,'roseGown');
   assert.equal(state.o.topColor,9);
-  assert.equal(vm.runInContext('curCat',runtime),'capsule');
+  assert.equal(wardrobeOpens,0);
   runtime.drawCapsule(pools.dress,'star');
   assert.equal(state.capsuleDresses.length,1);
   canSave=false;
@@ -283,6 +284,9 @@ test('capsule pools share the free draw, grant new items, and refund failed save
   assert.equal(state.o.hair,'cloudBob');
   assert.equal(state.o.hairColor,6);
   assert.equal(state.o.top,'roseGown');
+  assert.equal(wardrobeOpens,0);
+  options[1].fn();
+  assert.equal(wardrobeOpens,1);
   assert.equal(vm.runInContext('curCat',runtime),'capsuleHair');
   state.inv.flower=18;
   for(let i=0;i<6;i++)runtime.drawCapsule(pools.hair,'flower');
