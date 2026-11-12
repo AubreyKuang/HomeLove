@@ -135,6 +135,20 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .sw.on{box-shadow:0 0 0 3px var(--sel),3px 3px 0 3px var(--shadow)}
 
 .diarypanel{width:min(860px,100%)}
+#btnAlbum{position:relative}
+#btnAlbum[data-new]::after{content:attr(data-new);position:absolute;top:-7px;right:-5px;padding:1px 4px;color:#fff9eb;background:#a55356;border:2px solid #fff1d5;font-size:10px;line-height:1.2;pointer-events:none}
+.album-body{overflow:auto;padding:16px;background:#f5e3c7;color:#513b33}
+.album-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,145px),1fr));gap:14px}
+.album-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.album-card,.album-page{background:#fff5df;border:2px solid #b48667;color:#513b33;padding:8px;box-shadow:2px 3px #d7b595}
+.album-card{display:flex;flex-direction:column;gap:4px;text-align:start;font:inherit;cursor:pointer}
+.album-card:hover,.album-card:focus-visible{border-color:#a55356}
+.album-card[data-kind="rareDate"]{border-color:#b48537}
+.album-card canvas,.album-page canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #ac8063}
+.album-card small,.album-page small{color:#75594a}
+.album-page{width:min(100%,436px);margin:12px auto 4px;padding:12px}
+.album-page h3{margin:10px 0 2px}
+.album-page p{margin:8px 0 2px}
 .diarybody{overflow:auto;padding:14px 16px 18px;display:flex;flex-direction:column;gap:18px;background:var(--panel)}
 .dsec h3{margin:0 0 10px;font-family:var(--font-display);font-weight:400;font-size:19px}
 .rel{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px}
@@ -218,6 +232,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 </div>
 <div id="hudR">
   <button class="pbtn primary" id="btnWardrobe" type="button" data-i18n="btnWardrobe"></button>
+  <button class="pbtn" id="btnAlbum" type="button" data-i18n="btnAlbum"></button>
   <button class="pbtn" id="btnDiary" type="button" data-i18n="btnDiary"></button>
   <button class="pbtn" id="btnLang" type="button" data-i18n-aria="language"></button>
   <button class="pbtn" id="btnSound" type="button" data-i18n-aria="sound">🔊</button>
@@ -284,6 +299,16 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
   </div>
 </div>
 
+<div id="album" class="overlay hidden" role="dialog" aria-modal="true" data-i18n-aria="albumTitle">
+  <div class="dpanel px diarypanel">
+    <div class="dhead">
+      <h2 data-i18n="albumTitle"></h2>
+      <button class="pbtn" id="albumClose" type="button" data-i18n="close"></button>
+    </div>
+    <div class="album-body" id="albumBody"></div>
+  </div>
+</div>
+
 <div id="start" class="overlay" role="dialog" aria-modal="true" data-i18n-aria="title">
   <div class="card px">
     <div class="langpick" id="langPick" role="group" data-i18n-aria="language"></div>
@@ -294,7 +319,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
       <span class="k"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span><span id="moveHelp"></span>
       <span class="k"><kbd>E</kbd><kbd data-i18n="space"></kbd></span><span data-i18n="kAct"></span>
       <span class="k"><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span data-i18n="kChoose"></span>
-      <span class="k"><kbd>C</kbd><kbd>J</kbd><kbd>L</kbd></span><span data-i18n="kMenus"></span>
+      <span class="k"><kbd>C</kbd><kbd>J</kbd><kbd>B</kbd><kbd>L</kbd></span><span data-i18n="kMenus"></span>
       <span class="k"><kbd>M</kbd></span><span data-i18n="kSound"></span>
       <span class="k"><kbd>A</kbd></span><span data-i18n="kTouch"></span>
     </div>
@@ -306,9 +331,10 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="npc-memory.js"></script>
 <script src="save-manager.js"></script>
 <script src="cottage-activities.js?v=neighbor-letters-1"></script>
-<script src="lang/zh.js?v=capsule-hair-1" charset="utf-8"></script>
-<script src="lang/en.js?v=capsule-hair-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=capsule-hair-1" charset="utf-8"></script>
+<script src="memory-album.js"></script>
+<script src="lang/zh.js?v=memory-album-1" charset="utf-8"></script>
+<script src="lang/en.js?v=memory-album-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=memory-album-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -826,6 +852,7 @@ const NPCS=[
     gifts:{star:18,shell:10,letter:9,flower:6,cookie:4,berry:3,fish:1,carrot:3,pumpkin:5,carp:4,moonfish:16},social:{praise:3,joke:5,flirt:11},
     acts:{walk:6,fish:5,read:8,sport:1,stars:16},dates:{pond:8,garden:4,stars:14,home:5},qv:[[9,2,8],[8,6,9]],dv:[9,5,8]},
 ];
+const ALBUM_RESIDENTS=NPCS.map(n=>n.id);
 const HOME_IN=[[4,6],[8,7],[5,7],[9,6],[4,8],[13,6],[14,5]],HOME_OUT=[[14,11],[10,13],[19,8]];
 
 /* ---------------- state ---------------- */
@@ -834,7 +861,7 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,
+  garden:CottageActivities.loadGarden(),fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()]))
 };
@@ -853,6 +880,7 @@ function applySave(s){
   state.position=s.position;
   if(s.o&&typeof s.o==='object')Object.assign(state.o,s.o);
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
+  state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
   if(Array.isArray(s.pets))state.pets=s.pets.filter(p=>p&&['cat','dog','bird','rabbit'].includes(p.kind)&&typeof p.name==='string').slice(0,3).map(p=>({kind:p.kind,ci:p.ci|0,name:p.name,bond:+p.bond||0,mode:p.mode==='stay'?'stay':'follow',done:(p.done&&typeof p.done==='object')?p.done:{},hx:p.hx,hy:p.hy,x:0,y:0,dir:1,anim:0}));
   if(s.need)['energy','hunger','mood'].forEach(k=>{if(typeof s.need[k]==='number')state.need[k]=clampN(s.need[k]);});
@@ -1226,7 +1254,7 @@ function updNpc(n,dt){
   const r=rel(n);
   if(FISH.on&&FISH.companion===n)return;
   const invitation=fishingInvitationReady(n);
-  if(n.state==='here'&&!n.leaving&&!n.working&&r.met&&!D.modal&&!busy&&!startOpen&&!dressOpen&&!diaryOpen&&!FISH.on){
+  if(n.state==='here'&&!n.leaving&&!n.working&&r.met&&!D.modal&&!busy&&!startOpen&&!dressOpen&&!diaryOpen&&!albumOpen&&!FISH.on){
     if(invitation&&seekFishingInvitation(n))return;
     const distance=Math.hypot(n.x-P.x,n.y-P.y);
     if(!invitation&&!r.done.visit&&n.seekingPlayer&&distance<43){
@@ -1555,13 +1583,13 @@ function renderDialog(){
 }
 function advance(){if(!D.modal)return;if(D.idx<D.lines.length-1){D.idx++;renderDialog();return;}if(D.choices)return;const f=D.onEnd;closeDialog();if(f)f();}
 function choose(i){const c=D.choices&&D.choices[i];if(!c||c.disabled||D.idx!==D.lines.length-1)return;sfx('select');closeDialog();if(c.fn)c.fn();}
-function closeDialog(){D.modal=false;D.onEnd=null;D.choices=null;D.preview=null;dialogEl.classList.add('hidden');dialogEl.classList.remove('modal');if(!dressOpen&&!diaryOpen)cv.focus({preventScroll:true});}
+function closeDialog(){D.modal=false;D.onEnd=null;D.choices=null;D.preview=null;dialogEl.classList.add('hidden');dialogEl.classList.remove('modal');if(!dressOpen&&!diaryOpen&&!albumOpen)cv.focus({preventScroll:true});}
 dialogEl.addEventListener('click',()=>{if(D.modal)advance();else if(!FISH.on)dialogEl.classList.add('hidden');});
 const toastEl=$('#toast');let toastTimer=0;
 function notify(txt){if(!txt)return;toastEl.textContent=txt;toastEl.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.add('hidden'),2600);}
 
 /* ---------------- life sim ---------------- */
-let busy=false,dressOpen=false,diaryOpen=false,startOpen=true,target=null;
+let busy=false,dressOpen=false,diaryOpen=false,albumOpen=false,startOpen=true,target=null;
 const fadeEl=$('#fade');
 function busyFade(mid,end){busy=true;fadeEl.style.opacity='1';setTimeout(()=>{mid&&mid();fadeEl.style.opacity='0';setTimeout(()=>{busy=false;end&&end();},450);},650);}
 function decay(m,moving){const N=state.need;N.energy=clampN(N.energy-m*(0.07+(moving?0.03:0)));N.hunger=clampN(N.hunger-m*0.09);let md=-0.03;if(N.hunger<20||N.energy<20)md-=0.1;N.mood=clampN(N.mood+m*md);}
@@ -1570,6 +1598,7 @@ const partnerHome=()=>npcs.find(n=>rel(n).livesIn);
 function newDay(wake){
   for(const n of npcs)rememberMissedOccasions(n);
   state.day++;state.time=wake;flowers.forEach(f=>f.picked=false);state.picked=[];CottageActivities.grow(state.garden);state.changedToday=false;
+  deliverAlbumPostcard();
   NPCS.forEach(n=>{rel(n).done={};});
   state.pets.forEach(p=>{p.done={};});
   npcs.forEach(n=>{n.state='away';n.path=null;n.leaving=false;n.seekingPlayer=false;n.x=n.y=-100;});
@@ -1680,7 +1709,23 @@ function tryCapsuleItem(pool,item){
   say(objName('capsule'),lifeText(`已换上「${name}」！`,`Now wearing ${name}!`,`「${name}」に替えたよ！`));
 }
 function openCapsuleWardrobe(pool){curCat=pool.tab;openDress();}
+function deliverAlbumPostcard(){
+  const postcard=MemoryAlbum.nextPostcard(state.day,ALBUM_RESIDENTS.filter(id=>state.rel[id].met),state.album);
+  if(postcard)state.album.postcards.push(postcard);
+}
+function unreadAlbumPostcard(){
+  return state.album?.postcards.findLast(card=>!state.album.seen.includes(MemoryAlbum.postcardKey(card)));
+}
 function checkMail(){
+  const postcard=unreadAlbumPostcard();
+  if(!postcard){checkNeighborMail();return;}
+  const n=npcs.find(person=>person.id===postcard.resident);
+  talk(objName('mailbox'),[tr('albumMail',{n:nm(n)})],[
+    {label:tr('btnAlbum'),fn:()=>openAlbum('postcards')},
+    {label:tr('albumOtherMail'),back:true,fn:checkNeighborMail}
+  ]);
+}
+function checkNeighborMail(){
   const current=CottageActivities.openRequest(state.neighborRequest,state.day);
   const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,state.rel);
   if(request){
@@ -2088,6 +2133,7 @@ function give(n,k){
   if(r.done.gift||!(state.inv[k]>0))return;
   state.inv[k]--;r.done.gift=true;if(d>=15)r.knowGift=true;
   note(n,'gift_'+k,d);advanceTime(5);updateHud();D.npc=n;
+  lifeOf(n).firstGift ||= {day:state.day,item:k};
   rememberPlayer(n,'gift',d>=15?'liked':d<0?'disliked':'received',Math.max(-1,Math.min(1,d/15)),65,k);
   if(n.id===FISHING_INVITE.resident&&k===FISHING_INVITE.gift)queueFishingInvitation(n);
   state.need.mood=clampN(state.need.mood+3);addPts(n,d);updateHud();
@@ -2118,7 +2164,7 @@ function dateWith(n,loc){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];r.done.date=true;D.npc=n;
   busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
-      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{lifeOf(n).firstDate ||= {place:loc,day:state.day};lifeOf(n).cards.firstDate ||= state.day;if(Math.random()<.05)lifeOf(n).cards.rareDate ||= state.day;rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
+      D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
 function confess(n){
   const r=rel(n);D.npc=n;r.done.confess=true;
@@ -2144,7 +2190,7 @@ function findTarget(){
   for(const [ax,ay] of [[tx,ty],[mx,my]]){const pi=plotIndex(ax,ay);if(pi>=0)return {kind:'plot',i:pi,verb:plotVerb(state.garden[pi]),x:ax*16+8,y:ay*16+2};}
   if(!state.goldFound&&[[tx,ty],[mx,my]].some(([a,b])=>a===GOLD_TILE[0]&&b===GOLD_TILE[1]))return {kind:'gold',verb:tr('goldVerb'),x:GOLD_TILE[0]*16+8,y:GOLD_TILE[1]*16-4};
   const o=objAt(tx,ty);
-  if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
+  if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&unreadAlbumPostcard()?tr('albumMailPrompt'):o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
     x:(o.tx+o.tw/2)*16,y:o.py-5};
   const wx=Math.floor((P.x+d[0]*16)/16),wy=Math.floor((P.y-3+d[1]*16)/16);
   if(at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
@@ -2153,7 +2199,7 @@ function findTarget(){
 function interact(){
   if(D.modal){advance();return;}
   if(FISH.on){reel();return;}
-  if(busy||dressOpen||diaryOpen||startOpen)return;
+  if(busy||dressOpen||diaryOpen||albumOpen||startOpen)return;
   const t=findTarget();if(!t)return;
   walkRoute=[];
   D.npc=null;
@@ -2177,10 +2223,11 @@ function updateHud(){
   const N=state.need;
   [['bE','barE',N.energy,'energy'],['bH','barH',N.hunger,'hunger'],['bM','barM',N.mood,'mood']].forEach(([b,w,v,t])=>{$('#'+b).style.width=v.toFixed(0)+'%';$('#'+w).classList.toggle('low',v<20);$('#'+w).title=tr(t)+' '+Math.round(v);});
   $('#cBag').textContent=bagCount();
+  updateAlbumBadge();
 }
 const promptEl=$('#prompt');let promptText='';
 function updatePrompt(){
-  const txt=(!target||busy||dressOpen||diaryOpen||startOpen||D.modal||FISH.on)?'':target.verb;
+  const txt=(!target||busy||dressOpen||diaryOpen||albumOpen||startOpen||D.modal||FISH.on)?'':target.verb;
   if(txt===promptText)return;promptText=txt;
   if(!txt){promptEl.classList.add('hidden');return;}
   promptEl.innerHTML='';const k=document.createElement('kbd');k.textContent=actKey();promptEl.append(k,document.createTextNode(txt));promptEl.classList.remove('hidden');
@@ -2201,6 +2248,7 @@ function applyLang(){
   promptText='\u0000';updatePrompt();updateHud();
   if(dressOpen){renderPicker();renderLooks();drawPreview();}
   if(diaryOpen)renderDiary();
+  if(albumOpen)renderAlbum();
 }
 function setLang(code){if(!PACKS[code])return;LANG=code;try{localStorage.setItem(LANG_KEY,code);}catch(e){}applyLang();}
 function cycleLang(){const i=LANG_ORDER.indexOf(LANG);setLang(LANG_ORDER[(i+1)%LANG_ORDER.length]);}
@@ -2209,6 +2257,7 @@ const has=(...ks)=>ks.some(k=>keys.has(k)||touchKeys.has(k));
 addEventListener('keydown',e=>{
   if(startOpen){if(e.code==='Enter'&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('.langpick'))){e.preventDefault();begin();}return;}
   if(dressOpen){if(e.code==='Escape'||e.code==='KeyC'){e.preventDefault();closeDress();}else if(e.code==='KeyQ')rot(-1);else if(e.code==='KeyR')rot(1);return;}
+  if(albumOpen){if(e.code==='Escape'||e.code==='KeyB'){e.preventDefault();closeAlbum();}return;}
   if(diaryOpen){if(e.code==='Escape'||e.code==='KeyJ'){e.preventDefault();closeDiary();}return;}
   if(D.modal){
     if(e.repeat)return;
@@ -2231,7 +2280,7 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   if(e.code==='Escape'||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code))walkRoute=[];
   keys.add(e.code);
-  if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);}
+  if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);}
 });
 addEventListener('keyup',e=>keys.delete(e.code));
 addEventListener('blur',()=>{keys.clear();touchKeys.clear();});
@@ -2243,12 +2292,13 @@ document.querySelectorAll('#pad button').forEach(b=>{
 });
 $('#abtn').addEventListener('pointerdown',e=>{e.preventDefault();interact();});
 $('#btnWardrobe').addEventListener('click',()=>openDress());
+$('#btnAlbum').addEventListener('click',()=>openAlbum());
 $('#btnDiary').addEventListener('click',()=>openDiary());
 $('#btnLang').addEventListener('click',()=>{cycleLang();cv.focus({preventScroll:true});});
 $('#btnSound').addEventListener('click',()=>{setSound(!sndOn);cv.focus({preventScroll:true});});
 $('#btnSound').textContent=sndOn?'🔊':'🔇';
 let startLabel=state.seen?'resume':'start';
-$('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||FISH.on)return;startOpen=true;startLabel='continue';$('#btnStart').textContent=tr(startLabel);$('#start').classList.remove('hidden');$('#btnStart').focus();});
+$('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on)return;startOpen=true;startLabel='continue';$('#btnStart').textContent=tr(startLabel);$('#start').classList.remove('hidden');$('#btnStart').focus();});
 {const box=$('#langPick');LANG_ORDER.forEach(c=>{const b=el('button','pbtn',PACKS[c].meta.label);b.type='button';b.dataset.lang=c;b.lang=PACKS[c].meta.htmlLang;b.onclick=()=>setLang(c);box.append(b);});}
 let helloShown=false;
 function begin(){audioInit();if(AC&&sndOn)AC.resume().then(()=>sfx('start')).catch(()=>{});startOpen=false;state.seen=true;save();$('#start').classList.add('hidden');cv.focus({preventScroll:true});
@@ -2324,7 +2374,7 @@ function rewardNewLook(){
   state.need.mood=clampN(state.need.mood+8);
   updateHud();notify(tr('newLook'));
 }
-function openDress(){if(dressOpen||diaryOpen||busy||startOpen||D.modal||FISH.on)return;sfx('whoosh');dressOpen=true;dressStartKey=outfitKey(state.o);keys.clear();touchKeys.clear();$('#dress').classList.remove('hidden');renderPicker();renderLooks();drawPreview();$('#dClose').focus();}
+function openDress(){if(dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('whoosh');dressOpen=true;dressStartKey=outfitKey(state.o);keys.clear();touchKeys.clear();$('#dress').classList.remove('hidden');renderPicker();renderLooks();drawPreview();$('#dClose').focus();}
 function closeDress(){
   sfx('whoosh');dressOpen=false;$('#dress').classList.add('hidden');cv.focus({preventScroll:true});
   if(outfitKey(state.o)!==dressStartKey){rewardNewLook();save();}
@@ -2451,10 +2501,106 @@ function renderDiary(){
   }
   b.append(s1,s4,s2,pondLog,s3);
 }
-function openDiary(){if(dressOpen||diaryOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
+function openDiary(){if(dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
 function closeDiary(){sfx('page');diaryOpen=false;$('#diary').classList.add('hidden');cv.focus({preventScroll:true});}
 $('#diaryClose').addEventListener('click',closeDiary);
 $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();});
+/* ---------------- keepsake album ---------------- */
+const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
+let albumTab='events',albumSelected=null;
+const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album);
+function updateAlbumBadge(){
+  const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
+  const button=$('#btnAlbum');
+  if(count)button.dataset.new=count;else delete button.dataset.new;
+  button.setAttribute('aria-label',count?tr('albumUnread',{count}):tr('btnAlbum'));
+}
+function albumScene(card,n){
+  const art=mk(96,60),g=art.getContext('2d');
+  const scene=card.kind==='postcard'?POSTCARD_SCENES[n.id][card.variant]:
+    card.place??({rareDate:'garden',sharedFishing:'pond',neighborRequest:'garden',firstDate:'garden'}[card.kind]||card.kind);
+  MemoryAlbum.paint(g,scene);
+  blitChar(g,n.outfit,'down',0,38,['pond','stars'].includes(scene)?13:21);
+  if(card.kind==='neighborRequest'||card.kind==='postcard'){
+    g.fillStyle='#aa7464';g.fillRect(75,43,13,9);
+    g.fillStyle='#ffe5b8';g.fillRect(76,43,11,7);
+    g.fillStyle='#d19b7b';g.fillRect(80,46,3,1);
+  }
+  art.setAttribute('aria-hidden','true');
+  return art;
+}
+function albumDetails(card,n){
+  if(card.kind==='postcard')return tr('postcard_'+n.id+'_'+card.variant);
+  if(card.kind==='sharedFishing'&&Object.hasOwn(CottageActivities.fish,card.info?.kind)){
+    const caught=card.info;
+    return tr('sharedFishingDetails',{day:tr('day',{d:caught.day}),time:fmt(caught.time),fish:itemLabel(caught.kind),size:caught.size});
+  }
+  if(card.kind==='firstGift'&&Object.hasOwn(Lp.items,card.info?.item))return tr('albumGiftDetail',{n:nm(n),i:itemLabel(card.info.item)});
+  if(card.place&&Lp.dates[card.place])return tr('albumDateDetail',{place:Lp.dates[card.place].name});
+  return tr('albumDetail_'+card.kind);
+}
+function renderAlbum(){
+  const body=$('#albumBody'),cards=albumCards();
+  body.replaceChildren();
+  body.scrollTop=0;
+  const selected=cards.find(card=>card.key===albumSelected);
+  const title=card=>tr('albumCard_'+card.kind);
+  const resident=card=>npcs.find(n=>n.id===card.resident);
+  const stamp=(card,n)=>nm(n)+' · '+tr('day',{d:card.day});
+  if(selected){
+    const back=el('button','pbtn',tr('albumBack'));
+    back.type='button';
+    back.onclick=()=>{
+      albumSelected=null;renderAlbum();
+      body.querySelector('[data-key="'+selected.key+'"]')?.focus();
+    };
+    const n=resident(selected),page=el('article','album-page');
+    page.append(albumScene(selected,n),el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)));
+    body.append(back,page);back.focus();
+    return;
+  }
+  const tabs=el('div','album-tabs');
+  for(const [tab,label] of [['events','albumEvents'],['postcards','albumPostcards']]){
+    const b=el('button','pbtn'+(tab===albumTab?' primary':''),tr(label));
+    b.type='button';b.dataset.tab=tab;b.setAttribute('aria-pressed',tab===albumTab);
+    b.onclick=()=>{albumTab=tab;markAlbumTabSeen(cards);renderAlbum();body.querySelector('[data-tab="'+tab+'"]').focus();};
+    tabs.append(b);
+  }
+  body.append(tabs);
+  const visible=cards.filter(card=>(card.kind==='postcard')===(albumTab==='postcards'));
+  if(!visible.length){body.append(el('p',null,tr(albumTab==='events'?'albumEmptyEvents':'albumEmptyPostcards')));return;}
+  const grid=el('div','album-grid');
+  for(const card of visible){
+    const n=resident(card),button=el('button','album-card');
+    button.type='button';button.dataset.kind=card.kind;button.dataset.key=card.key;
+    button.append(albumScene(card,n),el('strong',null,title(card)),el('small',null,stamp(card,n)));
+    button.onclick=()=>{albumSelected=card.key;renderAlbum();};
+    grid.append(button);
+  }
+  body.append(grid);
+}
+function markAlbumTabSeen(cards){
+  const unread=cards.filter(card=>(card.kind==='postcard')===(albumTab==='postcards')&&!state.album.seen.includes(card.key));
+  if(unread.length){state.album.seen.push(...unread.map(card=>card.key));save();}
+  updateAlbumBadge();
+}
+function openAlbum(tab){
+  if(albumOpen||dressOpen||diaryOpen||startOpen||busy||D.modal||FISH.on)return;
+  const cards=albumCards();
+  const unread=cards.filter(card=>!state.album.seen.includes(card.key));
+  albumTab=tab??(unread[0]?.kind==='postcard'?'postcards':'events');
+  albumSelected=null;
+  albumOpen=true;
+  walkRoute=[];keys.clear();touchKeys.clear();
+  markAlbumTabSeen(cards);
+  sfx('page');$('#album').classList.remove('hidden');renderAlbum();$('#albumClose').focus();
+}
+function closeAlbum(){
+  sfx('page');albumOpen=false;$('#album').classList.add('hidden');cv.focus({preventScroll:true});
+}
+$('#albumClose').addEventListener('click',closeAlbum);
+$('#album').addEventListener('click',e=>{if(e.target.id==='album')closeAlbum();});
+
 /* ---------------- render ---------------- */
 const cv=$('#game'),ctx=cv.getContext('2d');let scale=3;
 function resize(){
@@ -2471,7 +2617,7 @@ function cameraOrigin(){
   return [Math.round(x*scale)/scale,Math.round(y*scale)/scale];
 }
 cv.addEventListener('click',e=>{
-  if(e.button!==0||startOpen||dressOpen||diaryOpen||D.modal||busy||FISH.on)return;
+  if(e.button!==0||startOpen||dressOpen||diaryOpen||albumOpen||D.modal||busy||FISH.on)return;
   const bounds=cv.getBoundingClientRect();
   if(!bounds.width||!bounds.height)return;
   const [cx,cy]=cameraOrigin();
@@ -2546,7 +2692,7 @@ function render(time){
     if(cat.dir<0){g.save();g.translate(x+9,y-14);g.scale(-1,1);g.drawImage(s,0,0);g.restore();}else g.drawImage(s,x-9,y-14);
   }});
   ents.sort((a,b)=>a.key-b.key);for(const e of ents)e.draw(ctx);
-  if(hasNeighborMail()){
+  if(unreadAlbumPostcard()||hasNeighborMail()){
     const x=7*16+4,y=10*16-16+(Math.sin(time*4)>0?1:0);
     ctx.fillStyle='#714c48';ctx.fillRect(x-1,y-1,10,8);
     ctx.fillStyle='#fff1cd';ctx.fillRect(x,y,8,6);
@@ -2555,7 +2701,7 @@ function render(time){
   }
   drawPuffs(ctx);
   for(const p of parts)drawHeart(ctx,p.x,p.y-p.t*14,Math.max(0,1-p.t/1.2));
-  if(target&&!busy&&!dressOpen&&!diaryOpen&&!startOpen&&!D.modal&&!FISH.on)drawArrow(ctx,target.x,target.y+(Math.sin(time*6)>0?-1:0));
+  if(target&&!busy&&!dressOpen&&!diaryOpen&&!albumOpen&&!startOpen&&!D.modal&&!FISH.on)drawArrow(ctx,target.x,target.y+(Math.sin(time*6)>0?-1:0));
   if(dark>0){
     const h=state.time/60,dusk=h>=17&&h<20;
     ctx.fillStyle=dusk?`rgba(${Math.round(60-40*dark)},${Math.round(30-8*dark)},60,${(0.52*dark).toFixed(3)})`:`rgba(20,22,62,${(0.52*dark).toFixed(3)})`;
@@ -2572,7 +2718,7 @@ function render(time){
 /* ---------------- loop ---------------- */
 let hudT=0,saveT=0,stepT=0;
 function update(dt){
-  const paused=startOpen||dressOpen||diaryOpen||D.modal||busy;
+  const paused=startOpen||dressOpen||diaryOpen||albumOpen||D.modal||busy;
   let dx=0,dy=0;
   if(paused||FISH.on)walkRoute=[];
   if(!paused&&!FISH.on){
