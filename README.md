@@ -39,7 +39,8 @@ A cozy pixel-art life sim with dress-up and romance, playable in 中文 / Englis
 
 - **过日子**：时间会流逝（现实 1 秒 = 游戏 2 分钟），有白天、傍晚和夜晚。三条状态要照顾：⚡精力（去小床睡觉）、🍙饱腹（去小圆桌吃饭）、💗心情。熬到凌晨 2 点或精力耗光会直接睡着。
 - **换装**：7 类衣物（肤色、发型、上衣、下装、鞋子、头饰、配饰），大部分有 12 种颜色，可以转身查看四个方向，可以随机搭配，最多收藏 6 套。在院子里采 3 朵花能解锁花环。
-- **扭蛋机**：走到门口信箱右边按 E，选择 **礼裙池**（8 款）或 **发型池**（6 款）。两池共用一次免费首抽，之后每抽用 2 个贝壳或 3 朵花，池内不重复。新发型有棉花云波波头、蝴蝶结侧辫、双丸子头、瀑布长卷发、金扣高马尾和精灵卷短发。抽中后选「现在试戴／试穿」会在原地换上。选「去衣柜查看」可在对应分类里浏览、改色、保存搭配。
+- **扭蛋机**：门口信箱右边按 E，选 **连衣裙与礼服**（12 款）、**发型**（10 款）、**上衣**（4 款）或 **半裙**（3 款）。四池共用一次免费首抽，之后每抽用 2 枚贝壳或 3 朵花，池内不重复。抽中后可以当场试穿，或者打开衣柜改色、混搭、保存搭配。
+- **居民专属故事**：顾言、陆星野、江屿和白夜各有三章。见面时从对话菜单进入，章节按好感与日期解锁，选项和回忆会留在收藏画册。
 - **收集和制作**：在花园采花，在小圆桌用草莓烤饼干，在书桌写情书。菜园和池塘的收成也可以在灶台做饭，或者作为礼物送给居民。
 - **种田**：到院子右侧菜地按 E 播种或照料。胡萝卜、草莓和南瓜分别需要 1、2、3 个浇过水的夜晚。草莓收过后，再浇水过一晚还能结果。一天没浇水，作物会等着你。种得多时可以一次浇完所有缺水的菜地。
 - **钓鱼**：面朝池塘按 E 选钓法。西侧芦苇边常见小鱼，东侧开阔水面更容易钓到金鳞鲤或月光鱼。白天找金鳞鲤，天黑再来找月光鱼。草莓鱼饵能缩短等待、延长收竿时间，也更容易钓到这两种鱼。看到「！」后趁进度条走完前收竿，鱼的首次钓获日期和最长尺寸会记进日记。
@@ -288,19 +289,31 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 
 ## 项目结构 / Project layout
 
-| Path | 内容 / What it is |
-|---|---|
-| `index.html` | 游戏本体：绘图、地图、角色、各种系统 / The whole game: drawing, map, characters, systems |
-| `cottage-activities.js` | 作物生长、钓获规则和鱼类记录 / Crop growth, fishing rules, and catch records |
-| `cottage-events.js` | 随机事件进度、存档与像素插画 / Random events, save data, and pixel art |
-| `memory-album.js` | 纪念卡整理、明信片投递和像素场景 / Keepsakes, postcard delivery, and pixel scenes |
-| `lang/zh.js` | 简体中文文本（源语言）/ Simplified Chinese text (source) |
-| `lang/en.js` | 英文文本 / English text |
-| `lang/ja.js` | 日文文本 / Japanese text |
-| `dev.html` | 测试模式（游戏本体 + 测试面板）/ Test mode (the game plus a test panel) |
-| `dev/make-dev.py` | 由 `index.html` 生成 `dev.html` / Builds `dev.html` from `index.html` |
-| `tools/check-lang.js` | 检查语言包和 `zh.js` 是否一致 / Checks a language pack against `zh.js` |
-| `docs/screenshots/` | README 里的截图 / Screenshots used in this README |
+```text
+HomeLove/
+├── index.html                正式版入口；页面样式、像素地图、换装、音效与游戏主循环
+├── dev.html                  测试版入口；由 dev/make-dev.py 生成
+├── cottage-activities.js     四季、种植、温棚、钓鱼与邻里委托规则
+├── cottage-bonds.js          信任、醋意、传闻、突然来访、成就与每日回顾
+├── cottage-events.js         飞船、漂流瓶、无名种子与林小满故事状态
+├── resident-stories.js       四位男主的章节解锁、选择记录与画册条目
+├── memory-album.js           像素纪念卡、明信片与收藏进度
+├── npc-memory.js             NPC 事件记忆的写入、检索与长期归纳
+├── save-manager.js           浏览器存档、版本兼容、快照与回退
+├── lang/
+│   ├── zh.js                 简体中文文本、物品名与剧情（源语言）
+│   ├── en.js                 英文文本与剧情
+│   └── ja.js                 日文文本与剧情
+├── dev/
+│   └── make-dev.py           从正式版生成带独立存档和测试面板的 dev.html
+├── tools/
+│   └── check-lang.js         检查翻译键、占位符和数组结构
+├── tests/                    活动、事件、剧情、关系、记忆、存档和画册的回归测试
+└── docs/
+    └── screenshots/          游戏截图
+```
+
+正式版通过 `index.html` 加载规则模块和语言包。地图渲染、角色像素绘制、交互和主循环也在这个入口里。章节台词放在 `lang/`，章节解锁和选项记录放在 `resident-stories.js`。修改入口后，用 `python3 dev/make-dev.py` 同步生成测试版。
 
 ### 修改或添加语言 / Editing or adding a language
 
@@ -315,6 +328,17 @@ node tools/check-lang.js <code>
 ## 四季与冬季种植
 
 春、夏、秋、冬各 7 个游戏日。HUD 显示当前季节，第 29 天回到春天。冬天露地无法播种或浇水，未成熟的作物保留进度，已经成熟的仍可收获。对着一格田地互动，可以用 2 枚贝壳安装一个永久的小温棚，全院最多 3 个。温棚内仍需要浇水才能生长。冬季可在池塘南岸的两个冰钓口钓鱼，也有机会捞到贝壳。
+
+## 四位男主的专属故事
+
+| 居民 | 三章内容 |
+|---|---|
+| 顾言 | 试喝旧店的最后一批咖啡，陪他决定下一步，再为新菜单写下第一行。 |
+| 陆星野 | 从一次投偏聊到替补名单，最后在比赛结束后重新一起投球。 |
+| 江屿 | 一起补完没有副歌的歌，试唱或录音，再决定歌曲该怎样收尾。 |
+| 白夜 | 从一幅留白的画聊起，看旧画或拉新画布，最后给画中的窗选一束光。 |
+
+第 2 天起，达到 3、5、7 心后依次出现新章节。第二章与第一章至少隔一天，第三章与第二章至少隔两天。每章有两个选项，第二章的选择会在第三章被角色提起。完成的章节可在「收藏 → 事件纪念」回看。测试版选择一位男主后，可以预览下一章。
 
 ## 小满的故事
 

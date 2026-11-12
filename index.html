@@ -343,9 +343,10 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="cottage-events.js?v=xiaoman-1"></script>
 <script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js"></script>
-<script src="lang/zh.js?v=bonds-1" charset="utf-8"></script>
-<script src="lang/en.js?v=bonds-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=bonds-1" charset="utf-8"></script>
+<script src="resident-stories.js"></script>
+<script src="lang/zh.js?v=stories-1" charset="utf-8"></script>
+<script src="lang/en.js?v=stories-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=stories-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -491,6 +492,30 @@ const CAPSULE_HAIRS=[
     if(K.up){R(3,5,10,2,c);R(4,7,8,1,dark);}
     else if(K.side){R(3,4,3,2,dark);R(8,3,3,2,light);}
     else{R(4,5,3,1,light);R(7,4,3,2,c);R(9,5,2,1,dark);}
+  }},
+  {id:'sideSweep',color:4,front(K,c){
+    capShort(K,c);const {R}=K;
+    R(4,1,7,2,c);R(5,2,4,1,shade(c,1.35));
+    if(!K.up){R(5,4,6,2,c);R(5,6,3,1,c);R(5,4,4,1,shade(c,1.27));}
+    R(K.side?3:11,5,1,4,shade(c,.8));
+  }},
+  {id:'silkLowBun',color:0,front(K,c){
+    capShort(K,c);const {R}=K,x=K.side?2:6;
+    if(K.up||K.side){R(x,8,5,4,c);R(x+1,11,3,2,shade(c,.78));R(x+1,9,3,1,'#f6d4ae');}
+    else{R(4,5,2,3,c);R(10,5,2,3,c);R(11,6,2,1,'#f6d4ae');}
+  }},
+  {id:'twinBraids',color:2,front(K,c){
+    capShort(K,c);const {R}=K,d=shade(c,.77),l=shade(c,1.27);
+    for(const x of K.side?[3]:[2,11]){
+      R(x,7,3,8,d);R(x+1,8,2,6,c);R(x,9,2,1,l);R(x+1,12,2,1,l);R(x,15,3,1,'#bd88a6');R(x+1,16,1,2,d);
+    }
+  }},
+  {id:'shaggyWolf',color:5,front(K,c){
+    capShort(K,c);const {R}=K,d=shade(c,.76);
+    R(3,1,8,2,c);R(4,2,4,1,shade(c,1.35));
+    R(2,5,3,4,c);R(3,8,2,4,d);R(2,11,2,1,c);
+    if(!K.side){R(11,5,3,4,c);R(11,8,2,4,d);R(12,11,2,1,c);}
+    if(K.up)R(5,8,6,4,c);else R(7,4,4,2,c);
   }}
 ];
 HAIRS.push(...CAPSULE_HAIRS);
@@ -576,6 +601,43 @@ const CAPSULE_DRESSES=[
     R(4+x,11,8-x,2,'#f6f3ef');R(3+x,13,10-x,1,'#e3edf3');
     if(K.up){R(5,14,6,3,'#e3edf3');R(6,17,4,1,'#f6f3ef');}
     else{R(7+x,13,2,1,'#e7bc76');R(7+x,14,1,2,'#d09972');}
+  }},
+  {id:'lavenderPinafore',color:8,sleeve:'puff',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,'#f5e5df',16);R(5,13,6,4,c);
+    R(4,17,8,3,c);R(3,20,10,1,shade(c,.7));
+    R(5,18,6,1,shade(c,1.25));R(6,16,4,2,'#f4ddd1');R(7,17,2,2,'#f4ddd1');
+  }},
+  {id:'emberQipao',color:2,sleeve:'short',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,c,17);R(5,17,6,4,c);R(5,21,6,1,shade(c,.72));
+    R(7,10,2,1,'#f5cd8f');R(5,15,1,6,shade(c,.75));
+    if(!K.up){R(8,11,2,1,'#f5cd8f');R(9,12,2,1,'#f5cd8f');R(10,19,1,3,'#f0c7aa');}
+  }},
+  {id:'wisteriaTeaDress',color:5,sleeve:'long',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,c,16);R(5,16,6,1,'#e4d4a5');R(4,17,8,4,c);
+    R(3,20,10,1,shade(c,.74));
+    for(const [x,y] of [[5,17],[10,18],[7,19],[11,20]]){R(x,y,1,1,'#edd4ed');R(x,y+1,1,1,'#9aac7e');}
+  }},
+  {id:'starlightTulle',color:7,sleeve:'none',hidesBottom:true,draw(K,c){
+    const {R}=K;torso(K,c,16);R(5,16,6,1,'#dfd5ee');R(4,17,8,2,c);R(2,19,12,2,shade(c,.8));R(3,21,10,1,'#d5c8ed');
+    for(const [x,y] of [[5,18],[8,19],[11,18],[4,20],[10,20]])R(x,y,1,1,'#fff0cb');
+  }}
+];
+const CAPSULE_TOPS=[
+  {id:'apricotCardigan',color:3,sleeve:'long',draw(K,c){
+    const {R}=K;torso(K,c,16);if(!K.up)R(7,11,2,5,'#fff1dc');
+    R(5,15,6,1,shade(c,.72));R(9,13,1,1,'#f8d79a');R(9,15,1,1,'#f8d79a');
+  }},
+  {id:'embroideredBlouse',color:0,sleeve:'puff',draw(K,c){
+    const {R}=K;torso(K,c);R(6,11,4,1,'#ad747f');R(7,12,2,1,'#f0baae');
+    R(5,14,1,1,'#a06f96');R(10,14,1,1,'#a06f96');
+  }},
+  {id:'denimJacket',color:7,sleeve:'long',draw(K,c){
+    const {R}=K;torso(K,c,16);R(5,12,6,1,shade(c,1.25));
+    if(!K.up){R(7,13,2,3,'#e9dfd1');R(5,14,1,1,'#e3c994');R(10,14,1,1,'#e3c994');}
+  }},
+  {id:'cloudSweater',color:8,sleeve:'long',draw(K,c){
+    const {R}=K;torso(K,c,16);R(6,12,4,1,'#fff1dd');R(5,13,6,2,'#fff1dd');
+    R(5,16,6,1,shade(c,.75));
   }}
 ];
 const TOPS=[
@@ -603,9 +665,24 @@ const TOPS=[
     if(K.down){K.R(5,11,2,1,col);K.R(9,11,2,1,col);K.R(7,11,2,1,K.skin);K.R(7,12,2,2,TIE);K.R(7,14,1,1,TIE);}
     else if(K.up){K.R(5,11,6,3,col);K.R(5,13,6,1,shade(col,.8));}
     else{K.R(6,11,3,2,col);K.R(10,12,1,2,TIE);}}},
-  ...CAPSULE_DRESSES
+  ...CAPSULE_DRESSES,...CAPSULE_TOPS
 ];
 function hips(K,c){if(K.side)K.R(6,16,5,2,c);else{K.R(5,16,6,2,c);K.R(7,17,2,1,shade(c,.82));}}
+const CAPSULE_BOTTOMS=[
+  {id:'plaidPleats',color:9,draw(K,c){
+    const {R}=K;hips(K,c);R(4,17,8,3,c);R(3,20,10,1,shade(c,.78));
+    R(4,18,8,1,shade(c,1.28));for(const x of [5,8,11])R(x,17,1,4,shade(c,.74));
+  }},
+  {id:'pearlMidi',color:0,draw(K,c){
+    const {R}=K;hips(K,c);R(4,17,8,4,c);R(3,21,10,1,shade(c,.82));
+    R(5,18,1,3,shade(c,1.2));R(10,18,1,3,shade(c,.86));
+    for(const x of [4,7,10])R(x,21,1,1,'#fff8e8');
+  }},
+  {id:'petalWrap',color:4,draw(K,c){
+    const {R}=K;hips(K,c);R(4,17,8,3,c);R(3,19,9,1,shade(c,1.28));
+    R(3,20,7,1,c);R(4,21,4,1,shade(c,.73));R(7,17,1,3,shade(c,.73));R(10,16,2,1,'#f4d294');
+  }}
+];
 const BOTTOMS=[
   {id:'shorts',draw(K,c){hips(K,c);K.legs.forEach(l=>K.R(l.x,18,2,1,l.back?shade(c,.85):c));}},
   {id:'pants',draw(K,c){hips(K,c);K.legs.forEach(l=>K.R(l.x,18,2,l.bot-17,l.back?shade(c,.85):c));}},
@@ -617,6 +694,7 @@ const BOTTOMS=[
   {id:'longskirt',draw(K,c){const sh=shade(c,.84);
     if(K.side){K.R(6,16,5,1,c);K.R(5,17,7,4,c);K.R(4,21,8,1,sh);}
     else{K.R(5,16,6,1,c);K.R(4,17,8,4,c);K.R(3,21,10,1,sh);K.R(6,18,1,3,sh);K.R(9,18,1,3,sh);}}},
+  ...CAPSULE_BOTTOMS
 ];
 function feet(K,fn){K.legs.forEach(l=>fn(l,l.bot+1));}
 const SHOES=[
@@ -665,15 +743,19 @@ const ACCS=[
 ];
 const CAPSULE_POOLS={
   dress:{items:CAPSULE_DRESSES,owned:'capsuleDresses',slot:'top',colorKey:'topColor',tab:'capsule'},
-  hair:{items:CAPSULE_HAIRS,owned:'capsuleHairs',slot:'hair',colorKey:'hairColor',tab:'capsuleHair'}
+  hair:{items:CAPSULE_HAIRS,owned:'capsuleHairs',slot:'hair',colorKey:'hairColor',tab:'capsuleHair'},
+  top:{items:CAPSULE_TOPS,owned:'capsuleTops',slot:'top',colorKey:'topColor',tab:'capsuleTop'},
+  bottom:{items:CAPSULE_BOTTOMS,owned:'capsuleBottoms',slot:'bottom',colorKey:'bottomColor',tab:'capsuleBottom'}
 };
 const CATS=[
   {key:'skin',crop:[2,1,16,14]},
   {key:'hair',items:HAIRS.filter(hair=>!CAPSULE_HAIRS.includes(hair)),colorKey:'hairColor',colors:HAIR_COLORS,crop:[2,0,16,14]},
   {key:'capsuleHair',slot:'hair',items:CAPSULE_HAIRS,colorKey:'hairColor',colors:HAIR_COLORS,crop:[1,0,18,21]},
-  {key:'top',items:TOPS.filter(top=>!CAPSULE_DRESSES.includes(top)),colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
+  {key:'top',items:TOPS.filter(top=>!CAPSULE_DRESSES.includes(top)&&!CAPSULE_TOPS.includes(top)),colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
   {key:'capsule',slot:'top',items:CAPSULE_DRESSES,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
-  {key:'bottom',items:BOTTOMS,colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
+  {key:'capsuleTop',slot:'top',items:CAPSULE_TOPS,colorKey:'topColor',colors:CLOTH,crop:[2,8,16,14]},
+  {key:'capsuleBottom',slot:'bottom',items:CAPSULE_BOTTOMS,colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
+  {key:'bottom',items:BOTTOMS.filter(item=>!CAPSULE_BOTTOMS.includes(item)),colorKey:'bottomColor',colors:CLOTH,crop:[2,11,16,14]},
   {key:'shoes',items:SHOES,colorKey:'shoesColor',colors:CLOTH,crop:[2,12,16,14]},
   {key:'hat',items:HATS,colorKey:'hatColor',colors:CLOTH,crop:[2,0,16,14]},
   {key:'acc',items:ACCS,colorKey:'accColor',colors:CLOTH,crop:[2,3,16,14]},
@@ -872,7 +954,7 @@ const state={
   o:{skin:1,hair:'twin',hairColor:1,top:'sailor',topColor:0,bottom:'skirt',bottomColor:7,shoes:'loafer',shoesColor:10,hat:'none',hatColor:9,acc:'none',accColor:4},
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
-  garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),xiaoman:XiaomanStory.load(),
+  garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
   bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
@@ -899,6 +981,7 @@ function applySave(s){
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
   state.xiaoman=XiaomanStory.load(s.xiaoman,state.day);
+  state.stories=ResidentStories.load(s.stories,state.day);
   state.bonds=CottageBonds.load(s.bonds,NPCS.map(n=>n.id),state.day);
   savedAtLoad=Number.isFinite(s.savedAt)?s.savedAt:0;
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
@@ -1773,16 +1856,22 @@ function drawCapsule(pool,payment){
   updateHud();sfx('levelup');
   const preview=el('div','capsule-reveal'),sprite=mk(20,26);
   preview.setAttribute('aria-hidden','true');
-  blitChar(sprite.getContext('2d'),{...state.o,[pool.slot]:item.id,[pool.colorKey]:item.color},'down',0,0,0);
+  blitChar(sprite.getContext('2d'),capsuleOutfit(pool,item),'down',0,0,0);
   preview.append(sprite);
   talk(objName('capsule'),[tr('capsuleWon',{dress:itemName(item.id)})],[
     {label:tr(pool.slot==='hair'?'capsuleTryHair':'capsuleTry'),fn:()=>tryCapsuleItem(pool,item)},
     {label:tr('capsuleView'),back:true,fn:()=>openCapsuleWardrobe(pool)}
   ],null,preview);
 }
+function capsuleOutfit(pool,item){
+  const outfit={...state.o,[pool.slot]:item.id,[pool.colorKey]:item.color};
+  if(pool.slot==='bottom'&&byId(TOPS,outfit.top).hidesBottom){outfit.top='tee';outfit.topColor=0;}
+  return outfit;
+}
 function tryCapsuleItem(pool,item){
-  const outfitChanged=state.o[pool.slot]!==item.id||state.o[pool.colorKey]!==item.color;
-  state.o[pool.slot]=item.id;state.o[pool.colorKey]=item.color;
+  const outfit=capsuleOutfit(pool,item);
+  const outfitChanged=Object.keys(outfit).some(k=>state.o[k]!==outfit[k]);
+  Object.assign(state.o,outfit);
   if(outfitChanged)rewardNewLook();
   save();
   sfx('pop');
@@ -2346,6 +2435,8 @@ function npcMenu(n,back){
   const request=acceptedNeighborRequest(n);
   if(request)opts.unshift({label:tr('requestHandIn'),fn:()=>offerNeighborDelivery(n,request)});
   opts.unshift(...worldNpcOptions(n,back));
+  const chapter=rel(n).met?ResidentStories.next(state.stories,n.id,state.day,h):null;
+  if(chapter!==null)opts.unshift({label:tr('residentStoryOpen',{chapter:residentChapter(n.id,chapter)[0]}),fn:()=>openResidentStory(n,chapter)});
   const scene=xiaomanScene(n);
   if(scene)opts.unshift({label:tr('xmTalk'),fn:()=>startXiaomanScene(n,scene)});
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
@@ -2370,7 +2461,9 @@ function chat(n){
   const first=state.life?.[n.id]?.firstDate;
   const recalled=NPCMemory.recall(state,n.id).find(e=>['gift','birthday','visit','rival','sharedFishing','neighborRequest','worldUfo','worldBottle','worldSeed','xiaomanConfession'].includes(e.type));
   const lines=[];
-  if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
+  const earlier=state.stories[n.id]?.[1];
+  if(earlier&&state.day>earlier.day&&Math.random()<.4)lines.push(tr('residentRecall_'+n.id+'_'+earlier.choice));
+  else if(first&&Math.random()<.4)lines.push(memoryLine(n,{interpretation:{type:'date',object:first.place}}));
   else if(recalled&&Math.random()<.4){const line=memoryLine(n,recalled);if(line)lines.push(line);}
   let gain=6+Math.round(NPCMemory.influence(state,n.id,'player'));const sc=outfitScore(n);
   if(sc>=4){lines.push(T.outfitHi);gain+=8;r.knowStyle=true;}else if(sc>=2){lines.push(T.outfitMid);gain+=4;}
@@ -2474,6 +2567,26 @@ function confess(n){
   });
 }
 function moveIn(n){const r=rel(n);D.npc=n;talk(nm(n),nt(n).moveIn,null,()=>{r.livesIn=true;n.path=null;n.idle=5;save();notify(tr('movedIn',{n:nm(n)}));});}
+
+/* ---------------- resident stories ---------------- */
+const residentChapter=(id,index)=>Lp.residentStories[id][index];
+function openResidentStory(n,index){
+  const r=rel(n);
+  if(ResidentStories.next(state.stories,n.id,state.day,hearts(r))!==index)return;
+  const [,intro,choices,firstReply,secondReply]=residentChapter(n.id,index);
+  const lines=[intro];
+  if(index===2)lines.unshift(tr('residentRecall_'+n.id+'_'+state.stories[n.id][1].choice));
+  const replies=[firstReply,secondReply];
+  D.npc=n;
+  const opts=choices.map((label,choice)=>({label,fn:()=>{
+    if(!ResidentStories.complete(state.stories,n.id,state.day,hearts(r),index,choice))return;
+    rememberPlayer(n,'residentStory','completed',.5,75,index);
+    addPts(n,3);updateHud();
+    D.npc=n;talk(nm(n),[replies[choice]]);
+  }}));
+  opts.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
+  talk(nm(n),lines,opts);
+}
 
 /* ---------------- Xiaoman’s story ---------------- */
 function xiaomanRoute(n){
@@ -2793,7 +2906,7 @@ function renderPicker(){
   const tabs=$('#tabs');tabs.innerHTML='';
   CATS.forEach(c=>{
     const label=c.key==='capsule'?lifeText('扭蛋礼裙','Capsule gowns','ガチャドレス'):
-      c.key==='capsuleHair'?tr('capsuleHairTab'):Lp.cats[c.key];
+      c.key==='capsuleHair'?tr('capsuleHairTab'):c.key==='capsuleTop'||c.key==='capsuleBottom'?tr(c.key+'Tab'):Lp.cats[c.key];
     const b=el('button','tab'+(c.key===curCat?' on':''),label);
     b.type='button';b.setAttribute('aria-pressed',c.key===curCat);
     b.onclick=()=>{curCat=c.key;renderPicker();};tabs.append(b);
@@ -2807,8 +2920,8 @@ function renderPicker(){
     const capsule=capsulePoolFor(it);
     const locked=!unlocked(it),sel=state.o[slot]===it.id,fans=likedBy(cat,it.id);
     const b=el('button','item'+(sel?' sel':'')+(locked?' locked':''));b.type='button';b.setAttribute('aria-pressed',sel);
-    const thumb={...state.o,[slot]:it.id};
-    if(capsule&&!sel)thumb[capsule.colorKey]=it.color;
+    const variant=sel&&capsule?{...it,color:state.o[capsule.colorKey]}:it;
+    const thumb=capsule?capsuleOutfit(capsule,variant):{...state.o,[slot]:it.id};
     b.append(thumbCanvas(thumb,cat.crop),el('span',null,it.label));
     if(fans.length){b.append(el('span','liked','♥'));b.title=tr('likedBy',{x:listJoin(fans)});}
     if(locked){
@@ -2817,8 +2930,7 @@ function renderPicker(){
     }
     b.onclick=()=>{
       if(locked){notify(capsule?tr('capsuleLocked'):tr('lockedToast',{i:it.label,x:it.lock,y:state.flowersTotal}));return;}
-      if(capsule&&!sel)state.o[capsule.colorKey]=it.color;
-      state.o[slot]=it.id;changed();
+      Object.assign(state.o,thumb);changed();
     };
     box.append(b);
   });
@@ -2877,6 +2989,11 @@ $('#btnSave').addEventListener('click',()=>{
 /* ---------------- diary ---------------- */
 function statusOf(r){const s=Lp.status;if(r.livesIn)return s.livesIn;if(r.couple)return s.couple;const h=hearts(r);if(h>=8)return s.h8;if(h>=6)return s.h6;if(h>=3)return s.h3;if(h>=1)return s.h1;return r.met?s.met:s.none;}
 function nextHint(n){
+  const story=state.stories[n.id];
+  if(story&&rel(n).met&&story.length<ResidentStories.chapters.length){
+    const ready=ResidentStories.next(state.stories,n.id,state.day,hearts(rel(n)));
+    if(ready!==null)return tr('residentStoryReady');
+  }
   if(xiaomanRoute(n))return tr(state.xiaoman.answer==='friends'?'xmHintFriends':state.xiaoman.answer==='space'?'xmHintSpace':'xmHint');
   const r=rel(n),h=hearts(r);
   if(!r.met)return tr('hintMeet',{t:fmt(n.arrive),n:nm(n)});
@@ -2991,7 +3108,7 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories)).sort((a,b)=>b.day-a.day);
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -3001,6 +3118,24 @@ function updateAlbumBadge(){
 function albumScene(card,n){
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.kind==='story'){
+    const scene={gy:'home',xy:'garden',jy:'pond',by:'stars'}[n.id];
+    MemoryAlbum.paint(g,scene);
+    blitChar(g,n.outfit,'down',0,36,20);
+    const [x,y]=[64,scene==='home'?28:40];
+    if(n.id==='gy'){
+      g.fillStyle='#fff0cd';g.fillRect(x,y,7,6);g.fillRect(x+7,y+1,2,3);
+      g.fillStyle='#93634c';g.fillRect(x+1,y,5,1);
+    }else if(n.id==='xy'){
+      g.fillStyle='#d9975d';g.fillRect(x,y+1,6,4);g.fillRect(x+1,y,4,6);
+      g.fillStyle='#9d663f';g.fillRect(x+2,y,1,6);
+    }else{
+      g.fillStyle='#b38c7d';g.fillRect(x,y,13,9);
+      g.fillStyle='#f2ddbb';g.fillRect(x+1,y+1,11,7);
+      g.fillStyle=n.id==='jy'?'#a27891':'#728ba0';g.fillRect(x+3,y+3,7,1);g.fillRect(x+3,y+5,5,1);
+    }
+    return art;
+  }
   if(card.event?.startsWith('xm')){
     MemoryAlbum.paint(g,card.event==='xmPostcard'?'home':'garden');
     blitChar(g,n.outfit,'down',0,29,22);
@@ -3040,6 +3175,7 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.kind==='story')return residentChapter(n.id,card.index)[3+card.choice];
   if(card.event?.startsWith('xm'))return tr(card.choice?'world_xmConfession_'+card.choice:'xmCard_'+card.event);
   if(card.event)return tr(card.choice?'world_'+card.event+'_'+card.choice:'worldUfoPostcard');
   if(card.kind==='postcard')return tr('postcard_'+n.id+'_'+card.variant);
@@ -3056,7 +3192,7 @@ function renderAlbum(){
   body.replaceChildren();
   body.scrollTop=0;
   const selected=cards.find(card=>card.key===albumSelected);
-  const title=card=>tr(card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
+  const title=card=>card.kind==='story'?residentChapter(card.resident,card.index)[0]:tr(card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
   const resident=card=>npcs.find(n=>n.id===card.resident);
   const stamp=(card,n)=>(n?nm(n)+' · ':'')+tr('day',{d:card.day});
   if(selected){

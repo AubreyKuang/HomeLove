@@ -82,6 +82,16 @@ PANEL = r'''
       const scene=xiaomanScene(n);
       if(scene)startXiaomanScene(n,scene);
     },
+    previewStory(id){
+      if(!canPreview())return;
+      const n=npcs.find(person=>person.id===id),history=state.stories[id];
+      const chapter=ResidentStories.chapters[history.length];
+      if(!chapter){notify('这条故事已经读完，可在收藏回看');return;}
+      const earliest=(history.at(-1)?.day??2)+chapter.gap;
+      if(state.day<earliest){state.day=earliest-1;newDay(10*60);}
+      const r=rel(n);r.met=true;r.pts=Math.max(r.pts,chapter.hearts*10);
+      openResidentStory(n,history.length);
+    },
     wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
@@ -112,6 +122,12 @@ PANEL = r'''
     b.onclick=()=>{A.previewSeason(CottageActivities.seasons[index]);cv.focus({preventScroll:true});};seasons.append(b);
   }
   btn('🎀 预览小满剧情',A.previewXiaoman);
+  const stories=document.createElement('select');stories.setAttribute('aria-label','选择男主');
+  for(const [id,name] of [['gy','顾言'],['xy','陆星野'],['jy','江屿'],['by','白夜']]){
+    const option=document.createElement('option');option.value=id;option.textContent=name;stories.append(option);
+  }
+  stories.value='gy';body.append(stories);
+  btn('📖 预览男主下一章',()=>A.previewStory(stories.value));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;
