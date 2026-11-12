@@ -113,3 +113,40 @@ test('The confession scene unfolds in order and the answer changes visits and ma
   assert.equal(xiaoman.postcard(friends,12).event,'xmPostcard');
   assert.equal(xiaoman.cards(space,100).at(-1).choice,'space');
 });
+
+const Snow=vm.runInNewContext(read('cottage-events.js')+'\nSnowFishing');
+test('winter knock is checked once a morning and fires by the third eligible morning',()=>{
+  const event=Snow.load();
+  assert.equal(Snow.morning(event,21,'autumn',540,0),false);
+  assert.equal(Snow.morning(event,22,'winter',660,0),false);
+  assert.equal(Snow.morning(event,22,'winter',540,.9),false);
+  assert.equal(Snow.morning(event,22,'winter',541,0),false);
+  assert.equal(Snow.morning(event,23,'winter',540,.9),false);
+  assert.equal(Snow.morning(event,24,'winter',540,.9),true);
+  assert.equal(Snow.morning(event,25,'winter',540,0),false);
+  assert.equal(event.invited,24);
+});
+
+test('ice fishing stores both times, rematches, timeout losses and dinner across reloads',()=>{
+  const event=Snow.load();
+  const race=Snow.start('race',0);
+  race.player=2;
+  race.elapsed=5;
+  assert.equal(Snow.raceReady(race),false);
+  race.elapsed=5.5;
+  assert.equal(Snow.raceReady(race),true);
+  assert.equal(Snow.record(event,23,race).outcome,'won');
+  const rematch=Snow.start('race',.5);
+  rematch.elapsed=Snow.raceLimit;
+  assert.equal(Snow.raceReady(rematch),true);
+  assert.equal(Snow.record(event,23,rematch).outcome,'lost');
+  event.ready=23;event.dinner=24;
+  const restored=Snow.load(JSON.parse(JSON.stringify(event)),24);
+  assert.equal(restored.stats.last.player,null);
+  assert.equal(restored.stats.best,2);
+  assert.equal(restored.stats.rivalBest,5.5);
+  assert.equal(restored.stats.won,1);
+  assert.equal(restored.stats.lost,1);
+  assert.equal(restored.dinner,24);
+  assert.deepEqual(Array.from(Snow.cards(restored),card=>card.event),['snowRace','snowDinner']);
+});

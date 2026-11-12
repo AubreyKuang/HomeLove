@@ -142,3 +142,53 @@ const XiaomanStory = (() => {
   }
   return {load,next,visits,postcard,cards};
 })();
+
+const SnowFishing = (() => {
+  const opens=7*60, closes=11*60, supperTime=18*60, raceLimit=18;
+  const outcomes=['won','lost','tie'];
+  function load(saved,day=1){
+    const date=value=>Number.isInteger(value)&&value>0&&value<=day?value:0;
+    const time=value=>Number.isFinite(value)&&value>0&&value<=raceLimit?value:null;
+    const stats=saved?.stats;
+    const count=value=>Number.isSafeInteger(value)&&value>=0?value:0;
+    const last=stats?.last;
+    const lastDay=date(last?.day), rival=time(last?.rival);
+    const dinner=date(saved?.dinner);
+    return {checked:date(saved?.checked),invited:date(saved?.invited),misses:Math.min(2,count(saved?.misses)),
+      ready:date(saved?.ready),dinner,stats:{
+        won:count(stats?.won),lost:count(stats?.lost),tie:count(stats?.tie),
+        best:time(stats?.best),rivalBest:time(stats?.rivalBest),
+        last:lastDay&&rival!==null&&outcomes.includes(last?.outcome)?
+          {day:lastDay,player:time(last.player),rival,outcome:last.outcome}:null
+      }};
+  }
+  function morning(event,day,season,minute,roll){
+    if(event.invited||event.checked===day||season!=='winter'||minute<opens||minute>=closes)return false;
+    event.checked=day;
+    if(roll>=.4&&event.misses<2){event.misses++;return false;}
+    event.invited=day;
+    event.misses=0;
+    return true;
+  }
+  const start=(mode,roll)=>({mode,elapsed:0,player:null,rival:5.5+roll*4.5,kind:null});
+  const time=value=>Math.round(value*10)/10;
+  function raceReady(round){
+    return round.elapsed>=round.rival&&(round.player!==null||round.elapsed>=raceLimit);
+  }
+  function record(event,day,round){
+    const player=round.player===null?null:time(round.player),rival=time(round.rival);
+    const outcome=player===null||player>rival?'lost':player<rival?'won':'tie';
+    const stats=event.stats;
+    stats[outcome]++;
+    if(player!==null)stats.best=Math.min(stats.best??player,player);
+    stats.rivalBest=Math.min(stats.rivalBest??rival,rival);
+    return stats.last={day,player,rival,outcome};
+  }
+  function cards(event){
+    const cards=[];
+    if(event.stats.last)cards.push({key:'world:snowRace',kind:'world_snowRace',event:'snowRace',resident:'xy',day:event.stats.last.day});
+    if(event.dinner)cards.push({key:'world:snowDinner',kind:'world_snowDinner',event:'snowDinner',resident:'xy',day:event.dinner});
+    return cards;
+  }
+  return {load,morning,start,raceReady,record,cards,opens,closes,supperTime,raceLimit};
+})();

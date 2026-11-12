@@ -1013,3 +1013,36 @@ Object.assign(window.HL_LANG.zh.ui, {
   "capsuleAgain": "再来一抽",
   "capsuleNoMore": "本池已抽齐"
 });
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "worldTitle_snowRace": "第一场雪，谁先到池塘",
+  "worldTitle_snowDinner": "三个人的鱼汤",
+  "snowKnock": "门外响了两下。陆星野抱着两根钓竿，帽檐上还沾着雪。「池塘结冰了。今天我想在冰钓上赢你一次！」",
+  "snowReturn": "「两处冰洞还在呢。今天想怎么钓？」",
+  "snowRace": "比谁先钓上鱼",
+  "snowRematch": "再比一场",
+  "snowCoop": "一起给顾言钓晚餐",
+  "snowLater": "改天再来",
+  "snowRecords": "查看两人的冰钓纪录",
+  "snowRaceStart": "「一人一个冰洞。谁先钓上鱼谁赢！」看到咬钩提示时按 {k}。",
+  "snowCoopStart": "「一人钓一条，够顾言煮一锅汤。」看到咬钩提示时按 {k}。",
+  "snowYourCatch": "你钓到了一条鱼，把它放进桶里。",
+  "snowRivalCatch": "陆星野先把鱼拉了上来。你还可以继续钓，记下自己的用时。",
+  "snowRivalIngredient": "陆星野钓到一条了。他蹲在旁边等你。",
+  "snowRecast": "鱼溜了。重新抛竿，等咬钩再按 {k}。",
+  "snowStop": "「收竿吧，手都冻红了。哪天还想钓就来找我。」",
+  "snowRace_won": "「你赢了！」陆星野看了一眼自己的鱼，又看了看你。「下次我换个冰洞。」",
+  "snowRace_lost": "「这次我先钓到！」陆星野把桶往你这边推了推。「下次还比吗？」",
+  "snowRace_tie": "两条鱼几乎同时出水。陆星野笑了。「行，这局算平手。」",
+  "snowRaceTimes": "本场用时 · 你 {player} ｜ 陆星野 {rival}",
+  "snowRaceTotals": "总战绩 · {won} 胜 / {lost} 负 / {tie} 平",
+  "snowRaceBest": "最快用时 · 你 {player} ｜ 陆星野 {rival}",
+  "snowSeconds": "{seconds} 秒",
+  "snowNoCatch": "未钓到",
+  "snowDinnerReady": "桶里有两条鱼了。「走，给顾言看看。晚上我们在小屋吃饭！」",
+  "snowGoDinner": "等到晚上，一起吃鱼汤",
+  "snowDinnerLater": "先做别的，晚点去餐桌",
+  "snowDinnerMeal": "顾言给三个人各盛了一碗鱼汤，先把最烫的一碗推到陆星野面前。「你一路喊冷，慢点喝。」",
+  "snowDinnerConfession": "陆星野捧着碗低下头。「其实我来敲门那天，是我第一次冰钓。两根竿都是临时借的。还好你肯一起去。」",
+  "snowDinnerToast": "顾言笑着添汤。「那就把第一锅留给今天。」窗外还在下雪，你们三个人谁也没急着起身。"
+});
