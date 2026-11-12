@@ -1013,3 +1013,36 @@ Object.assign(window.HL_LANG.ja.ui, {
   "capsuleAgain": "もう一回引く",
   "capsuleNoMore": "コンプリート済み"
 });
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "worldTitle_snowRace": "初雪の池で、先に釣るのは",
+  "worldTitle_snowDinner": "三人の魚スープ",
+  "snowKnock": "戸を二回たたく音。陸星野が竿を二本抱え、帽子のつばに雪をつけている。「池が凍ったぞ。今日は氷釣りで勝ってみせる！」",
+  "snowReturn": "「穴は二つともまだあるぞ。今日はどう釣る？」",
+  "snowRace": "先に魚を釣る勝負",
+  "snowRematch": "もう一度勝負する",
+  "snowCoop": "顧言の夕飯を一緒に釣る",
+  "snowLater": "また今度にする",
+  "snowRecords": "二人の氷釣り記録を見る",
+  "snowRaceStart": "「一人ひとつの穴。先に魚を釣った方の勝ち！」 アタリが来たら {k}。",
+  "snowCoopStart": "「一人一匹で、顧言のスープにちょうどいいな」 アタリが来たら {k}。",
+  "snowYourCatch": "魚を一匹釣って、バケツに入れた。",
+  "snowRivalCatch": "星野が先に釣り上げた。自分のタイムを記録するために、まだ釣れる。",
+  "snowRivalIngredient": "星野が一匹釣った。そばにしゃがんで待っている。",
+  "snowRecast": "逃げられた。投げ直して、アタリが来てから {k}。",
+  "snowStop": "「今日は上がろう。手が真っ赤だ。また釣りたくなったら呼んでくれ」",
+  "snowRace_won": "「君の勝ち！」星野は魚を見て、それから君を見た。「次は穴を替えるぞ」",
+  "snowRace_lost": "「今回は俺が先！」星野はバケツを君の方へ押した。「またやる？」",
+  "snowRace_tie": "二匹がほとんど同時に上がった。星野は笑った。「よし、引き分けだ」",
+  "snowRaceTimes": "今回・あなた {player} ｜ 星野 {rival}",
+  "snowRaceTotals": "通算・{won} 勝 / {lost} 敗 / {tie} 分",
+  "snowRaceBest": "最速・あなた {player} ｜ 星野 {rival}",
+  "snowSeconds": "{seconds} 秒",
+  "snowNoCatch": "釣果なし",
+  "snowDinnerReady": "バケツに魚が二匹。「顧言に見せよう。今夜は小屋で夕飯だ！」",
+  "snowGoDinner": "夕方まで待って、魚スープを囲む",
+  "snowDinnerLater": "先に用事を済ませて、あとで食卓へ",
+  "snowDinnerMeal": "顧言は三人分をよそい、いちばん熱い椀を星野へ。「帰り道ずっと寒いって言ってただろう。ゆっくり飲めよ」",
+  "snowDinnerConfession": "星野は椀を抱えてうつむいた。「あの朝、実は初めての氷釣りだった。竿も二本とも借り物。一緒に来てくれてよかった」",
+  "snowDinnerToast": "顧言は笑ってスープを足した。「じゃあ最初の一鍋は今日の分だ」 窓の外は雪。三人とも急いで立ち上がろうとはしなかった。"
+});
