@@ -54,7 +54,7 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
     lifeOf:()=>life,rememberPlayer(...args){memories.push(args);},
     addPts(_who,points){assert.equal(points,6);runtime.save();}
   });
-  runSection(runtime,'function checkMail(','function petCat(');
+  runSection(runtime,'function unreadAlbumPostcard(','function petCat(');
   assert.equal(runtime.hasNeighborMail(),true);
   runtime.checkMail();
   assert.equal(saved.status,'offered');
@@ -103,7 +103,7 @@ test('normal plot interaction plants, waters, advances overnight and grants one 
   let options;
   const state = {day: 1, time: 480, inv: {carrot: 0}, picked: [], pets: []};
   const runtime = game({
-    state, NPCS: [], npcs: [], flowers: [], save() {}, updateHud() {}, sfx() {}, say() {},
+    state, NPCS: [], npcs: [], flowers: [], deliverAlbumPostcard() {}, save() {}, updateHud() {}, sfx() {}, say() {},
     tr: key => key, itemLabel: key => key,
     talk(_speaker, _lines, choices) { options = choices; },
     advanceTime(minutes) { state.time += minutes; }
