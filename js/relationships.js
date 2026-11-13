@@ -939,7 +939,7 @@ function atPlannedDate(n,meeting){
     Math.hypot(n.x-P.x,n.y-P.y)<45;
 }
 function datePlanPlace(plan){
-  return plan.shelter?tr('dateMeetingCottage'):plan.rainWalk?tr(dateMeetingFor(plan).name):Lp.dates[plan.place].name;
+  return plan.shelter?tr('dateMeetingCottage'):plan.rainWalk?tr(dateMeetingFor(plan).name):tr(plan.place);
 }
 function describeDatePlan(plan){
   const {start,end}=DATE_MEETINGS[plan.place];
