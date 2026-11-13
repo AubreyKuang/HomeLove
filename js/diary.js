@@ -35,6 +35,26 @@ function appendKeepsake(container,n,key,title,details){
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
+  const revisit=state.rainReturn;
+  if(revisit&&!revisit.done&&(revisit.day===state.day+1||rainReturnReady())){
+    const spot=RAIN_DATE_MEETINGS[revisit.place];
+    const section=el('section','dsec');
+    section.append(el('h3',null,tr('dateRainReturnTitle')),el('p','rline',tr('dateRainReturnPlan',{
+      ...RAIN_RETURN,place:tr(spot.name),day:tr('day',{d:revisit.day}),
+      name:nm(npcs.find(n=>n.id===revisit.resident))
+    })));
+    if(rainReturnReady()){
+      const route=el('button','pbtn',tr('dateRainReturnRoute'));
+      route.type='button';
+      route.onclick=()=>{
+        const [x,y]=spot.p;
+        closeDiary();
+        if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
+      };
+      section.append(route);
+    }
+    b.append(section);
+  }
   const boxAvailable=breakfastBoxReady(true);
   if(state.breakfastBoxDay===state.day+1||boxAvailable){
     const section=el('section','dsec');

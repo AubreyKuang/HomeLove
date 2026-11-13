@@ -248,6 +248,30 @@ const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 const SHORT_DATE={minutes:20,points:5,mood:6};
 const UMBRELLA_DATE={minutes:25,points:6,mood:10};
 const RAIN_DETOUR_DATE={minutes:35,points:8,mood:13};
+const RAIN_RETURN={minutes:15,mood:8};
+function rainReturnReady(){
+  const revisit=state.rainReturn;
+  return revisit?.day===state.day&&!revisit.done&&VillageRiverside.weather(state.day)!=='rain'&&
+    state.time+RAIN_RETURN.minutes<26*60?revisit:null;
+}
+function atRainReturn(revisit){
+  const [x,y]=RAIN_DATE_MEETINGS[revisit.place].p;
+  return Math.hypot(P.x-x*16-8,P.y-y*16-12)<16;
+}
+function finishRainReturn(revisit){
+  if(!revisit||rainReturnReady()!==revisit||!atRainReturn(revisit))return;
+  const before={time:state.time,need:{...state.need}};
+  revisit.done=true;
+  advanceTime(RAIN_RETURN.minutes);
+  state.need.mood=clampN(state.need.mood+RAIN_RETURN.mood);
+  if(!save()){
+    revisit.done=false;
+    Object.assign(state,before);
+    return;
+  }
+  updateHud();
+  talk(tr('you'),[tr('dateRainReturnDone')]);
+}
 function hasSharedExperience(n){
   const life=state.life[n.id];
   return !!(life?.firstDate||state.moments.records[n.id]||life?.fishingInvitation?.catch);
@@ -612,6 +636,9 @@ function finishShortDate(n,plan,umbrella=false){
   if((umbrella||plan.rainWalk)&&(plan.shelter||!activeUmbrella()))return;
   const {minutes,mood,points}=plan.rainWalk?RAIN_DETOUR_DATE:umbrella?UMBRELLA_DATE:plan.shelter?DATE_SHELTER:SHORT_DATE;
   r.done.date=true;
+  if(plan.rainWalk&&VillageRiverside.weather(state.day+1)!=='rain'){
+    state.rainReturn={resident:n.id,place:plan.place,day:state.day+1,done:false};
+  }
   state.datePlan=null;
   advanceTime(minutes);
   state.need.mood=clampN(state.need.mood+mood);
