@@ -379,6 +379,37 @@ test('rain reflection can be viewed only on the next dry day at the original pud
   assert.deepEqual([revisit.done,state.time,state.need.mood,state.rel.gy.done],[true,615,48,{}]);
 });
 
+test('companion revisits require the appointment and both people at the puddle', () => {
+  const revisit={resident:'gy',place:'garden',day:4,done:false};
+  const state={day:3,time:600,rainReturn:revisit,need:{mood:40}};
+  const meeting={start:600,end:660,p:[12,12],spot:[13,12],name:'dateRainLane'};
+  const P={x:200,y:204},n={id:'gy',state:'here',x:300,y:204};
+  const bonds={trust:{gy:10}};
+  let write=false,plan;
+  const runtime=game({state,P,RAIN_DATE_MEETINGS:{garden:meeting},RAIN_RETURN:{minutes:15,mood:8},
+    RAIN_COMPANION:{minutes:25,mood:11,trust:4},VillageRiverside:{weather:()=> 'clear'},
+    B:()=>bonds,trustNpc:(_,d)=>{bonds.trust.gy+=d;},activeDatePlan:()=>plan,
+    save:()=>write,advanceTime:m=>{state.time+=m;},clampN:n=>n,updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
+  runSection(runtime,'function rainReturnReady(','function hasSharedExperience(');
+  runSection(runtime,'function atPlannedDate(','function datePlanPlace(');
+  assert.equal(runtime.setRainCompanion(revisit),false);
+  assert.equal(revisit.together,undefined);
+  write=true;plan={...revisit};
+  assert.equal(runtime.setRainCompanion(revisit),false);
+  plan=null;assert.equal(runtime.setRainCompanion(revisit),true);
+  assert.equal(runtime.rainCompanionMeeting(n),undefined);
+  state.day=4;state.time=580;
+  assert.equal(runtime.rainCompanionMeeting(n),meeting);
+  assert.equal(runtime.canFinishRainCompanion(revisit,n),false);
+  state.time=600;
+  assert.equal(runtime.canFinishRainCompanion(revisit,n),false);
+  n.x=216;write=false;
+  runtime.finishRainCompanion(revisit,n);
+  assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy],[600,40,false,10]);
+  write=true;runtime.finishRainCompanion(revisit,n);runtime.finishRainCompanion(revisit,n);
+  assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy],[625,51,true,14]);
+});
+
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
   const revisit={resident:'gy',place:'garden',day:4,done:false};
   const state={day:4,time:1530,rainReturn:revisit,rainSketches:{},need:{mood:40}};
