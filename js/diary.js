@@ -85,7 +85,7 @@ function renderDiary(){
   if(plan){
     const section=el('section','dsec');
     section.append(el('h3',null,tr('upcomingPlans')),el('p','rline',tr(
-      missed?'dateMeetingMissed':plan.shelter?'dateMeetingSheltered':'dateMeetingBooked',describeDatePlan(plan))));
+      missed?'dateMeetingMissed':plan.shelter?'dateMeetingSheltered':plan.rainWalk?'dateRainBooked':'dateMeetingBooked',describeDatePlan(plan))));
     for(const option of dateRebookingChoices(missed)){
       const change=el('button','pbtn',tr('dateMeetingRebook',describeDatePlan(option)));
       change.type='button';
@@ -102,7 +102,7 @@ function renderDiary(){
       if(canChangeDateShelter(plan)){
         const weather=tr('riverWeather_'+VillageRiverside.weather(state.day+1));
         section.append(el('p','rline',tr('dateMeetingRainForecast',{weather})));
-        if(!plan.shelter&&state.travel.owned.includes('umbrella')){
+        if(!plan.shelter&&!plan.rainWalk&&state.travel.owned.includes('umbrella')){
           section.append(el('p','rline',tr('dateMeetingUmbrellaHint',UMBRELLA_DATE)));
         }
         const tomorrow=rainDateTomorrow(plan);
@@ -128,11 +128,22 @@ function renderDiary(){
           }
         };
         section.append(change);
+        if(plan.rainWalk){
+          const restore=el('button','pbtn',tr('dateMeetingRestore',{place:Lp.dates[plan.place].name}));
+          restore.type='button';
+          restore.onclick=()=>{
+            if(changeRainDateRoute(plan)){
+              renderDiary();
+              $('#diaryClose').focus();
+            }
+          };
+          section.append(restore);
+        }
       }
       const route=el('button','pbtn',tr('dateMeetingRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=(plan.shelter?DATE_SHELTER:DATES[plan.place]).p;
+        const [x,y]=(plan.shelter?DATE_SHELTER:plan.rainWalk?dateMeetingFor(plan):DATES[plan.place]).p;
         closeDiary();
         if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
       };

@@ -14,6 +14,10 @@ const DATE_MEETINGS={garden:{start:600,end:660,spot:DATES.garden.n},pond:{start:
 const DATE_SHELTER={p:[6,7],minutes:30,points:7,mood:9};
 const SHELTERED_DATE_MEETINGS=Object.fromEntries(Object.entries(DATE_MEETINGS).map(([place,meeting])=>
   [place,{...meeting,spot:[7,7],indoors:true}]));
+const RAIN_DATE_MEETINGS={
+  garden:{...DATE_MEETINGS.garden,p:[12,12],spot:[13,12],name:'dateRainLane'},
+  pond:{...DATE_MEETINGS.pond,p:[23,8],spot:[24,8],name:'dateRainBank'}
+};
 
 /* ---------------- residents ---------------- */
 /* Numbers only; every line of text lives in lang/<code>.js under npcs.<id>. */
@@ -123,7 +127,8 @@ function applySave(s){
   const plan=s.datePlan;
   state.datePlan=plan&&ALBUM_RESIDENTS.includes(plan.resident)&&Object.hasOwn(DATE_MEETINGS,plan.place)&&
     Number.isInteger(plan.day)&&plan.day>=state.day&&plan.day<=state.day+1
-    ? {resident:plan.resident,place:plan.place,day:plan.day,...(plan.shelter===true?{shelter:true}:{})}:null;
+    ? {resident:plan.resident,place:plan.place,day:plan.day,
+      ...(plan.shelter===true?{shelter:true}:plan.rainWalk===true&&VillageRiverside.weather(plan.day)==='rain'?{rainWalk:true}:{})}:null;
   for(const pool of Object.values(CAPSULE_POOLS)){
     const saved=s[pool.owned];
     state[pool.owned]=Array.isArray(saved)?pool.items.filter(item=>saved.includes(item.id)).map(item=>item.id):[];

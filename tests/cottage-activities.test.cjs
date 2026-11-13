@@ -330,6 +330,32 @@ test('a rainy date can move to a dry tomorrow without creating a second reservat
   assert.deepEqual(done,{});
 });
 
+test('a rain detour can be reversed and requires both people to reach the new spot', () => {
+  const plan={resident:'gy',place:'garden',day:3},relation={done:{}};
+  const state={day:3,time:600,datePlan:plan,rel:{gy:relation},need:{mood:40}};
+  const meeting={start:600,end:660,spot:[20,12]},detour={...meeting,spot:[13,12],p:[12,12],name:'dateRainLane'};
+  const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};
+  let points=0;
+  const runtime=game({state,P,busy:false,npcs:[n],rel:()=>relation,DATE_MEETINGS:{garden:meeting},
+    RAIN_DATE_MEETINGS:{garden:detour},RAIN_DETOUR_DATE:{minutes:35,mood:13,points:8},
+    VillageRiverside:{weather:()=>'rain'},save:()=>true,activeUmbrella:()=>true,clampN:n=>n,
+    advanceTime:m=>{state.time+=m;},addPts(_,p){points+=p;},updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  runSection(runtime,'function finishShortDate(','function dateWith(');
+  assert.equal(runtime.changeRainDateRoute(plan),true);
+  assert.equal(runtime.changeRainDateRoute(state.datePlan),true);
+  assert.deepEqual({...state.datePlan},plan);
+  assert.equal(runtime.changeRainDateRoute(state.datePlan),true);
+  const revised=state.datePlan;
+  Object.assign(n,{x:216,y:204});
+  runtime.finishShortDate(n,revised,true);
+  assert.equal(state.datePlan,revised);
+  Object.assign(P,{x:200,y:204});
+  runtime.finishShortDate(n,revised,true);
+  runtime.finishShortDate(n,revised,true);
+  assert.deepEqual([state.datePlan,relation.done.date,state.time,state.need.mood,points],[null,true,635,53,8]);
+});
+
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
   const plan={resident:'gy',place:'garden',day:3};
   const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};
