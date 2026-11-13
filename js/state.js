@@ -147,7 +147,7 @@ function applySave(s){
         ...(sketch.subject==='paired'&&sketch.shared===true&&sketch.given===true&&Object.hasOwn(RAIN_DATE_MEETINGS,sketch.dedication)
           ?{dedication:sketch.dedication,
             ...(Number.isInteger(sketch.dedicationVisited)&&sketch.dedicationVisited>=sketch.day&&sketch.dedicationVisited<=state.day
-              ?{dedicationVisited:sketch.dedicationVisited}:{})}:{}),
+              ?{dedicationVisited:sketch.dedicationVisited,...(sketch.dedicationCompared===true?{dedicationCompared:true}:{})}:{})}:{}),
         ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
     }
   }
