@@ -734,33 +734,45 @@ function intimate(n,k){
   talk(nm(n),[nt(n)[k]],null,()=>{addPts(n,cfg[0]);state.need.mood=clampN(state.need.mood+cfg[1]);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});
 }
 const RAIN_SKETCH_GIFT={minutes:5,trust:8};
+const RAIN_SKETCH_DEDICATION={minutes:15,trust:11};
 function rainSketchGifts(n){
   return Object.entries(state.rainSketches).filter(([,sketch])=>sketch.resident===n.id&&!sketch.given);
 }
-function canGiveRainSketch(n){
-  return !rel(n).done.gift&&state.time+RAIN_SKETCH_GIFT.minutes<26*60&&findTarget()?.n===n;
+function canGiveRainSketch(n,minutes=RAIN_SKETCH_GIFT.minutes){
+  return !rel(n).done.gift&&state.time+minutes<26*60&&findTarget()?.n===n;
 }
 function offerRainSketchGift(n,place){
   D.npc=n;
-  talk(tr('giftWho'),[tr('rainSketchGiftConfirm',{name:nm(n),...RAIN_SKETCH_GIFT})],[
+  const choices=[
     {label:tr('optBack'),fn:()=>giftMenu(n)},
     {label:tr('rainSketchGiftSend'),fn:()=>giveRainSketch(n,place)}
-  ]);
+  ];
+  if(state.rainSketches[place]?.subject==='paired'){
+    for(const dedication of Object.keys(RAIN_DATE_MEETINGS)){
+      choices.push({label:tr('rainSketchDedicate',{place:tr(RAIN_DATE_MEETINGS[dedication].name),...RAIN_SKETCH_DEDICATION}),
+        disabled:!canGiveRainSketch(n,RAIN_SKETCH_DEDICATION.minutes),fn:()=>giveRainSketch(n,place,dedication)});
+    }
+  }
+  talk(tr('giftWho'),[tr('rainSketchGiftConfirm',{name:nm(n),...RAIN_SKETCH_GIFT})],choices);
 }
-function giveRainSketch(n,place){
+function giveRainSketch(n,place,dedication){
   const sketch=state.rainSketches[place];
-  if(sketch?.resident!==n.id||sketch.given||!canGiveRainSketch(n))return;
+  if(dedication&&(sketch?.subject!=='paired'||!Object.hasOwn(RAIN_DATE_MEETINGS,dedication)))return;
+  const gift=dedication?RAIN_SKETCH_DEDICATION:RAIN_SKETCH_GIFT;
+  if(sketch?.resident!==n.id||sketch.given||!canGiveRainSketch(n,gift.minutes))return;
   const r=rel(n),frame=state.album.framed,trust=B().trust[n.id];
   const before={time:state.time,need:{...state.need}};
   const previousGift=r.done.gift;
   r.done.gift=true;
   sketch.given=true;
+  if(dedication)sketch.dedication=dedication;
   if(frame?.key==='rain-sketch:'+place)state.album.framed=null;
-  advanceTime(RAIN_SKETCH_GIFT.minutes);
-  trustNpc(n,RAIN_SKETCH_GIFT.trust);
+  advanceTime(gift.minutes);
+  trustNpc(n,gift.trust);
   if(!save()){
     if(previousGift===undefined)delete r.done.gift;else r.done.gift=previousGift;
     delete sketch.given;
+    if(dedication)delete sketch.dedication;
     state.album.framed=frame;
     B().trust[n.id]=trust;
     Object.assign(state,before);
@@ -768,12 +780,14 @@ function giveRainSketch(n,place){
   }
   updateHud();
   D.npc=n;
-  talk(nm(n),[tr(sketch.shared?'rainCompanionSketchGiftReply':'rainSketchGiftReply',{place:tr(RAIN_DATE_MEETINGS[place].name)})]);
+  const reply=dedication?'rainSketchDedicateReply':sketch.subject==='paired'?'rainSketchPairedGiftReply':
+    sketch.shared?'rainCompanionSketchGiftReply':'rainSketchGiftReply';
+  talk(nm(n),[tr(reply,{place:tr(RAIN_DATE_MEETINGS[dedication||place].name)})]);
 }
 function giftMenu(n){
   const r=rel(n);D.npc=n;
   if(r.done.gift){talk(nm(n),[tr('giftDone')],null,()=>npcMenu(n,true));return;}
-  const opts=rainSketchGifts(n).map(([place])=>({label:tr('rainSketchGiftOption',{place:tr(RAIN_DATE_MEETINGS[place].name)}),
+  const opts=rainSketchGifts(n).map(([place,sketch])=>({label:tr(sketch.subject==='paired'?'rainSketchPairedGiftOption':'rainSketchGiftOption',{place:tr(RAIN_DATE_MEETINGS[place].name)}),
     disabled:!canGiveRainSketch(n),fn:()=>offerRainSketchGift(n,place)}));
   opts.push(...GIFT_KEYS.filter(k=>state.inv[k]>0).map(k=>{const kn=r.notes['gift_'+k];return {label:`${ITEM_ICONS[k]} ${itemLabel(k)} ×${state.inv[k]}`+(kn!=null?` ${faceOf(kn)}`:''),fn:()=>give(n,k)};}));
   if(!opts.length){talk(tr('giftWho'),[tr('giftEmpty')],null,()=>npcMenu(n,true));return;}

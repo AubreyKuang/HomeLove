@@ -30,6 +30,8 @@ function keepsakeFrameLine(n){
     hash2(state.day,frame.day+n.id.charCodeAt(0))>=.5)return '';
   frame.noticed=true;
   if(!save())frame.noticed=false;
+  if(Object.entries(state.rainSketches).some(([place,sketch])=>frame.key==='rain-sketch:'+place&&
+      frame.day===sketch.day&&sketch.subject==='paired'))return tr('rainSketchPairedFrame');
   return tr(frame.postcard?'frameRecognizePostcard':'frameRecognize_'+n.id);
 }
 function updateAlbumBadge(){
@@ -272,6 +274,7 @@ function renderAlbum(){
     display.dataset.frameAction='';
     page.append(art,el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)));
     if(selected.event==='rainSketch')page.append(el('p',null,tr(selected.given?'rainSketchGiftAlbumDone':'rainSketchGiftAlbumHint',{name:nm(n)})));
+    if(selected.dedication)page.append(el('p',null,tr('rainSketchDedicateAlbum',{place:tr(RAIN_DATE_MEETINGS[selected.dedication].name)})));
     page.append(keep);
     if(!selected.given)page.append(display);
     if(selected.event==='project_stage'){
