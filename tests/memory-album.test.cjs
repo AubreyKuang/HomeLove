@@ -33,6 +33,17 @@ test('older event cards appear with their original dates and details', () => {
   assert.equal(cards.at(-1).info.item, 'cookie');
 });
 
+test('the cottage frame keeps its original image and recognition across saves', () => {
+  const {album} = runtime();
+  const framed = {key: 'gy:firstDate', day: 2, resident: 'gy', postcard: false,
+    image: 'data:image/png;base64,aW1hZ2U=', noticed: true};
+  const restored = album.load(JSON.parse(JSON.stringify({framed})), residents, 4);
+  assert.deepEqual(JSON.parse(JSON.stringify(restored.framed)), framed);
+  assert.equal(album.load({}, residents, 4).framed, null);
+  assert.equal(album.load({framed}, residents, 1).framed, null);
+  assert.equal(album.load({framed: {...framed, image: 'https://example.com/img.png'}}, residents, 4).framed, null);
+});
+
 test('overnight delivery rotates familiar residents and stays unique across reloads', () => {
   const state = {
     day: 1, picked: [], garden: [], pets: [],
