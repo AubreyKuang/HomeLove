@@ -284,7 +284,7 @@ function rainCompanionMeeting(n){
   if(state.time>=meeting.start-20&&state.time<meeting.end)return meeting;
 }
 function rainCompanionStop(revisit){
-  if(revisit.walk==='pause')return RAIN_WALK_STOPS[revisit.place];
+  if(revisit.walk==='pause'||(revisit.walk==='meet'&&revisit.relocated))return RAIN_WALK_STOPS[revisit.place];
   return (revisit.walk==='meet'?RAIN_COMPANION_STARTS:RAIN_DATE_MEETINGS)[revisit.place];
 }
 function rainCompanionConflict(revisit,plan=activeDatePlan()){
@@ -319,9 +319,13 @@ function setRainCompanion(revisit){
   Object.assign(revisit,previous);
   return false;
 }
+function canSetRainCompanionWalk(revisit){
+  return state.rainReturn===revisit&&revisit.together&&!revisit.done&&(!revisit.rebooked||revisit.relocated)&&
+    (!revisit.walk||revisit.walk==='meet')&&
+    (revisit.day===state.day+1||(revisit.day===state.day&&state.time<RAIN_DATE_MEETINGS[revisit.place].start));
+}
 function setRainCompanionWalk(revisit){
-  if(state.rainReturn!==revisit||!revisit.together||revisit.done||revisit.rebooked||(revisit.walk&&revisit.walk!=='meet')||
-    !(revisit.day===state.day+1||(revisit.day===state.day&&state.time<RAIN_DATE_MEETINGS[revisit.place].start)))return false;
+  if(!canSetRainCompanionWalk(revisit))return false;
   const previous=revisit.walk;
   if(previous==='meet')delete revisit.walk;else revisit.walk='meet';
   if(save())return true;
@@ -330,7 +334,7 @@ function setRainCompanionWalk(revisit){
 }
 function startRainCompanionWalk(revisit,n,stop=false){
   if(state.rainReturn!==revisit||revisit.walk!=='meet'||!atPlannedDate(n,rainCompanionMeeting(n)))return;
-  if(stop&&!rainWalkCanPause(revisit))return;
+  if(stop&&(revisit.relocated||!rainWalkCanPause(revisit)))return;
   revisit.walk=stop?'pause':'walking';
   if(!save()){revisit.walk='meet';return;}
   followRainCompanion(revisit);
@@ -584,8 +588,9 @@ function npcMenu(n,back){
   if(momentAvailable(n))opts.unshift({label:tr('worldTitle_moment_'+n.id),fn:()=>openResidentMoment(n)});
   const revisit=state.rainReturn;
   if(revisit?.walk==='meet'&&atPlannedDate(n,rainCompanionMeeting(n))){
-    opts.unshift({label:tr('rainCompanionStartWalk'),fn:()=>startRainCompanionWalk(revisit,n)},
-      {label:tr('rainWalkChoosePause',RAIN_WALK_PAUSE),disabled:!rainWalkCanPause(revisit),fn:()=>startRainCompanionWalk(revisit,n,true)});
+    if(!revisit.relocated)opts.unshift({label:tr('rainWalkChoosePause',RAIN_WALK_PAUSE),
+      disabled:!rainWalkCanPause(revisit),fn:()=>startRainCompanionWalk(revisit,n,true)});
+    opts.unshift({label:tr('rainCompanionStartWalk'),fn:()=>startRainCompanionWalk(revisit,n)});
   }else if(revisit?.walk==='pause'&&atPlannedDate(n,rainCompanionMeeting(n))){
     const canPause=rainWalkCanPause(revisit);
     opts.unshift({label:tr(canPause?'rainWalkPause':'rainWalkTooLate',RAIN_WALK_PAUSE),disabled:!canPause,fn:()=>leaveRainWalkStop(revisit,n,true)},
