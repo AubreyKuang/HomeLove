@@ -63,6 +63,9 @@ function renderDiary(){
       section.append(invite);
       if(revisit.together&&!state.rainSketches[revisit.place]){
         section.append(el('p','rline',tr('rainCompanionSketchHint')));
+        if(!revisit.draft)section.append(el('p','rline',tr('rainSketchDraftHint',{
+          minutes:RAIN_SKETCH_DRAFT_MINUTES,saving:RAIN_SHARED_DRAFT_SAVING
+        })));
       }
       if(revisit.together&&(!revisit.walk||revisit.walk==='meet')&&(revisit.day>state.day||state.time<spot.start)){
         section.append(el('p','rline',tr('rainCompanionWalkHint',RAIN_COMPANION_WALK)));
@@ -78,7 +81,7 @@ function renderDiary(){
       }
     }else if(revisit.together)section.append(el('p','rline',tr('rainCompanionMissed')));
     if(!state.rainSketches[revisit.place]&&(revisit.day>state.day||!rainSketchLimit(revisit))){
-      section.append(el('p','rline',tr('dateRainSketchHint',RAIN_SKETCH)));
+      section.append(el('p','rline',tr(revisit.draft?'rainSketchDraftDiary':'dateRainSketchHint',soloRainSketch(revisit))));
     }
     if(rainReturnReady()){
       const meetingFirst=revisit.together&&revisit.walk==='meet'&&state.time<spot.end;
