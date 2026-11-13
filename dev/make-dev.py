@@ -7,7 +7,7 @@ page = (root / "index.html").read_text(encoding="utf-8")
 for original, replacement in (
     ("<title>", "<title>[DEV] "),
     ("<body>", '<body data-mode="test">'),
-    ("</body>", '<script src="dev/panel.js"></script>\n</body>'),
+    ("</body>", '<script src="dev/panel.js?v=day-plans-1"></script>\n</body>'),
 ):
     if page.count(original) != 1:
         raise ValueError(f"Expected one {original} in index.html")

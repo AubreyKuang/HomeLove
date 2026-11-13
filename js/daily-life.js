@@ -190,6 +190,13 @@ function neighborRequestItems(request){
   const {items}=CottageActivities.requests[request.resident];
   return Object.entries(items).map(([item,count])=>`${ITEM_ICONS[item]} ${itemLabel(item)} ×${count}`);
 }
+function cafeRequestPlan(){
+  const [opens,closes]=VillageMap.places.cafe.hours;
+  return tr('requestCafePlan',{
+    count:CottageActivities.requests.gy.items.berry,
+    minutes:CAFE_REQUEST_MINUTES,start:fmt(opens),latest:fmt(closes-CAFE_REQUEST_MINUTES)
+  });
+}
 function readNeighborRequest(request){
   const n=npcs.find(n=>n.id===request.resident);
   const {reward}=CottageActivities.requests[request.resident];
@@ -198,6 +205,7 @@ function readNeighborRequest(request){
     reward:`${ITEM_ICONS[reward]} ${itemLabel(reward)} ×2`,
     day:tr('day',{d:request.day+2})
   })];
+  if(n.id==='gy')lines.push(cafeRequestPlan());
   const options=request.status==='offered'?[
     {label:tr('requestAccept'),fn:()=>{
       request.status='accepted';save();
@@ -219,18 +227,50 @@ function offerNeighborDelivery(n,request){
     label:tr('requestDeliver',{item:itemLabel(item),count,owned:state.inv[item]}),
     disabled:state.inv[item]<count,fn:()=>deliverNeighborRequest(n,request,item)
   }));
+  if(n.id==='gy'&&atCafeForRequest(n)){
+    const end=state.time+CAFE_REQUEST_MINUTES;
+    const blocked=cafeRequestBlock();
+    options.push({
+      label:tr('requestCafeTogether',{minutes:CAFE_REQUEST_MINUTES,time:fmt(end),count:items.berry})+
+        (blocked?' '+tr(blocked):''),
+      disabled:!!blocked,
+      fn:()=>deliverNeighborRequest(n,request,'berry',true)
+    });
+  }
   D.npc=n;
   talk(nm(n),[tr('requestBring')],options.concat({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)}));
 }
-function deliverNeighborRequest(n,request,item){
+const CAFE_REQUEST_MINUTES=20;
+function atCafeForRequest(n){
+  if(n.state!=='here'||n.leaving)return false;
+  const cafe=VillageMap.places.cafe;
+  const [x,y]=cafe.spot;
+  const near=p=>Math.hypot(p.x-x*16-8,p.y-y*16-12)<48;
+  return villageDuty(n)===cafe&&near(n)&&near(P);
+}
+function cafeRequestBlock(){
+  const [opens,closes]=VillageMap.places.cafe.hours;
+  if(state.time<opens||state.time+CAFE_REQUEST_MINUTES>closes)return 'requestCafeClosing';
+  if(state.inv.berry<CottageActivities.requests.gy.items.berry)return 'requestCafeNeedBerries';
+  if(state.need.energy<=CAFE_REQUEST_MINUTES*.07)return 'requestCafeTired';
+}
+function deliverNeighborRequest(n,request,item,together=false){
   if(request!==state.neighborRequest)return;
+  if(together&&(n.id!=='gy'||item!=='berry'||!atCafeForRequest(n)||cafeRequestBlock()))return;
   const reward=CottageActivities.fulfillRequest(request,n.id,state.day,state.inv,item);
   if(!reward)return;
-  lifeOf(n).cards.neighborRequest ||= state.day;
-  rememberPlayer(n,'neighborRequest','fulfilled',.9,90,item);
+  const cards=lifeOf(n).cards;
+  cards.neighborRequest ||= state.day;
+  if(together){
+    advanceTime(CAFE_REQUEST_MINUTES);
+    cards.cafeRequest ||= state.day;
+  }
+  rememberPlayer(n,'neighborRequest',together?'preparedTogether':'fulfilled',.9,90,item);
   addPts(n,6);updateHud();
   D.npc=n;
-  talk(nm(n),[tr('requestThanks_'+n.id),tr('requestReward',{item:`${ITEM_ICONS[reward]} ${itemLabel(reward)}`})],null,()=>milestone(n));
+  const lines=together?[tr('requestCafePrep'),tr('requestCafeTaste')]:[tr('requestThanks_'+n.id)];
+  lines.push(tr('requestReward',{item:`${ITEM_ICONS[reward]} ${itemLabel(reward)}`}));
+  talk(nm(n),lines,null,()=>milestone(n));
 }
 function petCat(){
   sfx('cat');

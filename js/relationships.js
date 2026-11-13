@@ -25,7 +25,10 @@ function memoryLine(n,entry){
   if(data.type==='riverApron'||data.type==='riverLetter')return tr(data.type+'Recall');
   if(data.type==='xiaomanConfession'&&data.object==='friends')return tr('xmRecallFriends');
   if(['worldUfo','worldBottle','worldSeed'].includes(data.type))return tr(data.type+'Recall_'+data.object);
-  if(data.type==='neighborRequest')return tr('requestRecall_'+n.id,{item:itemLabel(data.object)});
+  if(data.type==='neighborRequest'){
+    if(n.id==='gy'&&data.outcome==='preparedTogether')return tr('requestCafeRecall');
+    return tr('requestRecall_'+n.id,{item:itemLabel(data.object)});
+  }
   if(data.type==='sharedFishing')return tr('sharedFishingRecall',{
     fish:itemLabel(data.object.kind),size:data.object.size
   });
@@ -270,7 +273,9 @@ function npcMenu(n,back){
   if(!story&&(h>=6||r.m6))opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
   if(!story&&h>=6&&!r.couple&&!anyCouple()){
     if(!hasSharedExperience(n))opts.push({label:tr('hintSharedExperience'),disabled:true});
-    else if(h>=8)opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
+    else if(h>=8)opts.push({label:r.done.confess?tr('optConfessTomorrow'):state.need.mood<40
+      ?tr('confessMoodNeeded',{mood:Math.floor(state.need.mood)}):tr('optConfess'),
+      disabled:!!r.done.confess||state.need.mood<40,fn:()=>confess(n)});
   }
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));

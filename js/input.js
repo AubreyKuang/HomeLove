@@ -2,9 +2,10 @@
 
 const keys=new Set(),touchKeys=new Set();
 const has=(...ks)=>ks.some(k=>keys.has(k)||touchKeys.has(k));
+$('#fishCancel').onclick=()=>{cancelFishing();cv.focus({preventScroll:true});};
 addEventListener('keydown',e=>{
   if(e.code==='Escape'&&cottageMenu.open){e.preventDefault();cottageMenu.open=false;cottageMenu.querySelector('summary').focus();return;}
-  if(['Enter','Space'].includes(e.code)&&e.target instanceof Element&&e.target.closest('#hud button,#hudR button,#villageGuide button,#cottageMenu>summary'))return;
+  if(['Enter','Space'].includes(e.code)&&e.target instanceof Element&&e.target.closest('#hud button,#hudR button,#villageGuide button,#fishCancel,#cottageMenu>summary'))return;
   if(startOpen){if(e.code==='Enter'&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('.langpick'))){e.preventDefault();begin();}return;}
   if(mapOpen){if(e.code==='Escape'||e.code==='KeyG'){e.preventDefault();closeVillageMap();}return;}
   if(dressOpen){if(e.code==='Escape'||e.code==='KeyC'){e.preventDefault();closeDress();}else if(e.code==='KeyQ')rot(-1);else if(e.code==='KeyR')rot(1);return;}

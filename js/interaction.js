@@ -724,8 +724,9 @@ function updateMiniMap(){
 }
 function openVillageMap(){
   if(mapOpen||startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on)return;
-  mapOpen=true;cancelVillageRoute();keys.clear();touchKeys.clear();
+  mapOpen=true;keys.clear();touchKeys.clear();
   const box=$('#villageStops');
+  const duties=new Map(npcs.map(n=>[n.id,villageDuty(n)]));
   drawOverview($('#villageOverview'),CottageActivities.seasonOf(state.day),false);
   box.replaceChildren();
   for(const [id,place] of Object.entries(VillageMap.places)){
@@ -739,7 +740,18 @@ function openVillageMap(){
       words.append(el('small',null,nm(resident)+' · '+fmt(start)+'–'+fmt(end)));
     }
     if(id==='cafe')words.append(el('small',null,tr('projectCafeMapHours')));
-    if(id==='lookout')words.append(el('small',null,tr('projectArtMapHours')));
+    const here=npcs.filter(resident=>{
+      if(resident.state!=='here'||resident.leaving)return false;
+      const duty=duties.get(resident.id);
+      if(duty){
+        const [x,y]=duty.spot;
+        const [px,py]=place.spot||[];
+        return px!==undefined&&Math.hypot(x-px,y-py)<=3&&Math.hypot(resident.x-x*16-8,resident.y-y*16-12)<48;
+      }
+      return id==='home'&&(inCottageWindow(resident)||rel(resident).livesIn)
+        && resident.x<27*16&&resident.y<19*16;
+    });
+    if(here.length)words.append(el('small','village-here',tr('villageHere',{names:here.map(nm).join(tr('nameSeparator'))})));
     if(blackoutOption(id).length)words.append(el('small',null,tr('blackoutMap')));
     if(id==='market')words.append(el('small',null,'09:00–18:00'));
     button.append(dot,words);

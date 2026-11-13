@@ -39,6 +39,7 @@ function updateVillageGuide(){
   const following = villageDestination && walkRoute.length>0;
   const greeting = !following && firstGreetingTarget();
   const visible = villageGuideVisible() && (following || greeting);
+  $('#fishCancel').hidden = !FISH.on;
   guide.classList.toggle('hidden', !visible);
   cancel.classList.toggle('hidden', !following);
   dismiss.classList.toggle('hidden', !greeting);

@@ -190,6 +190,7 @@ window.HL_LANG.ja = {
     albumCard_visitSick: "お見舞い",
     albumCard_rareDate: "忘れられないデート",
     albumCard_neighborRequest: "ご近所のお手伝い",
+    albumCard_cafeRequest: "窓辺のいちごのお菓子",
     albumCard_firstGift: "初めての贈り物",
     albumCard_sharedFishing: "月夜の釣り",
     albumCard_postcard: "ご近所さんの絵はがき",
@@ -200,6 +201,7 @@ window.HL_LANG.ja = {
     albumDetail_visitSick: "この日、あなたはお見舞いに足を運びました。",
     albumDetail_rareDate: "アルバムに残しておきたいデート。",
     albumDetail_neighborRequest: "手紙で頼まれた品を届けました。",
+    albumDetail_cafeRequest: "手紙で頼まれたいちごを顧言とジャムにして、カフェの窓辺でお菓子を分け合いました。",
     albumDetail_firstGift: "初めての贈り物を届けました。",
     albumDetail_sharedFishing: "池のほとりで一緒に魚を釣りました。",
     postcard_gy_0: "朝もやがまだ残ってる。窓辺の一杯は君の分。",
@@ -801,6 +803,15 @@ Object.assign(window.HL_LANG.ja.ui, {
   "requestOr": " または ",
   "requestHandIn": "お願いの品を届ける",
   "requestBring": "今日はどちらを持ってきた？",
+  "requestCafeTogether": "一緒にお菓子を作る · いちご ×{count} · {minutes}分、{time}に終了",
+  "requestCafePlan": "一緒にお菓子を作るなら、いちごを{count}個持ってカフェへ。{start}から{latest}までに始めよう。所要時間は{minutes}分。",
+  "requestCafeRoute": "カフェへ歩いて行く",
+  "requestCafeClosing": "（閉店までに間に合わない）",
+  "requestCafeNeedBerries": "（いちごが足りない）",
+  "requestCafeTired": "（体力が足りない）",
+  "requestCafePrep": "いちごを切ってくれる？ 僕が混ぜるよ。ほら、ジャムがスプーンの背に残るようになった。",
+  "requestCafeTaste": "顧言はお菓子を二つに切った。「窓辺の席、まだ日が当たってる。あそこで食べようか？」",
+  "requestCafeRecall": "一緒に作ったいちごジャム、窓辺で君がひと口目を食べた時の顔を覚えてるよ。",
   "requestDeliver": "{item} ×{count}を渡す（所持 {owned}）",
   "requestReward": "{item} ×2を受け取り、好感度が6上がった。",
   "requestKeepsake": "初めてのお手伝い",
@@ -1496,3 +1507,13 @@ window.HL_LANG.ja.moments = {
     "later": "「また違う光が来るよ」彼は紙をしまい、あなたに道を譲りました。"
   }
 };
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "villageHere": "ここにいる：{names}",
+  "nameSeparator": "、",
+  "upcomingPlans": "これからの予定",
+  "sharedFishingPlan": "{name} · {day} {start}〜{end} · 迎えに来たら、一緒に池へ。",
+  "fishingEnergyNeeded": "一緒に釣るには体力が5以上必要です",
+  "confessMoodNeeded": "告白には気分が40以上必要です（現在 {mood}）",
+  "fishCancel": "釣り竿をしまう"
+});

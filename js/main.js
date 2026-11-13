@@ -5,7 +5,7 @@ let hudT=0,saveT=0,stepT=0,bondsT=0;
 function update(dt){
   const paused=document.hidden||startOpen||dressOpen||diaryOpen||albumOpen||mapOpen||D.modal||busy;
   let dx=0,dy=0;
-  if(paused||FISH.on)walkRoute=[];
+  if(FISH.on||busy||D.modal||(paused&&!mapOpen&&!villageDestination))walkRoute=[];
   if(!paused&&!FISH.on){
     if(has('ArrowLeft','KeyA','left'))dx-=1;if(has('ArrowRight','KeyD','right'))dx+=1;
     if(has('ArrowUp','KeyW','up'))dy-=1;if(has('ArrowDown','KeyS','down'))dy+=1;
@@ -18,7 +18,7 @@ function update(dt){
     if(dx&&dy){const hd=dx<0?'left':'right',vd=dy<0?'up':'down';if(P.dir!==hd&&P.dir!==vd)P.dir=hd;}
     else P.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';
     const len=Math.hypot(dx,dy);movePlayerBy(dx/len*sp,dy/len*sp);moving=true;
-  }else if(walkRoute.length){
+  }else if(!paused&&!FISH.on&&walkRoute.length){
     const destination = villageDestination && walkRoute.at(-1);
     moving=followWalkRoute(sp);
     if(destination && !walkRoute.length){

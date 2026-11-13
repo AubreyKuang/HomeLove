@@ -29,7 +29,7 @@ function offerFishingInvitation(n){
   rel(n).done.visit=true;
   D.npc=n;
   talk(nm(n),[tr('sharedFishingInvite')],[
-    {label:tr('sharedFishingAccept'),disabled:state.need.energy<5,fn:()=>goFishingTogether(n)},
+    {label:tr(state.need.energy<5?'fishingEnergyNeeded':'sharedFishingAccept'),disabled:state.need.energy<5,fn:()=>goFishingTogether(n)},
     {label:tr('sharedFishingLater'),back:true,fn:()=>deferFishingInvitation(n)}
   ]);
 }
@@ -114,6 +114,7 @@ function missFish(reason){
   ]);
 }
 function cancelFishing(){
+  if(!FISH.on)return;
   if(FISH.snow){
     endFish(5,1);say(nm(snowResident()),tr('snowStop'));return;
   }

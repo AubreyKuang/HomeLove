@@ -190,6 +190,7 @@ window.HL_LANG.zh = {
     albumCard_visitSick: "病中探望",
     albumCard_rareDate: "难忘约会",
     albumCard_neighborRequest: "邻里来信",
+    albumCard_cafeRequest: "窗边的草莓点心",
     albumCard_firstGift: "第一次送礼",
     albumCard_sharedFishing: "月下同钓",
     albumCard_postcard: "邻里明信片",
@@ -200,6 +201,7 @@ window.HL_LANG.zh = {
     albumDetail_visitSick: "这一天，你特地来探望。",
     albumDetail_rareDate: "一场值得记下来的约会。",
     albumDetail_neighborRequest: "你带来了信里提到的东西。",
+    albumDetail_cafeRequest: "你和顾言把来信里的草莓熬成果酱，坐在咖啡店窗边分了一块点心。",
     albumDetail_firstGift: "你送出了第一份礼物。",
     albumDetail_sharedFishing: "一起在池塘边收竿。",
     postcard_gy_0: "晨雾还没散，窗边这杯给你留着。",
@@ -801,6 +803,15 @@ Object.assign(window.HL_LANG.zh.ui, {
   "requestOr": " 或 ",
   "requestHandIn": "交付邻里委托",
   "requestBring": "今天带了哪一样？",
+  "requestCafeTogether": "一起做点心 · 草莓 ×{count} · {minutes} 分钟，{time} 结束",
+  "requestCafePlan": "想一起做点心的话，带 {count} 颗草莓来咖啡店。{start} 开始，最晚 {latest} 动手，需要 {minutes} 分钟。",
+  "requestCafeRoute": "走去咖啡店",
+  "requestCafeClosing": "（营业时间不够）",
+  "requestCafeNeedBerries": "（草莓不够）",
+  "requestCafeTired": "（精力不够）",
+  "requestCafePrep": "你切草莓，我来搅。快看，果酱已经能挂在勺背上了。",
+  "requestCafeTaste": "顾言把点心切成两块。「窗边那张桌子还有阳光。我们过去尝尝？」",
+  "requestCafeRecall": "上次一起熬的草莓酱，我还记得你在窗边尝第一口的样子。",
   "requestDeliver": "交付 {item} ×{count}（已有 {owned}）",
   "requestReward": "收到 {item} ×2，好感 +6。",
   "requestKeepsake": "第一次帮忙",
@@ -1496,3 +1507,13 @@ window.HL_LANG.zh.moments = {
     "later": "“嗯，下次还有别的光。”他收好薄纸，把路让给你。"
   }
 };
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "villageHere": "正在这里：{names}",
+  "nameSeparator": "、",
+  "upcomingPlans": "接下来的安排",
+  "sharedFishingPlan": "{name} · {day} {start}–{end} · 对方会来找你，再一起去池塘",
+  "fishingEnergyNeeded": "同钓需要至少 5 点精力",
+  "confessMoodNeeded": "告白需要心情达到 40（当前 {mood}）",
+  "fishCancel": "收起鱼竿"
+});

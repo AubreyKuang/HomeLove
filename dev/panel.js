@@ -146,10 +146,16 @@
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
   const box=document.createElement('div');
   box.style.cssText='position:fixed;right:12px;bottom:12px;max-height:55vh;overflow:auto;z-index:15;background:rgba(30,24,36,.92);color:#fff6e6;border:2px solid #ffd45e;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:5px;font:12px/1.3 system-ui,sans-serif;max-width:170px';
-  const head=document.createElement('button');head.type='button';head.textContent='🛠 测试面板 ▾';
+  const head=document.createElement('button');head.type='button';head.textContent='🛠 测试面板 ▸';
+  head.setAttribute('aria-expanded','false');
   head.style.cssText='all:unset;cursor:pointer;font-weight:700;color:#ffd45e';box.append(head);
-  const body=document.createElement('div');body.style.cssText='display:flex;flex-direction:column;gap:4px';box.append(body);
-  head.onclick=()=>{const hid=body.style.display==='none';body.style.display=hid?'flex':'none';head.textContent=hid?'🛠 测试面板 ▾':'🛠 测试面板 ▸';cv.focus({preventScroll:true});};
+  const body=document.createElement('div');body.style.cssText='display:none;flex-direction:column;gap:4px';box.append(body);
+  head.onclick=()=>{
+    const open=body.style.display==='none';
+    body.style.display=open?'flex':'none';
+    head.textContent=open?'🛠 测试面板 ▾':'🛠 测试面板 ▸';
+    head.setAttribute('aria-expanded',String(open));
+  };
   const btn=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;
     b.style.cssText='cursor:pointer;text-align:left;padding:4px 6px;border-radius:5px;border:1px solid #6b5a72;background:#3d3248;color:#fff6e6;font:inherit';
     b.onclick=()=>{fn(b);cv.focus({preventScroll:true});};body.append(b);return b;};

@@ -121,8 +121,12 @@ function villageDuty(n){
       return event.host===n.id?VillageMap.places[id]:weekendGuestSpots[id];
     }
   }
+  if(n.id==='gy'&&acceptedNeighborRequest(n)){
+    const duty=VillageMap.duty(n.id,state.time);
+    if(duty?.id==='cafe')return duty;
+  }
   if(n.id==='gy'&&state.time>=1080&&state.time<1170)return VillageMap.places.cafe;
-  if(n.id==='by'&&state.time>=15*60&&state.time<20*60)return VillageMap.places.lookout;
+  if(n.id==='by')return VillageMap.duty(n.id,state.time);
   return rel(n).livesIn||inCottageWindow(n)?null:VillageMap.duty(n.id,state.time);
 }
 // An unannounced visit: the resident shows up at any hour and comes looking for you, even indoors.

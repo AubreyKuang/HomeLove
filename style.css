@@ -312,6 +312,8 @@ body:has(#start:not(.hidden)) :is(#hud,#hudR,#pad,#abtn){visibility:hidden}
   pointer-events: none;
 }
 #villageGuideText { padding: 3px 2px; }
+#fishCancel{position:fixed;top:calc(104px + env(safe-area-inset-top,0px));right:12px;min-height:44px;z-index:8}
+.village-stop .village-here{font-weight:700}
 #villageGuide button {
   pointer-events: auto;
   min-width: 34px;

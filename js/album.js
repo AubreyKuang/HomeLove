@@ -40,6 +40,13 @@ function albumScene(card,n){
   if(card.event?.startsWith('moment_'))return momentArt(n,card.choice);
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.kind==='cafeRequest'){
+    MemoryAlbum.paint(g,'home');
+    blitChar(g,state.o,'down',0,24,22);blitChar(g,n.outfit,'down',0,48,21);
+    g.fillStyle='#faedd7';g.fillRect(69,31,14,4);
+    g.fillStyle='#bf6271';g.fillRect(72,29,8,3);
+    return art;
+  }
   if(card.event==='blackout'){
     MemoryAlbum.paint(g,'stars');
     blitChar(g,state.o,'down',0,36,22);blitChar(g,n.outfit,'down',0,58,22);

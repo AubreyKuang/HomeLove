@@ -190,6 +190,7 @@ window.HL_LANG.en = {
     albumCard_visitSick: "A Visit While Sick",
     albumCard_rareDate: "A Date to Remember",
     albumCard_neighborRequest: "A Neighborly Favor",
+    albumCard_cafeRequest: "Strawberry Pastry by the Window",
     albumCard_firstGift: "First Gift",
     albumCard_sharedFishing: "Fishing by Moonlight",
     albumCard_postcard: "A Neighbor’s Postcard",
@@ -200,6 +201,7 @@ window.HL_LANG.en = {
     albumDetail_visitSick: "You made time to stop by and see how they were feeling.",
     albumDetail_rareDate: "A date worth keeping in the album.",
     albumDetail_neighborRequest: "You brought the item they asked for in their letter.",
+    albumDetail_cafeRequest: "You and Gu Yan made jam from the strawberries in his letter and shared a pastry by the café window.",
     albumDetail_firstGift: "You gave them their first gift.",
     albumDetail_sharedFishing: "You reeled in a catch together at the pond.",
     postcard_gy_0: "The morning mist is still here. I saved you the cup by the window.",
@@ -801,6 +803,15 @@ Object.assign(window.HL_LANG.en.ui, {
   "requestOr": " or ",
   "requestHandIn": "Deliver a request",
   "requestBring": "Which did you bring today?",
+  "requestCafeTogether": "Make a pastry together · Strawberries ×{count} · {minutes} min, ends at {time}",
+  "requestCafePlan": "To make a pastry together, bring {count} strawberries to the café. Start between {start} and {latest} and allow {minutes} minutes.",
+  "requestCafeRoute": "Walk to the café",
+  "requestCafeClosing": " (not enough time before closing)",
+  "requestCafeNeedBerries": " (not enough strawberries)",
+  "requestCafeTired": " (not enough energy)",
+  "requestCafePrep": "You slice the strawberries and I'll stir. Look, the jam's thick enough to coat the spoon.",
+  "requestCafeTaste": "Gu Yan cuts the pastry in two. “There's still sun at the window table. Shall we try it there?”",
+  "requestCafeRecall": "I still remember the jam we made and how you looked taking the first bite by the window.",
   "requestDeliver": "Hand over {item} ×{count} ({owned} owned)",
   "requestReward": "Received {item} ×2 and gained 6 affection.",
   "requestKeepsake": "First Favor",
@@ -1496,3 +1507,13 @@ window.HL_LANG.en.moments = {
     "later": "“There will be other light.” He gathers the paper and steps aside for you."
   }
 };
+
+Object.assign(window.HL_LANG.en.ui, {
+  "villageHere": "Here now: {names}",
+  "nameSeparator": ", ",
+  "upcomingPlans": "Upcoming plans",
+  "sharedFishingPlan": "{name} · {day}, {start}–{end} · They will find you, then you can go to the pond together.",
+  "fishingEnergyNeeded": "Fishing together requires at least 5 energy",
+  "confessMoodNeeded": "Confessing requires 40 mood (currently {mood})",
+  "fishCancel": "Put away the rod"
+});

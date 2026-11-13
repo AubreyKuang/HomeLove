@@ -47,11 +47,12 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   const n = {id:'gy'};
   const state = {day:1,neighborRequest:null,rel:{gy:{met:true}},inv:{berry:2,cookie:0,flower:0}};
   const life = {cards:{}}, memories = [];
-  let options, saved;
+  let options, saved, letter;
   const runtime = game({
     state,npcs:[n],D:{},ITEM_ICONS:{berry:'🍓',cookie:'🍪',flower:'🌼'},
-    tr:key=>key,itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,say(){},updateHud(){},
-    talk(_who,_lines,choices){options=choices;},
+    VillageMap:{places:{cafe:{hours:[750,1020]}}},fmt:String,
+    tr:(key,vars)=>key+(key==='requestCafePlan'?JSON.stringify(vars):''),itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,say(){},updateHud(){},
+    talk(_who,lines,choices){options=choices;letter=lines;},
     save(){saved=JSON.parse(JSON.stringify(state.neighborRequest));},
     lifeOf:()=>life,rememberPlayer(...args){memories.push(args);},
     addPts(_who,points){assert.equal(points,6);runtime.save();}
@@ -60,6 +61,7 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   assert.equal(runtime.hasNeighborMail(),true);
   runtime.checkMail();
   assert.equal(saved.status,'offered');
+  assert.ok(letter.includes('requestCafePlan{"count":2,"minutes":20,"start":"750","latest":"1000"}'));
   options[0].fn();
   assert.equal(saved.status,'accepted');
   const request=runtime.acceptedNeighborRequest(n);
@@ -72,6 +74,44 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   assert.equal(memories[0][1],'neighborRequest');
   assert.equal(state.inv.flower,2);
   assert.equal(runtime.hasNeighborMail(),false);
+});
+
+test('the café request shares the regular payout, spends time only when feasible, and persists one keepsake', () => {
+  const n={id:'gy',state:'here',x:232,y:364};
+  const cafe={spot:[14,22],hours:[750,1020]};
+  const request={day:1,resident:'gy',status:'accepted'};
+  const life={cards:{}}, state={
+    day:1,time:1001,need:{energy:90},inv:{berry:2,cookie:0,flower:0},neighborRequest:request
+  };
+  let choices, saved;
+  const runtime=game({state,P:{x:232,y:364},VillageMap:{places:{cafe}},villageDuty:()=>cafe,
+    D:{},fmt:String,ITEM_ICONS:{berry:'🍓',cookie:'🍪',flower:'🌼'},
+    tr:key=>key,itemLabel:key=>key,nm:npc=>npc.id,lifeOf:()=>life,rememberPlayer(){},updateHud(){},
+    talk(_who,_lines,options){choices=options;},
+    addPts(_who,amount){assert.equal(amount,6);saved=JSON.parse(JSON.stringify({state,life}));},
+    advanceTime(minutes){state.time+=minutes;}
+  });
+  runSection(runtime,'function unreadAlbumPostcard(','function petCat(');
+  runtime.offerNeighborDelivery(n,request);
+  const joint=choices.find(option=>option.label.includes('requestCafeTogether'));
+  assert.match(joint.label,/requestCafeClosing/);
+  assert.equal(choices[0].disabled,false);
+  joint.fn();
+  assert.equal(request.status,'accepted');
+  assert.equal(state.inv.berry,2);
+  state.time=1000;
+  runtime.offerNeighborDelivery(n,request);
+  const prepared=choices.find(option=>option.label.includes('requestCafeTogether'));
+  assert.equal(prepared.disabled,false);
+  prepared.fn();
+  prepared.fn();
+  assert.equal(saved.state.time,1020);
+  assert.deepEqual(saved.state.inv,{berry:0,cookie:0,flower:2});
+  assert.equal(saved.life.cards.cafeRequest,1);
+  assert.equal(runtime.activities.loadRequest(saved.state.neighborRequest).status,'delivered');
+  const album=vm.runInContext(read('memory-album.js')+'\nMemoryAlbum',runtime);
+  const cards=album.collect(['gy'],{gy:saved.life},{postcards:[]});
+  assert.equal(cards.filter(card=>card.kind==='cafeRequest').length,1);
 });
 
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {

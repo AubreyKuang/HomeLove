@@ -19,7 +19,8 @@ function nextHint(n){
   if(!anyCouple()&&!hasSharedExperience(n))return tr('hintSharedExperience');
   if(h<7)return tr('hint7');
   if(h<8)return tr('hint8');
-  return anyCouple()?tr('hintTaken'):tr('hintConfess');
+  return anyCouple()?tr('hintTaken'):state.need.mood<40
+    ?tr('confessMoodNeeded',{mood:Math.floor(state.need.mood)}):tr('hintConfess');
 }
 function appendKeepsake(container,n,key,title,details){
   const keepsake=el('article','keepsake');
@@ -34,6 +35,35 @@ function appendKeepsake(container,n,key,title,details){
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
+  const request=CottageActivities.openRequest(state.neighborRequest,state.day);
+  if(request?.status==='accepted'){
+    const section=el('section','dsec'),n=npcs.find(person=>person.id===request.resident);
+    section.append(el('h3',null,tr('requestJournal')),el('div','rline',tr('requestJournalEntry',{
+      name:nm(n),items:neighborRequestItems(request).join(tr('requestOr')),day:tr('day',{d:request.day+2})
+    })));
+    if(n.id==='gy'){
+      section.append(el('p','rline',cafeRequestPlan()));
+      const route=el('button','pbtn',tr('requestCafeRoute'));
+      route.type='button';
+      route.onclick=()=>{
+        closeDiary();
+        walkToVillagePlace('cafe',VillageMap.places.cafe);
+      };
+      section.append(route);
+    }
+    b.append(section);
+  }
+  const invitation=state.life[FISHING_INVITE.resident]?.fishingInvitation;
+  if(invitation&&!invitation.catch){
+    const n=npcs.find(person=>person.id===FISHING_INVITE.resident);
+    const day=Math.max(invitation.dueDay,state.day+Number(state.time>=FISHING_INVITE.closes));
+    const plans=el('section','dsec');
+    plans.append(el('h3',null,tr('upcomingPlans')),el('div','rline',tr('sharedFishingPlan',{
+      name:nm(n),day:tr('day',{d:day}),start:fmt(FISHING_INVITE.opens),end:fmt(FISHING_INVITE.closes)
+    })));
+    if(day===state.day&&state.need.energy<5)plans.append(el('div','rline',tr('fishingEnergyNeeded')));
+    b.append(plans);
+  }
   const s1=el('section','dsec');s1.append(el('h3',null,tr('secRel')));const grid=el('div','rel');
   npcs.forEach(n=>{
     const r=rel(n),h=hearts(r),T=nt(n),card=el('div','rcard'),c=mk(20,26);blitChar(c.getContext('2d'),n.outfit,'down',0,0,0);
@@ -47,7 +77,8 @@ function renderDiary(){
     const styleTxt=r.knowStyle?listJoin(n.likeColors.map(i=>Lp.colors[i]))+' · '+listJoin(n.likeItems.map(itemName)):tr('unknown4');
     const notes=Object.entries(r.notes).map(([k,v])=>{const nmk=k.startsWith('gift_')?ITEM_ICONS[k.slice(5)]+itemLabel(k.slice(5)):k.startsWith('pet_')?PET_ICON[k.slice(4)]+Lp.pets.kinds[k.slice(4)].name:(Lp.notes[k]||k);return nmk+faceOf(v);});
     const nl=el('div','rline');nl.append(document.createTextNode(tr('notes')));nl.append(notes.length?document.createTextNode(notes.join('  ')):el('em',null,tr('notesEmpty')));
-    info.append(top,el('div','rsub',`${T.title} · `+(r.livesIn?tr('livesHere'):xiaomanRoute(n)&&state.xiaoman.answer?tr('xmVisits_'+state.xiaoman.answer):tr('visits',{a:fmt(n.arrive),b:fmt(n.leave)}))),hs,
+    const {start,end}=visitWindow(n);
+    info.append(top,el('div','rsub',`${T.title} · `+(r.livesIn?tr('livesHere'):xiaomanRoute(n)&&state.xiaoman.answer?tr('xmVisits_'+state.xiaoman.answer):tr('visits',{a:fmt(start),b:fmt(end)}))),hs,
       el('div','rline',today),el('div','rline',tr('favGift')+giftTxt),el('div','rline',tr('favStyle')+styleTxt),nl,el('div','rnext',nextHint(n)));
     if(r.met){
       const tv=B().trust[n.id],jv=B().jealousy[n.id];
@@ -103,14 +134,6 @@ function renderDiary(){
     caught.append(card);
   }
   pondLog.append(caught);
-  const request=CottageActivities.openRequest(state.neighborRequest,state.day);
-  if(request?.status==='accepted'){
-    const section=el('section','dsec'),n=npcs.find(person=>person.id===request.resident);
-    section.append(el('h3',null,tr('requestJournal')),el('div','rline',tr('requestJournalEntry',{
-      name:nm(n),items:neighborRequestItems(request).join(tr('requestOr')),day:tr('day',{d:request.day+2})
-    })));
-    b.append(section);
-  }
   if(state.projects.recording&&!state.projects.music){
     const sounds=el('section','dsec');
     sounds.append(el('h3',null,tr('worldTitle_project_stage')),

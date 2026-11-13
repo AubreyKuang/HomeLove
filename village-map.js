@@ -9,7 +9,7 @@ const VillageMap = (() => {
     stage:{id:'stage',tile:[23,31],anchor:[23,29],spot:[22,30],color:'#bda1d1',resident:'jy',hours:[11*60,14*60]},
     ferry:{tile:[37,29],anchor:[36,28],color:'#7aadb6'},
     post:{tile:[4,23],anchor:[4,25],color:'#e5b384'},
-    lookout:{id:'lookout',tile:[44,12],anchor:[44,15],spot:[45,14],color:'#9abdda',resident:'by',hours:[16*60+30,19*60]}
+    lookout:{id:'lookout',tile:[44,12],anchor:[44,15],spot:[45,14],color:'#9abdda',resident:'by',hours:[15*60,20*60]}
   };
   const props=[
     {id:'guide',x:7,y:21,w:1,h:1},
