@@ -45,6 +45,7 @@ function albumScene(card,n){
   if(card.event==='rainSketch'){
     MemoryAlbum.paint(g,card.place);
     blitChar(g,state.o,'down',0,24,24);
+    if(card.shared)blitChar(g,n.outfit,'down',0,9,22);
     g.fillStyle='#a28164';g.fillRect(49,23,35,29);
     g.fillStyle='#fff0d7';g.fillRect(48,21,34,29);
     g.fillStyle='#7fa9b9';g.fillRect(53,37,24,7);g.fillRect(56,35,18,11);
@@ -172,7 +173,9 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
-  if(card.event==='rainSketch')return tr('rainSketchCard',{place:tr(RAIN_DATE_MEETINGS[card.place].name)});
+  if(card.event==='rainSketch')return tr(card.shared?'rainCompanionSketchCard':'rainSketchCard',{
+    place:tr(RAIN_DATE_MEETINGS[card.place].name),name:nm(n)
+  });
   if(card.event?.startsWith('moment_'))return Lp.moments[n.id].endings[card.choice].join(' ');
   if(card.event==='blackout')return tr('blackoutResult_'+card.choice);
   if(card.event==='project_cafe'){

@@ -139,7 +139,8 @@ function applySave(s){
   for(const place of Object.keys(RAIN_DATE_MEETINGS)){
     const sketch=s.rainSketches?.[place];
     if(ALBUM_RESIDENTS.includes(sketch?.resident)&&Number.isInteger(sketch.day)&&sketch.day>0&&sketch.day<=state.day){
-      state.rainSketches[place]={resident:sketch.resident,day:sketch.day,...(sketch.given===true?{given:true}:{})};
+      state.rainSketches[place]={resident:sketch.resident,day:sketch.day,
+        ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
     }
   }
   for(const pool of Object.values(CAPSULE_POOLS)){
