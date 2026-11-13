@@ -79,17 +79,22 @@ function renderDiary(){
       }
     }else if(revisit.together){
       section.append(el('p','rline',tr('rainCompanionMissed')));
-      if(canRebookRainDraft(revisit)){
+      const destinations=Object.entries(RAIN_DATE_MEETINGS).filter(([place])=>canRebookRainDraft(revisit,place));
+      if(destinations.length){
         section.append(el('p','rline',tr('rainDraftRebookHint')));
-        const retry=el('button','pbtn',tr('rainDraftRebook',{start:fmt(spot.start),end:fmt(spot.end)}));
-        retry.type='button';
-        retry.onclick=()=>{
-          if(rebookRainDraft(revisit)){
-            renderDiary();
-            b.querySelector('[data-rain-companion]')?.focus();
-          }
-        };
-        section.append(retry);
+        for(const [place,meeting] of destinations){
+          const retry=el('button','pbtn',tr(place===revisit.place?'rainDraftRebook':'rainDraftRebookElsewhere',{
+            place:tr(meeting.name),start:fmt(meeting.start),end:fmt(meeting.end),minutes:RAIN_DRAFT_RELOCATION_MINUTES
+          }));
+          retry.type='button';
+          retry.onclick=()=>{
+            if(rebookRainDraft(revisit,place)){
+              renderDiary();
+              b.querySelector('[data-rain-companion]')?.focus();
+            }
+          };
+          section.append(retry);
+        }
       }
     }
     if(!state.rainSketches[revisit.place]&&(revisit.day>state.day||!rainSketchLimit(revisit))){

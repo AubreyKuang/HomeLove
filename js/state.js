@@ -134,6 +134,7 @@ function applySave(s){
     Number.isInteger(revisit.day)&&revisit.day>=state.day&&revisit.day<=state.day+1
     ? {resident:revisit.resident,place:revisit.place,day:revisit.day,done:revisit.done===true,
       ...(revisit.rebooked===true?{rebooked:true}:{}),
+      ...(revisit.rebooked===true&&revisit.draft===true&&revisit.relocated===true?{relocated:true}:{}),
       ...(revisit.draft===true?{draft:true,...(['bank','reflection'].includes(revisit.subject)?{subject:revisit.subject}:{})}:{}),
       ...(revisit.together===true?{together:true,
         ...(['meet','pause','walking'].includes(revisit.walk)?{walk:revisit.walk}:{})}:{})}:null;

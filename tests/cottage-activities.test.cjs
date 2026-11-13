@@ -468,7 +468,7 @@ test('an early draft saves time together and can still be completed alone', () =
   let write=false,choices;
   const runtime=game({state,P,npcs:[n],RAIN_DATE_MEETINGS:{garden:{start:600,end:660,p:[12,12],spot:[13,12],name:'garden'}},
     RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,RAIN_DRAFT_BANK_BONUS:5,
-    RAIN_COMPANION:{minutes:25,mood:11,trust:4},RAIN_DRAFT_CHANGE:{minutes:10,trust:2},
+    RAIN_COMPANION:{minutes:25,mood:11,trust:4},RAIN_DRAFT_CHANGE:{minutes:10,trust:2},RAIN_DRAFT_RELOCATION_MINUTES:5,
     VillageRiverside:{weather:()=> 'clear'},save:()=>write,
     advanceTime:m=>{state.time+=m;},clampN:n=>n,B:()=>bonds,trustNpc:(_,delta)=>{bonds.trust.gy+=delta;},
     updateHud(){},D:{},talk(_who,_lines,options){choices=options;},tr:k=>k,nm:n=>n.id});
@@ -491,6 +491,8 @@ test('an early draft saves time together and can still be completed alone', () =
   const bank={...revisit,subject:'bank'};
   assert.equal(runtime.rainCompanionActivity(bank,true).minutes,25);
   assert.equal(runtime.soloRainSketch(bank).minutes,15);
+  assert.equal(runtime.soloRainSketch({...bank,relocated:true}).minutes,20);
+  assert.equal(runtime.rainCompanionActivity({...bank,relocated:true},true).minutes,30);
   state.rainSketches={};state.rainReturn={...bank,done:false};state.time=610;
   const change=runtime.rainCompanionOptions(state.rainReturn,n).find(choice=>choice.label==='rainSketchChangeSubject');
   write=false;change.fn();
@@ -511,7 +513,7 @@ test('an unfinished draft can be rebooked once after a missed meetup', () => {
   const draft={resident:'gy',place:'garden',day:4,done:false,together:true,draft:true,subject:'bank',walk:'walking'};
   const state={day:4,time:659,rainReturn:draft,rainSketches:{}};
   let rainy=false,write=false,plan;
-  const runtime=game({state,RAIN_RETURN:{minutes:15},RAIN_DATE_MEETINGS:{garden:{start:600,end:660}},
+  const runtime=game({state,RAIN_RETURN:{minutes:15},RAIN_DATE_MEETINGS:{garden:{start:600,end:660},pond:{start:960,end:1020}},
     activeDatePlan:()=>plan,VillageRiverside:{weather:day=>rainy&&day===5?'rain':'clear'},save:()=>write});
   runSection(runtime,'function rainReturnReady(','function startRainCompanionWalk(');
   assert.equal(runtime.rebookRainDraft(draft),false);
@@ -519,6 +521,10 @@ test('an unfinished draft can be rebooked once after a missed meetup', () => {
   assert.equal(runtime.canRebookRainDraft(draft),false);
   rainy=false;plan={resident:'gy',place:'garden',day:5};
   assert.equal(runtime.canRebookRainDraft(draft),false);
+  assert.equal(runtime.canRebookRainDraft(draft,'pond'),true);
+  state.rainSketches.pond={resident:'gy',day:2};
+  assert.equal(runtime.canRebookRainDraft(draft,'pond'),false);
+  delete state.rainSketches.pond;
   plan=null;
   assert.equal(runtime.canRebookRainDraft(draft),true);
   assert.equal(runtime.rebookRainDraft(draft),false);
@@ -534,6 +540,9 @@ test('an unfinished draft can be rebooked once after a missed meetup', () => {
   state.time=660;
   assert.equal(runtime.rebookRainDraft(rebooked),false);
   assert.equal(runtime.rainReturnReady(),rebooked);
+  state.day=4;state.time=660;state.rainReturn=draft;
+  assert.equal(runtime.rebookRainDraft(draft,'pond'),true);
+  assert.deepEqual([state.rainReturn.day,state.rainReturn.place,state.rainReturn.subject,state.rainReturn.relocated],[5,'pond','bank',true]);
 });
 
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
