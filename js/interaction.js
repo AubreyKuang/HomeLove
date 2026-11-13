@@ -572,6 +572,15 @@ function renderLanternReaction(cx,cy){
   lanternBubble.style.top=Math.max(125,(n.y-cy-31)*ratio)+'px';
 }
 function villageInteraction(id){
+  if(id==='bench'){
+    if(!breakfastBoxReady(true))return;
+    const {eatMinutes,outdoorHunger,mood}=BREAKFAST_BOX;
+    talk(tr('village_bench'),[tr('boxBench')],[
+      {label:tr('boxEatOutside',{m:eatMinutes,h:outdoorHunger,mood}),fn:()=>eatBreakfastBox(true)},
+      {label:tr('walkAway'),fn:null}
+    ]);
+    return;
+  }
   if(blackoutOption(id).length){openBlackoutScene(id);return;}
   if(id==='ferry'){ferryMenu();return;}
   if(id==='post'){postMenu();return;}
@@ -794,7 +803,7 @@ function findTarget(){
   if(o)return {kind:'obj',o,verb:o.id==='mailbox'&&readyVehicles().length?tr('vehiclePackage'):o.id==='mailbox'&&unreadAlbumPostcard()?tr('albumMailPrompt'):o.id==='mailbox'&&hasNeighborMail()?tr('requestMailPrompt'):Lp.objects[o.id].verb,
     x:(o.tx+o.tw/2)*16,y:o.py-5};
   const prop=villagePropAt(tx,ty);
-  if(prop)return {kind:'village',id:prop.id,verb:tr('village_'+prop.id),x:(prop.x+prop.w/2)*16,y:prop.y*16-9};
+  if(prop&&(prop.id!=='bench'||breakfastBoxReady(true)))return {kind:'village',id:prop.id,verb:tr('village_'+prop.id),x:(prop.x+prop.w/2)*16,y:prop.y*16-9};
   const wx=Math.floor((P.x+d[0]*16)/16),wy=Math.floor((P.y-3+d[1]*16)/16);
   if((wx<28&&wy<10||!winter&&wx===VillageRiverside.riverFish[0]&&wy===VillageRiverside.riverFish[1])&&at(wx,wy)===WATER)return {kind:'fish',tx:wx,ty:wy,verb:winter?tr(isIceHole(wx,wy)?'iceAction':'iceLook'):tr('fishAt',{spot:tr(pondSpot(wx))}),x:wx*16+8,y:wy*16};
   return null;

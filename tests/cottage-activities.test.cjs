@@ -216,7 +216,7 @@ test('date reservations reserve only the named resident and end without a penalt
 
 test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
   const state={day:1,time:1200,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
-  const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6},
+  const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40},
     sfx(){},busyFade(mid){mid();},advanceTime(m){state.time+=m;},clampN:n=>Math.min(100,n),updateHud(){},save(){}});
   runSection(runtime,'function breakfastBoxReady(','function eat(){');
   runSection(runtime,'const RECIPES=','function workout(');
@@ -235,6 +235,28 @@ test('a packed breakfast spends produce once and can be eaten only the next morn
   runtime.eatBreakfastBox();
   assert.equal(state.time,720);
   assert.equal(state.need.hunger,75);
+  assert.equal(state.breakfastBoxDay,null);
+});
+
+test('the market bench uses the same box and keeps it available two hours longer', () => {
+  const state={day:2,time:835,breakfastBoxDay:2,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
+  const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40},
+    sfx(){},busyFade(mid){mid();},advanceTime(m){state.time+=m;},clampN:n=>Math.min(100,n),updateHud(){},save(){}});
+  runSection(runtime,'function breakfastBoxReady(','function eat(){');
+  runSection(runtime,'const RECIPES=','function workout(');
+  const recipe=vm.runInContext("RECIPES.find(recipe=>recipe.label==='cookStew')",runtime);
+  assert.equal(runtime.breakfastBoxReady(),false);
+  assert.equal(runtime.breakfastBoxReady(true),true);
+  assert.equal(runtime.breakfastBoxBlock(recipe),'boxAlready');
+  state.time=836;
+  runtime.eatBreakfastBox(true);
+  assert.equal(state.breakfastBoxDay,2);
+  state.time=835;
+  runtime.eatBreakfastBox();
+  runtime.eatBreakfastBox(true);
+  runtime.eatBreakfastBox(true);
+  assert.equal(state.time,840);
+  assert.deepEqual(state.need,{hunger:60,mood:36});
   assert.equal(state.breakfastBoxDay,null);
 });
 

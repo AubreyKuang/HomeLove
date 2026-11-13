@@ -35,10 +35,23 @@ function appendKeepsake(container,n,key,title,details){
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
-  if(state.breakfastBoxDay===state.day+1||breakfastBoxReady()){
+  const boxAvailable=breakfastBoxReady(true);
+  if(state.breakfastBoxDay===state.day+1||boxAvailable){
     const section=el('section','dsec');
+    const {until,outdoorUntil,eatMinutes,hunger,outdoorHunger}=BREAKFAST_BOX;
     section.append(el('h3',null,tr('boxTitle')),el('p','rline',
-      tr(breakfastBoxReady()?'boxToday':'boxTomorrow',{t:fmt(BREAKFAST_BOX.until),m:BREAKFAST_BOX.eatMinutes})));
+      tr(boxAvailable?'boxToday':'boxTomorrow',{m:eatMinutes})));
+    if(!boxAvailable||breakfastBoxReady())section.append(el('p','rline',tr('boxTablePlan',{t:fmt(until),h:hunger})));
+    section.append(el('p','rline',tr('boxBenchPlan',{t:fmt(outdoorUntil),h:outdoorHunger})));
+    if(boxAvailable){
+      const route=el('button','pbtn',tr('boxMarketRoute'));
+      route.type='button';
+      route.onclick=()=>{
+        closeDiary();
+        walkToVillagePlace('market',VillageMap.places.market);
+      };
+      section.append(route);
+    }
     b.append(section);
   }
   const plan=activeDatePlan();

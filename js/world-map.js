@@ -38,7 +38,7 @@ fences.forEach(([x,y])=>block(x,y));
 VillageMap.props.forEach(p=>{
   for(let y=p.y;y<p.y+p.h;y++)for(let x=p.x;x<p.x+p.w;x++)block(x,y);
 });
-const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>(Object.hasOwn(VillageMap.places,p.id)||Object.hasOwn(VillageMap.exchanges,p.id)||['guide','weekendBoard','weekendStall'].includes(p.id))&&
+const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>(Object.hasOwn(VillageMap.places,p.id)||Object.hasOwn(VillageMap.exchanges,p.id)||['guide','weekendBoard','weekendStall','bench'].includes(p.id))&&
   tx>=p.x&&tx<p.x+p.w&&ty>=p.y&&ty<p.y+p.h);
 const ICE_HOLES=[[19,6],[23,6]];
 const isIceHole=(x,y)=>ICE_HOLES.some(([tx,ty])=>tx===x&&ty===y);
