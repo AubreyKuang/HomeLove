@@ -274,7 +274,31 @@ function renderAlbum(){
     display.dataset.frameAction='';
     page.append(art,el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)));
     if(selected.event==='rainSketch')page.append(el('p',null,tr(selected.given?'rainSketchGiftAlbumDone':'rainSketchGiftAlbumHint',{name:nm(n)})));
-    if(selected.dedication)page.append(el('p',null,tr('rainSketchDedicateAlbum',{place:tr(RAIN_DATE_MEETINGS[selected.dedication].name)})));
+    if(selected.dedication){
+      const meeting=RAIN_DATE_MEETINGS[selected.dedication],place=tr(meeting.name);
+      page.append(el('p',null,tr('rainSketchDedicateAlbum',{place})));
+      const visit=activeDedicationVisit();
+      if(selected.dedicationVisited){
+        page.append(el('p',null,tr('rainDedicationVisitMemory',{place,day:tr('day',{d:selected.dedicationVisited}),name:nm(n)})));
+      }else if(visit?.source===selected.place){
+        page.append(el('p',null,tr('rainDedicationVisitInDiary')));
+      }else{
+        const last=fmt(meeting.end-RAIN_DEDICATION_VISIT.minutes);
+        let available=false;
+        for(const day of [state.day,state.day+1]){
+          if(!canBookDedicationVisit(selected.place,day))continue;
+          available=true;
+          const book=el('button','pbtn',tr(day===state.day?'rainDedicationVisitToday':'rainDedicationVisitTomorrow',
+            {place,start:fmt(meeting.start),last}));
+          book.type='button';
+          book.onclick=()=>{
+            if(bookDedicationVisit(selected.place,day))renderAlbum();
+          };
+          page.append(book);
+        }
+        if(!available)page.append(el('p',null,tr(visit?'rainDedicationVisitOther':'rainDedicationVisitUnavailable')));
+      }
+    }
     page.append(keep);
     if(!selected.given)page.append(display);
     if(selected.event==='project_stage'){

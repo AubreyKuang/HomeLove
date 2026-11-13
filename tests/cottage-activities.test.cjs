@@ -655,6 +655,40 @@ test('a rain sketch gift requires its companion and rolls back before a successf
   assert.deepEqual([state.time,paired.given,paired.dedication,bonds.trust.gy,state.album.framed],[615,true,'garden',23,null]);
 });
 
+test('a dedication revisit respects the weather and schedule, and saves its memory only once', () => {
+  const n={id:'gy',state:'here',x:216,y:204},P={x:200,y:204};
+  const sketch={dedication:'garden',resident:'gy'};
+  const state={day:5,time:641,need:{mood:40},rainSketches:{pond:sketch},dedicationVisit:null};
+  const bonds={trust:{gy:10}};
+  let write=false,rain=false;
+  const meeting={name:'garden',start:600,end:660,p:[12,12],spot:[13,12]};
+  const runtime=game({state,P,RAIN_DATE_MEETINGS:{garden:meeting},DATE_MEETINGS:{garden:meeting},
+    VillageRiverside:{weather:()=>rain?'rain':'clear'},save:()=>write,advanceTime:m=>{state.time+=m;},
+    B:()=>bonds,trustNpc:(_,d)=>{bonds.trust.gy+=d;},clampN:n=>n,updateHud(){},notify(){},D:{},talk(){},nm:n=>n.id,tr:k=>k});
+  runSection(runtime,'function rainCompanionConflict(','function canRebookRainDraft(');
+  runSection(runtime,'const RAIN_DEDICATION_VISIT=','function canChangeDateShelter(');
+  assert.equal(runtime.canBookDedicationVisit('pond',5),false);
+  rain=true;assert.equal(runtime.canBookDedicationVisit('pond',6),false);rain=false;
+  state.datePlan={place:'garden',resident:'gy',day:6};
+  assert.equal(runtime.canBookDedicationVisit('pond',6),false);
+  state.datePlan=null;
+  assert.equal(runtime.bookDedicationVisit('pond',6),false);
+  assert.equal(state.dedicationVisit,null);
+  write=true;assert.equal(runtime.bookDedicationVisit('pond',6),true);
+  assert.equal(runtime.setDatePlan({place:'garden',resident:'gy',day:6}),false);
+  assert.equal(runtime.cancelDedicationVisit(state.dedicationVisit),true);
+  assert.equal(runtime.bookDedicationVisit('pond',6),true);
+  const visit=state.dedicationVisit;
+  assert.equal(runtime.dedicationMeeting(n),undefined);
+  state.day=6;state.time=640;
+  assert.equal(runtime.dedicationMeeting(n),meeting);
+  write=false;runtime.finishDedicationVisit(n);
+  assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited],[640,40,10,visit,undefined]);
+  write=true;runtime.finishDedicationVisit(n);runtime.finishDedicationVisit(n);
+  assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited],[660,48,14,null,6]);
+  assert.equal(runtime.canBookDedicationVisit('pond',7),false);
+});
+
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
   const plan={resident:'gy',place:'garden',day:3};
   const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};
