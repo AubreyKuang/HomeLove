@@ -252,6 +252,7 @@ const RAIN_RETURN={minutes:15,mood:8};
 const RAIN_SKETCH={minutes:30,mood:4};
 const RAIN_SKETCH_DRAFT_MINUTES=10, RAIN_SHARED_DRAFT_SAVING=15;
 const RAIN_DRAFT_BANK_BONUS=5;
+const RAIN_DRAFT_RELOCATION_MINUTES=5;
 const RAIN_DRAFT_CHANGE={minutes:10,trust:2};
 const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 const RAIN_COMPANION_WALK={minutes:30,mood:13,trust:6};
@@ -285,16 +286,18 @@ function rainCompanionStop(revisit){
 function rainCompanionConflict(revisit,plan=activeDatePlan()){
   return !!(plan&&revisit&&plan.day===revisit.day&&plan.resident===revisit.resident&&plan.place===revisit.place);
 }
-function canRebookRainDraft(revisit){
+function canRebookRainDraft(revisit,place=revisit?.place){
   if(!revisit?.draft||!revisit.together||revisit.rebooked||rainReturnReady()!==revisit||
     state.rainSketches[revisit.place]||state.time<RAIN_DATE_MEETINGS[revisit.place].end)return false;
   const tomorrow=state.day+1;
-  return VillageRiverside.weather(tomorrow)!=='rain'&&!rainCompanionConflict({...revisit,day:tomorrow});
+  return Object.hasOwn(RAIN_DATE_MEETINGS,place)&&!state.rainSketches[place]&&
+    VillageRiverside.weather(tomorrow)!=='rain'&&!rainCompanionConflict({...revisit,place,day:tomorrow});
 }
-function rebookRainDraft(revisit){
-  if(!canRebookRainDraft(revisit))return false;
+function rebookRainDraft(revisit,place=revisit?.place){
+  if(!canRebookRainDraft(revisit,place))return false;
   const {walk,...plan}=revisit;
-  state.rainReturn={...plan,day:state.day+1,rebooked:true};
+  state.rainReturn={...plan,place,day:state.day+1,rebooked:true,
+    ...(place!==revisit.place?{relocated:true}:{})};
   if(save())return true;
   state.rainReturn=revisit;
   return false;
@@ -356,7 +359,7 @@ function rainCompanionActivity(revisit,sketch=false,changeSubject=false){
   const {minutes,mood,trust}=revisit.walk==='walking'?RAIN_COMPANION_WALK:RAIN_COMPANION;
   const saving=revisit.draft?RAIN_SHARED_DRAFT_SAVING-(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
   if(!sketch)return {minutes,mood,trust};
-  return {minutes:minutes+10-saving+(changeSubject?RAIN_DRAFT_CHANGE.minutes:0),
+  return {minutes:minutes+10-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0)+(changeSubject?RAIN_DRAFT_CHANGE.minutes:0),
     mood:mood-4,trust:trust-2+(changeSubject?RAIN_DRAFT_CHANGE.trust:0)};
 }
 const otherRainSketchSubject=revisit=>revisit.subject==='bank'?'reflection':'bank';
@@ -397,7 +400,7 @@ function finishRainCompanion(revisit,n,sketch=false,changeSubject=false){
 }
 function soloRainSketch(revisit){
   const saving=revisit.draft?RAIN_SKETCH_DRAFT_MINUTES+(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
-  return {...RAIN_SKETCH,minutes:RAIN_SKETCH.minutes-saving};
+  return {...RAIN_SKETCH,minutes:RAIN_SKETCH.minutes-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0)};
 }
 function rainSketchLimit(revisit){
   if(state.rainSketches[revisit.place])return 'dateRainSketchCollected';
