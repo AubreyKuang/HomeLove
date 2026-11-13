@@ -534,6 +534,14 @@ function changeDateShelter(plan){
   const {resident,place,day}=plan;
   return setDatePlan({resident,place,day,...(plan.shelter?{}:{shelter:true})});
 }
+function rainDateTomorrow(plan){
+  if(!canChangeDateShelter(plan)||VillageRiverside.weather(state.day+1)==='rain')return null;
+  return {resident:plan.resident,place:plan.place,day:state.day+1};
+}
+function postponeRainDate(plan){
+  const tomorrow=rainDateTomorrow(plan);
+  return !!tomorrow&&setDatePlan(tomorrow);
+}
 function missedDatePlan(){
   const plan=state.datePlan;
   if(plan?.day!==state.day||activeDatePlan()||state.rel[plan.resident].done.date)return;

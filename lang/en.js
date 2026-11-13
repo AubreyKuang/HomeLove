@@ -424,6 +424,8 @@ window.HL_LANG.en = {
     dateMeetingWalkDone: "You take a short walk, talk about your plans for the day, then wave goodbye.",
     dateMeetingCottage: "the cottage table",
     dateMeetingShelter: "Move indoors for tea · {minutes} min",
+    dateMeetingRainForecast: "Tomorrow’s weather: {weather}.",
+    dateMeetingPostpone: "Move to tomorrow · {place} · meet {start}–{end} · {minutes}-minute date",
     dateMeetingRestore: "Meet at {place} again",
     dateMeetingSheltered: "{day} · Meet {name} by the cottage table at the same time, {start}–{end}. Allow {minutes} minutes for tea.",
     dateMeetingTea: "Sit down for tea · {minutes} min · affection +{points} · mood +{mood} · uses today’s date",

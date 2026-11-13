@@ -424,6 +424,8 @@ window.HL_LANG.ja = {
     dateMeetingWalkDone: "近くを一周し、お互いの今日の予定を話して、手を振って別れた。",
     dateMeetingCottage: '小屋の食卓',
     dateMeetingShelter: '雨なので小屋でお茶にする · {minutes}分',
+    dateMeetingRainForecast: '明日の天気は{weather}。',
+    dateMeetingPostpone: '明日に変更 · {place} · {start}〜{end}に集合 · デート{minutes}分',
     dateMeetingRestore: '待ち合わせ場所を{place}に戻す',
     dateMeetingSheltered: '{day} · {name}が小屋の食卓で待っている。待ち合わせは予定どおり{start}〜{end}。お茶は{minutes}分。',
     dateMeetingTea: '座ってお茶を飲む · {minutes}分 · 好感度 +{points} · 気分 +{mood} · 今日のデート枠を使う',

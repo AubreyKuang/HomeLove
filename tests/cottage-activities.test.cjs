@@ -303,6 +303,33 @@ test('a rainy date can change venue and award tea only at the cottage', () => {
   assert.deepEqual([state.datePlan,relation.done.date,state.time,state.need.mood,relation.points],[null,true,689,49,7]);
 });
 
+test('a rainy date can move to a dry tomorrow without creating a second reservation', () => {
+  const plan={resident:'gy',place:'pond',day:3,shelter:true};
+  const done={};
+  const state={day:3,time:970,datePlan:plan,rel:{gy:{done}}};
+  let tomorrow='wind', writesSucceed=false;
+  const runtime=game({state,DATE_MEETINGS:{pond:{start:960,end:1020}},
+    VillageRiverside:{weather:day=>day===3?'rain':tomorrow},save:()=>writesSucceed});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  assert.equal(runtime.postponeRainDate(plan),false);
+  assert.equal(state.datePlan,plan);
+  writesSucceed=true;
+  tomorrow='rain';
+  assert.equal(runtime.rainDateTomorrow(plan),null);
+  tomorrow='clear';
+  done.date=true;
+  assert.equal(runtime.postponeRainDate(plan),false);
+  delete done.date;
+  state.time=1020;
+  assert.equal(runtime.postponeRainDate(plan),false);
+  state.time=1019;
+  assert.equal(runtime.postponeRainDate(plan),true);
+  assert.deepEqual({...state.datePlan},{resident:'gy',place:'pond',day:4});
+  assert.equal(runtime.postponeRainDate(plan),false);
+  assert.equal(runtime.plannedDateMeeting({id:'gy'}),undefined);
+  assert.deepEqual(done,{});
+});
+
 test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
   const state={day:1,time:1200,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
   const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40},
