@@ -1325,3 +1325,14 @@ Object.assign(window.HL_LANG.ja.ui, {
   "blackoutRecall_court": "また街灯が消えたら、君が選んだ道を覚えてるよ。",
   "blackoutRecall_cafe": "君が灯を持ってきた夜、テラスがあんなに静かになると初めて知った。"
 });
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "lanternNotice_gy": "ちょうどよかった。ゆっくりでいいよ。段差は見てる。",
+  "lanternNotice_xy": "来たね！ こっちだよ。道を空けておくね。",
+  "lanternNotice_jy": "ここで止めてた。灯りが届いたら、次の拍から弾くよ。",
+  "lanternNotice_by": "川が暗くなると、灯りが二つに見えるんだね。",
+  "lanternNotice_xm": "あなたの提灯だ。そのあたたかい光、覚えてる。"
+});
+
+window.HL_LANG.ja.objects.computer = {"name": "机のパソコン", "verb": "パソコンを使う"};
+window.HL_LANG.ja.ui.computerIntro = "机のパソコンをつけた。通販を見てみる？";

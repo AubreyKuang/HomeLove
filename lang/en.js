@@ -1325,3 +1325,14 @@ Object.assign(window.HL_LANG.en.ui, {
   "blackoutRecall_court": "If the lights go out again, I remember which path you chose.",
   "blackoutRecall_cafe": "That night you brought the lantern, I realized how quiet the terrace could be."
 });
+
+Object.assign(window.HL_LANG.en.ui, {
+  "lanternNotice_gy": "Good timing. Take it slowly. I’m watching the step.",
+  "lanternNotice_xy": "There you are! Over here. I’ll leave room for you.",
+  "lanternNotice_jy": "I stopped here. I’ll pick up the next beat when your light reaches us.",
+  "lanternNotice_by": "When the river goes dark, your lantern shines twice.",
+  "lanternNotice_xm": "That’s your lantern. I know that warm little light."
+});
+
+window.HL_LANG.en.objects.computer = {"name": "Desk computer", "verb": "Use the computer"};
+window.HL_LANG.en.ui.computerIntro = "You turn on the computer. Want to browse the online shop?";

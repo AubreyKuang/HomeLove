@@ -98,7 +98,7 @@ const VillageMap = (() => {
   function paintProp(g,p,winter,night,time){
     const w=p.w*16,h=p.h*16,x=p.x*16,y=p.y*16+h;
     const R=(a,b,ww,hh,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,ww,hh);};
-    const wood='#785441',warm='#d6a274',cream='#f8e6bb',snow='#ecf3ef',edge='#5b403b';
+    const wood='#785441',warm='#d6a274',cream='#f8e6bb',snow='#ecf3ef',edge='#443036';
     if(p.id==='postHouse'){
       R(1,-30,w-2,30,edge);R(4,-28,w-8,26,'#dcb78d');
       R(7,-39,w-14,5,edge);R(2,-35,w-4,6,edge);R(9,-38,w-18,4,'#9f6161');
@@ -138,28 +138,7 @@ const VillageMap = (() => {
         R(left+ww/2-1,-23,2,13,wood);R(left+2,-18,ww-4,1,wood);
         R(left+3,-22,3,2,'#e7e4c7');R(left-2,-7,ww+4,2,wood);
       }
-      if(p.id==='postHouse'){
-      R(1,-30,w-2,30,edge);R(4,-28,w-8,26,'#dcb78d');
-      R(7,-39,w-14,5,edge);R(2,-35,w-4,6,edge);R(9,-38,w-18,4,'#9f6161');
-      R(4,-34,w-8,3,winter?snow:'#bb7972');R(1,-30,w-2,2,'#a56b5d');
-      R(6,-23,15,15,edge);R(8,-21,11,11,night?'#d8aa68':'#91b3af');
-      R(13,-21,1,11,wood);R(8,-16,11,1,wood);
-      R(w-30,-21,21,21,edge);R(w-28,-19,17,19,'#866453');
-      R(w-27,-17,15,15,'#9cbbba');R(w-19,-17,1,15,edge);
-      R(23,-27,15,10,edge);R(25,-25,11,6,cream);R(26,-24,9,1,'#b47470');R(29,-23,3,1,'#b47470');
-    }else if(p.id==='post'){
-      R(6,-11,4,11,edge);R(1,-19,14,11,edge);R(2,-18,12,8,'#b76c72');
-      R(3,-17,10,2,'#d99490');R(4,-14,8,2,edge);R(6,-15,4,1,cream);
-    }else if(p.id==='ferry'||p.id==='washline'){
-      R(1,-13,3,13,edge);R(w-4,-13,3,13,edge);
-      R(4,-11,w-8,2,wood);R(4,-10,w-8,1,warm);
-      if(p.id==='washline'){
-        R(7,-9,10,8,edge);R(8,-9,8,7,'#d7bba6');R(9,-8,6,1,cream);
-        R(20,-9,7,6,edge);R(21,-9,5,5,'#9eb9b3');
-      }else{
-        R(4,-18,8,7,edge);R(5,-17,6,5,warm);R(6,-15,4,1,edge);
-      }
-    }else if(p.id==='cafeHouse'){
+      if(p.id==='cafeHouse'){
         R(c-12,-29,24,10,edge);R(c-11,-28,22,8,cream);
         R(c-4,-26,7,4,roof);R(c+3,-26,2,2,roof);R(c-5,-22,10,1,roof);
         R(c-23,-19,46,7,edge);R(c-22,-18,44,5,roof);
@@ -192,7 +171,7 @@ const VillageMap = (() => {
         R(7,-9,2,7,edge);R(2,-12,12,5,edge);R(3,-11,10,3,'#f1d0a0');R(5,-13,4,2,'#a86a75');
       }
     }else if(p.id==='bench'||p.id==='planter'){
-      R(2,-4,w-4,4,wood);R(2,-7,w-4,3,'#a47860');
+      R(2,-4,w-4,4,edge);R(1,-8,w-2,5,edge);R(3,-7,w-6,3,'#a47860');
       if(p.id==='bench')R(3,-9,w-6,2,'#c69b78');
       else{R(4,-10,w-8,4,winter?snow:'#769775');R(5,-11,2,2,'#d6a6bd');R(10,-12,2,3,'#e3c59f');}
     }else if(p.id==='weekendBoard'){
@@ -202,8 +181,8 @@ const VillageMap = (() => {
       R(5,-18,6,1,wood);R(5,-15,4,1,wood);
     }else if(Object.hasOwn(exchanges,p.id)||p.id==='weekendStall'){
       const [shade,bright]=({produce:['#ab5960','#ed9686'],fishStall:['#547e9c','#91bdd0'],flowerStall:['#866d9e','#bba3cf'],weekendStall:['#a65c61','#efb389']})[p.id];
-      R(3,-15,w-6,13,wood);R(6,-13,w-12,10,warm);
-      R(2,-28,3,22,wood);R(w-5,-28,3,22,wood);
+      R(3,-15,w-6,13,edge);R(6,-13,w-12,10,warm);
+      R(2,-28,3,22,edge);R(w-5,-28,3,22,edge);
       R(0,-32,w,10,edge);R(1,-31,w-2,7,shade);
       for(let i=2;i<w-4;i+=8)R(i,-30,4,6,winter?snow:bright);
       R(0,-17,w,5,edge);R(1,-16,w-2,3,cream);
