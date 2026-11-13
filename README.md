@@ -1,6 +1,6 @@
 # 像素小屋 · Pixel Cottage · ピクセル小屋
 
-一个像素风的「过日子 + 换装 + 恋爱」小游戏。整个游戏只有一个网页和三个语言文件，所有画面都由代码现场绘制，没有图片、模型或音频文件。
+一个像素风的「过日子 + 换装 + 恋爱」小游戏。游戏通过网页入口加载玩法模块和三种语言文本，游戏内像素画面与音效由代码生成。
 
 A cozy pixel-art life sim with dress-up and romance, playable in 中文 / English / 日本語. Every sprite is drawn by code; there are no image or audio files.
 
@@ -416,6 +416,8 @@ node tools/check-lang.js <code>
 - 比赛和晚餐都在「收藏 → 事件纪念」留下记录。测试版右下角可用「预览第一场雪冰钓」直接体验。
 
 ## 四段不期而遇
+
+![陆星野的风车故事和像素纪念卡](docs/screenshots/quiet-windmill.jpg)
 
 四位男主各有一段两条分支的日常故事。先认识居民，之后在对应天气和地点碰见他，从当面交谈或场所菜单进入。完成一次后至少隔两个游戏日才会出现另一段新偶遇。暂时离开，今后符合条件时仍能再遇见。
 
