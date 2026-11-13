@@ -97,6 +97,21 @@ PANEL = r'''
       Object.assign(P,{x:15*16+8,y:25*16+12,dir:'up'});
       walkRoute=[];snapPets();updateHud();save();
     },
+    previewMoment(id){
+      if(!canPreview())return;
+      const scene=ResidentMoments.scenes[id],n=npcs.find(person=>person.id===id);
+      if(state.moments.records[id]){
+        openAlbum('events');albumSelected='moment:'+id;renderAlbum();return;
+      }
+      let day=Math.max(2,state.day);
+      while(!ResidentMoments.available(state.moments,id,day,scene.start+5,VillageRiverside.weather(day)))day++;
+      state.day=day;state.time=scene.start+5;
+      const place=VillageMap.places[scene.place],[x,y]=place.spot;
+      rel(n).met=true;
+      Object.assign(n,{x:x*16+8,y:y*16+12,state:'here',leaving:false,path:null});
+      Object.assign(P,{x:x*16+8,y:(y+1)*16+12,dir:'up'});
+      walkRoute=[];snapPets();fillNeeds();updateHud();openResidentMoment(n);
+    },
     previewProject(id){
       if(!canPreview())return;
       const place=VillageMap.places[id];
@@ -183,6 +198,7 @@ PANEL = r'''
   btn('🏮 预览提灯女神',()=>A.previewBlackout());
   btn('🏮 跳到下一次停电',()=>A.previewBlackout(true));
   btn('🌿 预览共同活动',()=>A.previewProject(({gy:'cafe',xy:'court',jy:'stage',by:'lookout'})[stories.value]));
+  btn('🍂 预览不期而遇',()=>A.previewMoment(stories.value));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;
