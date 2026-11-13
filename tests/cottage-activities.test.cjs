@@ -156,6 +156,34 @@ test('the café request shares the regular payout, spends time only when feasibl
   assert.equal(cards.filter(card=>card.kind==='cafeRequest').length,1);
 });
 
+test('date reservations reserve only the named resident and end without a penalty', () => {
+  const n={id:'gy',state:'here',x:328,y:124}, other={id:'xy'};
+  const plan={resident:'gy',place:'pond',day:2};
+  const state={day:1,time:960,datePlan:plan};
+  const meeting={start:960,end:1020,spot:[20,7]};
+  let writesSucceed=false;
+  const runtime=game({state,DATE_MEETINGS:{pond:meeting},P:{x:312,y:124},save:()=>writesSucceed});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  assert.equal(runtime.activeDatePlan(),plan);
+  assert.equal(runtime.plannedDateMeeting(n),undefined);
+  state.day=2;state.time=939;
+  assert.equal(runtime.plannedDateMeeting(n),undefined);
+  state.time=940;
+  assert.equal(runtime.plannedDateMeeting(n),meeting);
+  assert.equal(runtime.plannedDateMeeting(other),undefined);
+  assert.equal(runtime.atPlannedDate(n,meeting),false);
+  state.time=960;
+  assert.equal(runtime.atPlannedDate(n,meeting),true);
+  assert.equal(runtime.setDatePlan(null),false);
+  assert.equal(state.datePlan,plan);
+  state.time=1020;
+  assert.equal(runtime.activeDatePlan(),undefined);
+  assert.equal(runtime.plannedDateMeeting(n),undefined);
+  writesSucceed=true;
+  assert.equal(runtime.setDatePlan(null),true);
+  assert.equal(state.datePlan,null);
+});
+
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {
   const {activities} = game();
   const fresh = activities.loadGarden();

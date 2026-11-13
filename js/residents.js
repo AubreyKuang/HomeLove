@@ -105,6 +105,8 @@ const inCottageWindow=n=>{
 const weekendGuestSpots=Object.fromEntries(Object.entries(VillageWeekend.activities).map(([id,event])=>[id,{spot:event.spot}]));
 const blackoutCafeGuest={spot:[15,22]},blackoutStageGuest={spot:[24,29]};
 function villageDuty(n){
+  const meeting=plannedDateMeeting(n);
+  if(meeting)return meeting;
   if(blackoutActive()){
     const record=state.blackout.last;
     if(record?.day===state.day){
