@@ -593,7 +593,9 @@ function npcMenu(n,back){
   if(atPlannedDate(n,dedication)){
     opts.unshift({label:tr('rainDedicationVisitAction',RAIN_DEDICATION_VISIT),fn:()=>finishDedicationVisit(n)},
       {label:tr('rainDedicationCompareAction',RAIN_DEDICATION_COMPARE),
-        disabled:state.time+RAIN_DEDICATION_COMPARE.minutes>dedication.end,fn:()=>finishDedicationVisit(n,true)});
+        disabled:state.time+RAIN_DEDICATION_COMPARE.minutes>dedication.end,fn:()=>finishDedicationVisit(n,'compare')},
+      {label:tr('rainDedicationStoryAction',RAIN_DEDICATION_STORY),
+        disabled:state.time+RAIN_DEDICATION_STORY.minutes>dedication.end,fn:()=>finishDedicationVisit(n,'story')});
   }
   if(revisit?.walk==='meet'&&atPlannedDate(n,rainCompanionMeeting(n))){
     if(!revisit.relocated)opts.unshift({label:tr('rainWalkChoosePause',RAIN_WALK_PAUSE),
@@ -831,6 +833,7 @@ function doAct(n,k){
 }
 const RAIN_DEDICATION_VISIT={minutes:20,mood:8,trust:4};
 const RAIN_DEDICATION_COMPARE={...RAIN_DEDICATION_VISIT,minutes:35,mood:12};
+const RAIN_DEDICATION_STORY={minutes:RAIN_DEDICATION_COMPARE.minutes,mood:8,trust:7};
 function activeDedicationVisit(){
   const visit=state.dedicationVisit;
   if(visit&&visit.day>=state.day&&VillageRiverside.weather(visit.day)!=='rain'&&
@@ -867,10 +870,11 @@ function dedicationMeeting(n){
   const meeting=RAIN_DATE_MEETINGS[visit.place];
   if(state.time>=meeting.start-20)return meeting;
 }
-function finishDedicationVisit(n,compare=false){
+function finishDedicationVisit(n,activity='visit'){
   const visit=activeDedicationVisit();
   const meeting=dedicationMeeting(n);
-  const {minutes,mood,trust:gain}=compare?RAIN_DEDICATION_COMPARE:RAIN_DEDICATION_VISIT;
+  const compare=activity==='compare',story=activity==='story';
+  const {minutes,mood,trust:gain}=compare?RAIN_DEDICATION_COMPARE:story?RAIN_DEDICATION_STORY:RAIN_DEDICATION_VISIT;
   if(!atPlannedDate(n,meeting)||state.time+minutes>meeting.end)return;
   const sketch=state.rainSketches[visit.source],trust=B().trust[n.id];
   const before={time:state.time,need:{...state.need}};
@@ -880,6 +884,7 @@ function finishDedicationVisit(n,compare=false){
     sketch.dedicationCompared=true;
     if(VillageRiverside.weather(visit.day)==='wind')sketch.dedicationWind=true;
   }
+  if(story)sketch.dedicationStory=true;
   advanceTime(minutes);
   state.need.mood=clampN(state.need.mood+mood);
   trustNpc(n,gain);
@@ -890,13 +895,18 @@ function finishDedicationVisit(n,compare=false){
       delete sketch.dedicationCompared;
       delete sketch.dedicationWind;
     }
+    if(story)delete sketch.dedicationStory;
     B().trust[n.id]=trust;
     Object.assign(state,before);
     return;
   }
   updateHud();
   D.npc=n;
-  talk(nm(n),[compare?dedicationComparison(sketch):tr('rainDedicationVisitDone',{place:tr(meeting.name)})]);
+  talk(nm(n),[compare?dedicationComparison(sketch):story?dedicationStory(sketch):
+    tr('rainDedicationVisitDone',{place:tr(meeting.name)})]);
+}
+function dedicationStory(sketch){
+  return tr('rainDedicationStory_'+sketch.resident);
 }
 function dedicationComparison(sketch){
   const place=sketch.dedication==='garden'?'Garden':'Pond';
