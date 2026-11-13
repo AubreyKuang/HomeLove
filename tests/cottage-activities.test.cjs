@@ -384,10 +384,12 @@ test('companion revisits require the appointment and both people at the puddle',
   const state={day:3,time:600,rainReturn:revisit,need:{mood:40}};
   const meeting={start:600,end:660,p:[12,12],spot:[13,12],name:'dateRainLane'};
   const firstStop={...meeting,p:[19,12],spot:[20,12]};
+  const pauseStop={...meeting,p:[16,12],spot:[15,12]};
   const P={x:200,y:204},n={id:'gy',state:'here',x:300,y:204};
   const bonds={trust:{gy:10}};
   let write=false,plan,route;
   const runtime=game({state,P,RAIN_DATE_MEETINGS:{garden:meeting},RAIN_COMPANION_STARTS:{garden:firstStop},RAIN_RETURN:{minutes:15,mood:8},
+    RAIN_WALK_STOPS:{garden:pauseStop},RAIN_WALK_PAUSE:{minutes:10,mood:4},RAIN_WALK_TRAVEL_BUFFER:10,say(){},
     RAIN_COMPANION_WALK:{minutes:30,mood:13,trust:6},setWalkDestination:(x,y)=>{route=[x,y];return true;},
     RAIN_COMPANION:{minutes:25,mood:11,trust:4},VillageRiverside:{weather:()=> 'clear'},
     B:()=>bonds,trustNpc:(_,d)=>{bonds.trust.gy+=d;},activeDatePlan:()=>plan,
@@ -428,6 +430,21 @@ test('companion revisits require the appointment and both people at the puddle',
   state.time=650;
   runtime.finishRainCompanion(revisit,n);
   assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy],[680,64,true,20]);
+  revisit.done=false;revisit.walk='meet';state.time=610;
+  Object.assign(P,{x:312});n.x=328;
+  runtime.startRainCompanionWalk(revisit,n,true);
+  assert.deepEqual([revisit.walk,route],['pause',[264,202]]);
+  Object.assign(P,{x:264});n.x=248;
+  write=false;runtime.leaveRainWalkStop(revisit,n,true);
+  assert.deepEqual([state.time,state.need.mood,revisit.walk],[610,64,'pause']);
+  write=true;runtime.leaveRainWalkStop(revisit,n,true);
+  runtime.leaveRainWalkStop(revisit,n,true);
+  assert.deepEqual([state.time,state.need.mood,revisit.walk,route],[620,68,'walking',[200,202]]);
+  revisit.walk='pause';state.time=640;
+  runtime.leaveRainWalkStop(revisit,n,true);
+  assert.equal(revisit.walk,'pause');
+  runtime.leaveRainWalkStop(revisit,n,false);
+  assert.deepEqual([state.time,state.need.mood,revisit.walk],[640,68,'walking']);
 });
 
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
