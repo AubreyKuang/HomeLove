@@ -260,6 +260,32 @@ test('the market bench uses the same box and keeps it available two hours longer
   assert.equal(state.breakfastBoxDay,null);
 });
 
+test('lunch with Gu Yan spends the same box once and must finish before the cutoff', () => {
+  const cafe={hours:[750,1020],spot:[14,22]},n={id:'gy',state:'here',x:232,y:364};
+  const state={day:2,time:749,breakfastBoxDay:2,need:{hunger:20,mood:30}};
+  let points=0;
+  const runtime=game({state,busy:false,VillageMap:{places:{cafe}},P:{x:216,y:364},villageDuty:()=>cafe,rel:()=>({met:true}),
+    BREAKFAST_BOX:{eatMinutes:5,outdoorUntil:840},LUNCH_SHARE:{minutes:15,hunger:22,mood:8,points:5},
+    sfx(){},busyFade(mid){mid();},advanceTime(m){state.time+=m;},clampN:n=>Math.min(100,n),updateHud(){},addPts(_,delta){points+=delta;}});
+  runSection(runtime,'function breakfastBoxReady(','function eat(){');
+  runSection(runtime,'function atCafeWithResident(','function cafeRequestBlock(');
+  assert.equal(runtime.canShareLunch(n),false);
+  state.time=826;
+  runtime.shareLunch(n);
+  assert.equal(state.breakfastBoxDay,2);
+  state.time=825;
+  n.leaving=true;
+  assert.equal(runtime.canShareLunch(n),false);
+  n.leaving=false;
+  assert.equal(runtime.canShareLunch(n),true);
+  runtime.shareLunch(n);
+  runtime.shareLunch(n);
+  assert.deepEqual(state.need,{hunger:42,mood:38});
+  assert.equal(state.time,840);
+  assert.equal(state.breakfastBoxDay,null);
+  assert.equal(points,5);
+});
+
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {
   const {activities} = game();
   const fresh = activities.loadGarden();

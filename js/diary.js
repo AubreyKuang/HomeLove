@@ -43,14 +43,23 @@ function renderDiary(){
       tr(boxAvailable?'boxToday':'boxTomorrow',{m:eatMinutes})));
     if(!boxAvailable||breakfastBoxReady())section.append(el('p','rline',tr('boxTablePlan',{t:fmt(until),h:hunger})));
     section.append(el('p','rline',tr('boxBenchPlan',{t:fmt(outdoorUntil),h:outdoorHunger})));
+    const shareEnd=outdoorUntil-LUNCH_SHARE.minutes;
+    const cafePlan=state.rel.gy.met&&(!boxAvailable||state.time<=shareEnd);
+    if(cafePlan){
+      section.append(el('p','rline',tr('boxSharePlan',{start:fmt(VillageMap.places.cafe.hours[0]),end:fmt(shareEnd)})));
+    }
     if(boxAvailable){
-      const route=el('button','pbtn',tr('boxMarketRoute'));
-      route.type='button';
-      route.onclick=()=>{
-        closeDiary();
-        walkToVillagePlace('market',VillageMap.places.market);
-      };
-      section.append(route);
+      const destinations=[['market','boxMarketRoute']];
+      if(cafePlan)destinations.push(['cafe','requestCafeRoute']);
+      for(const [place,label] of destinations){
+        const route=el('button','pbtn',tr(label));
+        route.type='button';
+        route.onclick=()=>{
+          closeDiary();
+          walkToVillagePlace(place,VillageMap.places[place]);
+        };
+        section.append(route);
+      }
     }
     b.append(section);
   }

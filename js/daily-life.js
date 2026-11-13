@@ -65,6 +65,27 @@ function eatBreakfastBox(outdoors=false){
     updateHud();save();
   },()=>say(outdoors?tr('village_bench'):objName('table'),tr(outdoors?'boxAteOutside':'boxAte')));
 }
+function canShareLunch(n){
+  const [opens,closes]=VillageMap.places.cafe.hours;
+  return n?.id==='gy'&&rel(n).met&&breakfastBoxReady(true)&&atCafeWithResident(n)&&
+    state.time>=opens&&state.time+LUNCH_SHARE.minutes<=Math.min(closes,BREAKFAST_BOX.outdoorUntil);
+}
+function shareLunch(n){
+  if(busy||!canShareLunch(n))return;
+  const {minutes,hunger,mood,points}=LUNCH_SHARE;
+  sfx('eat');
+  busyFade(()=>{
+    state.breakfastBoxDay=null;
+    advanceTime(minutes);
+    state.need.hunger=clampN(state.need.hunger+hunger);
+    state.need.mood=clampN(state.need.mood+mood);
+    addPts(n,points);
+    updateHud();
+  },()=>{
+    D.npc=n;
+    talk(nm(n),[tr('boxShared')],null,()=>milestone(n));
+  });
+}
 function eat(){
   const N=state.need;if(N.hunger>92){say(objName('table'),tr('notHungry'));return;}
   const ph=partnerHome();
@@ -297,7 +318,7 @@ function offerNeighborDelivery(n,request){
     label:tr('requestDeliver',{item:itemLabel(item),count,owned:state.inv[item]}),
     disabled:state.inv[item]<count,fn:()=>deliverNeighborRequest(n,request,item)
   }));
-  if(n.id==='gy'&&atCafeForRequest(n)){
+  if(n.id==='gy'&&atCafeWithResident(n)){
     const end=state.time+CAFE_REQUEST_MINUTES;
     const blocked=cafeRequestBlock();
     options.push({
@@ -311,7 +332,7 @@ function offerNeighborDelivery(n,request){
   talk(nm(n),[tr('requestBring')],options.concat({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)}));
 }
 const CAFE_REQUEST_MINUTES=20;
-function atCafeForRequest(n){
+function atCafeWithResident(n){
   if(n.state!=='here'||n.leaving)return false;
   const cafe=VillageMap.places.cafe;
   const [x,y]=cafe.spot;
@@ -326,7 +347,7 @@ function cafeRequestBlock(){
 }
 function deliverNeighborRequest(n,request,item,together=false){
   if(request!==state.neighborRequest)return;
-  if(together&&(n.id!=='gy'||item!=='berry'||!atCafeForRequest(n)||cafeRequestBlock()))return;
+  if(together&&(n.id!=='gy'||item!=='berry'||!atCafeWithResident(n)||cafeRequestBlock()))return;
   const reward=CottageActivities.fulfillRequest(request,n.id,state.day,state.inv,item);
   if(!reward)return;
   const cards=lifeOf(n).cards;
