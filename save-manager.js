@@ -72,5 +72,5 @@ const SaveManager = (() => {
     return entry ? decode(entry.raw, valid, migrate) : null;
   }
 
-  return { load, save, snapshot, snapshots, restore, version };
+  return { load, save, snapshot, snapshots, restore, decode, version };
 })();
