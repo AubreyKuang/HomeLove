@@ -11,6 +11,8 @@ const VillageMap = (() => {
   };
   const props=[
     {id:'guide',x:7,y:21,w:1,h:1},
+    {id:'weekendBoard',x:8,y:24,w:1,h:1},
+    {id:'weekendStall',x:12,y:27,w:3,h:1},
     {id:'cafeHouse',x:11,y:20,w:7,h:2},
     {id:'cafe',x:14,y:23,w:1,h:1},
     {id:'bistro',x:12,y:23,w:1,h:1},{id:'bistro',x:16,y:23,w:1,h:1},
@@ -88,7 +90,7 @@ const VillageMap = (() => {
   function paintProp(g,p,winter,night,time){
     const w=p.w*16,h=p.h*16,x=p.x*16,y=p.y*16+h;
     const R=(a,b,ww,hh,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,ww,hh);};
-    const wood='#785441',warm='#d6a274',cream='#f8e6bb',snow='#ecf3ef';
+    const wood='#785441',warm='#d6a274',cream='#f8e6bb',snow='#ecf3ef',edge='#5b403b';
     if(p.id==='cafeHouse'||p.id==='clubhouse'||p.id==='studio'){
       const [roof,light,wall,glass]={
         cafeHouse:['#94596a','#bd7a80','#eac6a0','#92bbb7'],
@@ -96,19 +98,22 @@ const VillageMap = (() => {
         studio:['#5b627e','#8687a5','#d9c9ad','#9fbccb']
       }[p.id];
       const c=w/2;
-      R(2,-5,w-4,5,'#9f7a62');R(4,-33,w-8,30,wood);R(6,-32,w-12,28,wall);
-      R(13,-48,w-26,6,roof);R(8,-42,w-16,5,roof);R(3,-37,w-6,5,roof);
-      R(0,-33,w,4,wood);R(14,-48,w-28,2,winter?snow:light);
+      R(1,-4,w-2,4,edge);R(3,-4,w-6,2,'#9f7a62');R(4,-33,w-8,29,edge);R(6,-32,w-12,26,wall);
+      R(12,-49,w-24,7,edge);R(7,-43,w-14,5,edge);R(2,-38,w-4,5,edge);R(0,-33,w,4,edge);
+      R(14,-47,w-28,5,roof);R(9,-42,w-18,5,roof);R(4,-37,w-8,5,roof);
+      R(14,-48,w-28,2,winter?snow:light);R(9,-42,w-18,1,light);R(2,-32,w-4,1,wood);
+      for(let a=12;a<w-12;a+=10){R(a,-40,1,3,light);R(a+4,-35,1,2,light);}
+      R(7,-9,w-14,1,'#bb9579');R(7,-7,w-14,1,'#a57d66');
       for(const [left,ww] of [[10,20],[w-30,20]]){
-        R(left,-25,ww,18,wood);R(left+2,-23,ww-4,13,night?'#d5a36e':glass);
+        R(left,-25,ww,18,edge);R(left+2,-23,ww-4,13,night?'#d5a36e':glass);
         R(left+ww/2-1,-23,2,13,wood);R(left+2,-18,ww-4,1,wood);
         R(left+3,-22,3,2,'#e7e4c7');R(left-2,-7,ww+4,2,wood);
       }
       if(p.id==='cafeHouse'){
-        R(c-12,-29,24,10,wood);R(c-11,-28,22,8,cream);
+        R(c-12,-29,24,10,edge);R(c-11,-28,22,8,cream);
         R(c-4,-26,7,4,roof);R(c+3,-26,2,2,roof);R(c-5,-22,10,1,roof);
-        R(c-22,-18,44,5,roof);
-        for(let i=-21;i<22;i+=6)R(c+i,-17,4,5,cream);
+        R(c-23,-19,46,7,edge);R(c-22,-18,44,5,roof);
+        for(let i=-21;i<22;i+=6)R(c+i,-17,4,4,cream);
         R(c-15,-12,30,7,glass);R(c-16,-6,32,2,wood);
         R(c-12,-10,5,2,cream);R(c+7,-11,5,3,wood);
         for(const a of [7,w-17]){
@@ -127,26 +132,35 @@ const VillageMap = (() => {
     }else if(p.id==='cafe'||p.id==='bistro'){
       R(1,-3,14,3,'rgba(67,47,48,.22)');
       if(p.id==='cafe'){
-        R(1,-11,14,9,wood);R(2,-10,12,7,'#c59372');R(0,-12,16,3,cream);
+        R(1,-11,14,9,edge);R(2,-10,12,7,'#c59372');R(0,-13,16,5,edge);R(1,-12,14,3,cream);
         R(3,-16,4,4,'#f2ddc2');R(7,-15,2,2,'#f2ddc2');
         R(10,-16,4,4,'#8d6271');R(11,-15,2,1,cream);
         const steam=Math.floor(time*2)%3;
         R(4,-18-steam,1,2,night?'#ffe4ac':'#fff1d7');
       }else{
-        R(0,-4,3,3,wood);R(13,-4,3,3,wood);
-        R(7,-9,2,7,wood);R(3,-11,10,4,'#f1d0a0');R(5,-13,4,2,'#a86a75');
+        R(0,-4,3,3,edge);R(13,-4,3,3,edge);
+        R(7,-9,2,7,edge);R(2,-12,12,5,edge);R(3,-11,10,3,'#f1d0a0');R(5,-13,4,2,'#a86a75');
       }
     }else if(p.id==='bench'||p.id==='planter'){
       R(2,-4,w-4,4,wood);R(2,-7,w-4,3,'#a47860');
       if(p.id==='bench')R(3,-9,w-6,2,'#c69b78');
       else{R(4,-10,w-8,4,winter?snow:'#769775');R(5,-11,2,2,'#d6a6bd');R(10,-12,2,3,'#e3c59f');}
-    }else if(Object.hasOwn(exchanges,p.id)){
-      const [shade,bright]=({produce:['#ab5960','#ed9686'],fishStall:['#547e9c','#91bdd0'],flowerStall:['#866d9e','#bba3cf']})[p.id];
+    }else if(p.id==='weekendBoard'){
+      R(2,-14,2,13,edge);R(12,-14,2,13,edge);
+      R(0,-24,16,15,edge);R(1,-23,14,13,warm);
+      R(3,-21,10,9,cream);R(7,-22,2,2,'#b86f75');
+      R(5,-18,6,1,wood);R(5,-15,4,1,wood);
+    }else if(Object.hasOwn(exchanges,p.id)||p.id==='weekendStall'){
+      const [shade,bright]=({produce:['#ab5960','#ed9686'],fishStall:['#547e9c','#91bdd0'],flowerStall:['#866d9e','#bba3cf'],weekendStall:['#a65c61','#efb389']})[p.id];
       R(3,-15,w-6,13,wood);R(6,-13,w-12,10,warm);
       R(2,-28,3,22,wood);R(w-5,-28,3,22,wood);
-      R(0,-31,w,8,shade);
-      for(let i=1;i<w-1;i+=8)R(i,-30,5,6,winter?snow:bright);
-      R(0,-24,w,2,shade);R(0,-16,w,4,cream);
+      R(0,-32,w,10,edge);R(1,-31,w-2,7,shade);
+      for(let i=2;i<w-4;i+=8)R(i,-30,4,6,winter?snow:bright);
+      R(0,-17,w,5,edge);R(1,-16,w-2,3,cream);
+      if(p.id==='weekendStall'){
+        R(4,-13,w-8,11,'#9e6873');R(6,-12,w-12,7,'#bc8281');
+        for(let i=8;i<w-4;i+=7)R(i,-6,2,3,'#f0c4a4');
+      }
       for(let i=7;i<w-5;i+=9){
         if(p.id==='produce'){R(i,-20,5,4,'#e69466');R(i+2,-21,2,1,'#79936b');}
         if(p.id==='fishStall'){R(i,-19,6,2,'#7fa3ba');R(i+6,-20,1,4,'#4c7c94');}
@@ -154,7 +168,7 @@ const VillageMap = (() => {
       }
     }else if(p.id==='bandstand'){
       R(1,-6,w-2,6,wood);R(3,-31,4,26,'#855978');R(w-7,-31,4,26,'#855978');
-      R(0,-36,w,5,'#91668e');R(2,-37,w-4,2,winter?snow:'#c8a5b9');
+      R(0,-37,w,7,edge);R(2,-36,w-4,4,'#91668e');R(3,-36,w-6,1,winter?snow:'#c8a5b9');
       R(7,-24,13,18,'#a8799a');R(w-20,-24,13,18,'#a8799a');
       R(9,-23,2,13,'#c196b5');R(w-11,-23,2,13,'#c196b5');
       for(let i=12;i<w-9;i+=11)R(i,-29+(i%3),2,2,night?'#ffe4a4':'#dbb79a');

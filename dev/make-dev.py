@@ -68,6 +68,14 @@ PANEL = r'''
       state.time=9*60;
       save();updateHud();
     },
+    previewWeekend(sunday=false){
+      if(!canPreview())return;
+      let day=VillageWeekend.saleDay(state.day)+Number(sunday);
+      if(day<state.day)day+=7;
+      if(day!==state.day){state.day=day-1;newDay(10*60);}
+      A.time(sunday?11:10);
+      Object.assign(P,{x:9*16+8,y:24*16+12,dir:'left'});walkRoute=[];snapPets();save();
+    },
     previewSnowFishing(){
       if(!canPreview())return;
       A.previewSeason('winter');
@@ -128,6 +136,8 @@ PANEL = r'''
     const b=document.createElement('button');b.type='button';b.textContent=label;b.title='预览四季';
     b.onclick=()=>{A.previewSeason(CottageActivities.seasons[index]);cv.focus({preventScroll:true});};seasons.append(b);
   }
+  btn('🛍 跳到周六集市',()=>A.previewWeekend());
+  btn('🎶 跳到周日活动',()=>A.previewWeekend(true));
   btn('🎣 预览第一场雪冰钓',A.previewSnowFishing);
   btn('🎀 预览小满剧情',A.previewXiaoman);
   const stories=document.createElement('select');stories.setAttribute('aria-label','选择男主');
