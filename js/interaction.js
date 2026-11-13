@@ -667,11 +667,15 @@ function cancelVillageRoute(){
 
 function walkToVillagePlace(id, place){
   closeVillageMap();
-  if(!setWalkDestination(place.anchor[0]*16+8,place.anchor[1]*16+10)){
+  walkToNamedPlace(place.anchor,tr('village_'+id));
+}
+
+function walkToNamedPlace([x,y], label){
+  if(!setWalkDestination(x*16+8,y*16+10)){
     notify(tr('villageNoRoute'));
     return;
   }
-  villageDestination = id;
+  villageDestination = label;
   updateVillageGuide();
 }
 $('#villageRouteCancel').onclick = ()=>{

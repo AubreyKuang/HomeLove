@@ -32,14 +32,31 @@ function appendKeepsake(container,n,key,title,details){
   keepsake.append(sprite,caption);
   container.append(keepsake);
 }
+function fishingPlanDay(invitation){
+  return Math.max(invitation.dueDay,state.day+Number(state.time>=FISHING_INVITE.closes));
+}
+function upcomingPlanSoon(){
+  const soon=({start,end})=>state.time>=start-60&&state.time<end;
+  const date=activeDatePlan(),dedication=activeDedicationVisit(),revisit=state.rainReturn;
+  const invitation=state.life[FISHING_INVITE.resident]?.fishingInvitation;
+  return (date?.day===state.day&&soon(dateMeetingFor(date)))||
+    (dedication?.day===state.day&&soon(RAIN_DATE_MEETINGS[dedication.place]))||
+    (rainReturnReady()&&revisit.together&&soon(rainCompanionStop(revisit)))||
+    (invitation&&!invitation.catch&&fishingPlanDay(invitation)===state.day&&soon({start:FISHING_INVITE.opens,end:FISHING_INVITE.closes}));
+}
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
+  const plans=new Map();
+  const addPlan=(day,section)=>{
+    if(!plans.has(day))plans.set(day,[]);
+    plans.get(day).push(section);
+  };
   const dedication=activeDedicationVisit();
   if(dedication){
     const spot=RAIN_DATE_MEETINGS[dedication.place],section=el('section','dsec');
     const name=nm(npcs.find(n=>n.id===dedication.resident));
-    section.append(el('h3',null,tr('rainDedicationVisitTitle')),el('p','rline',tr('rainDedicationVisitPlan',{
+    section.append(el('h5',null,tr('rainDedicationVisitTitle')),el('p','rline',tr('rainDedicationVisitPlan',{
       name,place:tr(spot.name),day:tr('day',{d:dedication.day}),start:fmt(spot.start),
       last:fmt(spot.end-RAIN_DEDICATION_VISIT.minutes),...RAIN_DEDICATION_VISIT
     })),el('p','rline',tr('rainDedicationForecast',{weather:tr('riverWeather_'+VillageRiverside.weather(dedication.day))})),
@@ -53,9 +70,8 @@ function renderDiary(){
       const route=el('button','pbtn',tr(dedication.second?'rainDedicationSecondRoute':'rainDedicationVisitRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=spot.p;
         closeDiary();
-        if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
+        walkToNamedPlace(spot.p,tr(spot.name));
       };
       section.append(route);
     }
@@ -68,14 +84,14 @@ function renderDiary(){
       }
     };
     section.append(cancel);
-    b.append(section);
+    addPlan(dedication.day,section);
   }
   const revisit=state.rainReturn;
   if(revisit&&!revisit.done&&(revisit.day===state.day+1||rainReturnReady())){
     const spot=RAIN_DATE_MEETINGS[revisit.place];
     const name=nm(npcs.find(n=>n.id===revisit.resident));
     const section=el('section','dsec');
-    section.append(el('h3',null,tr('dateRainReturnTitle')),el('p','rline',tr('dateRainReturnPlan',{
+    section.append(el('h5',null,tr('dateRainReturnTitle')),el('p','rline',tr('dateRainReturnPlan',{
       ...RAIN_RETURN,place:tr(spot.name),day:tr('day',{d:revisit.day}),
       name
     })));
@@ -146,13 +162,13 @@ function renderDiary(){
         stopping?'rainWalkPauseRoute':'dateRainReturnRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=(meetingFirst||stopping?rainCompanionStop(revisit):spot).p;
+        const destination=meetingFirst||stopping?rainCompanionStop(revisit):spot;
         closeDiary();
-        if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
+        walkToNamedPlace(destination.p,tr(destination.name));
       };
       section.append(route);
     }
-    b.append(section);
+    addPlan(revisit.day,section);
   }
   const boxAvailable=breakfastBoxReady(true);
   if(state.breakfastBoxDay===state.day+1||boxAvailable){
@@ -203,7 +219,7 @@ function renderDiary(){
   const plan=activeDatePlan()||missed;
   if(plan){
     const section=el('section','dsec');
-    section.append(el('h3',null,tr('upcomingPlans')),el('p','rline',tr(
+    section.append(el('h5',null,tr('datePlanTitle')),el('p','rline',tr(
       missed?'dateMeetingMissed':plan.shelter?'dateMeetingSheltered':plan.rainWalk?'dateRainBooked':'dateMeetingBooked',describeDatePlan(plan))));
     for(const option of dateRebookingChoices(missed)){
       const change=el('button','pbtn',tr('dateMeetingRebook',describeDatePlan(option)));
@@ -262,9 +278,9 @@ function renderDiary(){
       const route=el('button','pbtn',tr('dateMeetingRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=(plan.shelter?DATE_SHELTER:plan.rainWalk?dateMeetingFor(plan):DATES[plan.place]).p;
+        const destination=plan.shelter?DATE_SHELTER:plan.rainWalk?dateMeetingFor(plan):DATES[plan.place];
         closeDiary();
-        if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
+        walkToNamedPlace(destination.p,datePlanPlace(plan));
       };
       section.append(route);
     }
@@ -277,12 +293,12 @@ function renderDiary(){
       }
     };
     section.append(cancel);
-    b.append(section);
+    addPlan(missed?state.day:plan.day,section);
   }
   const request=CottageActivities.openRequest(state.neighborRequest,state.day);
   if(request?.status==='accepted'){
     const section=el('section','dsec'),n=npcs.find(person=>person.id===request.resident);
-    section.append(el('h3',null,tr('requestJournal')),el('div','rline',tr('requestJournalEntry',{
+    section.append(el('h5',null,tr('requestJournal')),el('div','rline',tr('requestJournalEntry',{
       name:nm(n),items:neighborRequestItems(request).join(tr('requestOr')),day:tr('day',{d:request.day+2})
     })),el('p','rline',tr('requestMailboxPlan')));
     if(n.id==='gy'){
@@ -295,7 +311,7 @@ function renderDiary(){
       };
       section.append(route);
     }
-    b.append(section);
+    addPlan(state.day,section);
   }else if(state.neighborRequest?.status==='dropped'){
     const section=el('section','dsec');
     section.append(el('h3',null,tr('requestJournal')),el('p','rline',
@@ -305,13 +321,24 @@ function renderDiary(){
   const invitation=state.life[FISHING_INVITE.resident]?.fishingInvitation;
   if(invitation&&!invitation.catch){
     const n=npcs.find(person=>person.id===FISHING_INVITE.resident);
-    const day=Math.max(invitation.dueDay,state.day+Number(state.time>=FISHING_INVITE.closes));
-    const plans=el('section','dsec');
-    plans.append(el('h3',null,tr('upcomingPlans')),el('div','rline',tr('sharedFishingPlan',{
+    const day=fishingPlanDay(invitation);
+    const section=el('section','dsec');
+    section.append(el('div','rline',tr('sharedFishingPlan',{
       name:nm(n),day:tr('day',{d:day}),start:fmt(FISHING_INVITE.opens),end:fmt(FISHING_INVITE.closes)
     })));
-    if(day===state.day&&state.need.energy<5)plans.append(el('div','rline',tr('fishingEnergyNeeded')));
-    b.append(plans);
+    if(day===state.day&&state.need.energy<5)section.append(el('div','rline',tr('fishingEnergyNeeded')));
+    addPlan(day,section);
+  }
+  if(plans.size){
+    const schedule=el('section','diary-plans');
+    schedule.append(el('h3',null,tr('upcomingPlans')));
+    for(const [day,sections] of [...plans].sort(([a],[b])=>a-b)){
+      const date=el('section');
+      const label=day===state.day?tr('plansToday'):day===state.day+1?tr('plansTomorrow'):tr('day',{d:day});
+      date.append(el('h4',null,label),...sections);
+      schedule.append(date);
+    }
+    b.prepend(schedule);
   }
   const s1=el('section','dsec');s1.append(el('h3',null,tr('secRel')));const grid=el('div','rel');
   npcs.forEach(n=>{

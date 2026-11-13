@@ -1698,7 +1698,11 @@ Object.assign(window.HL_LANG.ja.ui, {
   "villageHere": "ここにいる：{names}",
   "nameSeparator": "、",
   "upcomingPlans": "これからの予定",
-  "sharedFishingPlan": "{name} · {day} {start}〜{end} · 迎えに来たら、一緒に池へ。",
+  "plansToday": "今日",
+  "plansTomorrow": "明日",
+  "datePlanTitle": "デート",
+  "fishingWindowClosed": "一緒に釣れる時間を過ぎました",
+  "sharedFishingPlan": "{name} · {day} {start}〜{end} · 庭で待ち、迎えが来たら一緒に池へ。",
   "fishingEnergyNeeded": "一緒に釣るには体力が5以上必要です",
   "confessMoodNeeded": "告白には気分が40以上必要です（現在 {mood}）",
   "fishCancel": "釣り竿をしまう"

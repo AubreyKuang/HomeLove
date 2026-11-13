@@ -11,6 +11,8 @@ function updateHud(){
   [['bE','barE',N.energy,'energy'],['bH','barH',N.hunger,'hunger'],['bM','barM',N.mood,'mood']].forEach(([b,w,v,t])=>{$('#'+b).style.width=v.toFixed(0)+'%';$('#'+w).classList.toggle('low',v<20);$('#'+w).title=tr(t)+' '+Math.round(v);});
   $('#cBag').textContent=bagCount();
   updateAlbumBadge();
+  const plans = $('#btnPlans');
+  plans.hidden = !upcomingPlanSoon();
   const ride=state.travel.selected,badge=$('#miniRide');
   badge.classList.toggle('hidden',!ride);
   if(ride){
@@ -44,7 +46,7 @@ function updateVillageGuide(){
   cancel.classList.toggle('hidden', !following);
   dismiss.classList.toggle('hidden', !greeting);
   if(!visible) return;
-  const text = following ? tr('villageRouteTo',{place:tr('village_'+villageDestination)})
+  const text = following ? tr('villageRouteTo',{place:villageDestination})
     : greeting.inside ? tr('firstGreetingDoor') : tr('firstGreetingResident',{name:nm(greeting.resident)});
   if(label.textContent!==text) label.textContent = text;
 }

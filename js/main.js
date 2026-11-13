@@ -23,7 +23,7 @@ function update(dt){
     moving=followWalkRoute(sp);
     if(destination && !walkRoute.length){
       if(P.x===destination[0] && P.y===destination[1]){
-        notify(tr('villageRouteArrived',{place:tr('village_'+villageDestination)}));
+        notify(tr('villageRouteArrived',{place:villageDestination}));
       }else notify(tr('villageNoRoute'));
     }
   }

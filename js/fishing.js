@@ -107,8 +107,10 @@ function missFish(reason){
   sfx('miss');endFish(10,2);
   if(!companion){say(tr('pond'),tr(reason));return;}
   D.npc=companion;
+  const blocked=state.time>=FISHING_INVITE.closes?'fishingWindowClosed':
+    state.need.energy<5?'fishingEnergyNeeded':null;
   talk(nm(companion),[tr(reason)],[
-    {label:tr('sharedFishingRetry'),disabled:state.need.energy<5||state.time>=FISHING_INVITE.closes,
+    {label:tr(blocked||'sharedFishingRetry'),disabled:!!blocked,
       fn:()=>startFish(tx,ty,false,companion)},
     {label:tr('sharedFishingLater'),back:true,fn:()=>deferFishingInvitation(companion)}
   ]);
