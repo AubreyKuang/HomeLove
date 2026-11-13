@@ -61,6 +61,9 @@ function renderDiary(){
       };
       invite.dataset.rainCompanion='';
       section.append(invite);
+      if(revisit.together&&!state.rainSketches[revisit.place]){
+        section.append(el('p','rline',tr('rainCompanionSketchHint')));
+      }
       if(revisit.together&&(!revisit.walk||revisit.walk==='meet')&&(revisit.day>state.day||state.time<spot.start)){
         section.append(el('p','rline',tr('rainCompanionWalkHint',RAIN_COMPANION_WALK)));
         const walk=el('button','pbtn',tr(revisit.walk==='meet'?'rainCompanionDirect':'rainCompanionWalk'));

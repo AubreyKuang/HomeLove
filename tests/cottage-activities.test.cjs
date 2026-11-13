@@ -381,7 +381,7 @@ test('rain reflection can be viewed only on the next dry day at the original pud
 
 test('companion revisits require the appointment and both people at the puddle', () => {
   const revisit={resident:'gy',place:'garden',day:4,done:false};
-  const state={day:3,time:600,rainReturn:revisit,need:{mood:40}};
+  const state={day:3,time:600,rainReturn:revisit,rainSketches:{},need:{mood:40}};
   const meeting={start:600,end:660,p:[12,12],spot:[13,12],name:'dateRainLane'};
   const firstStop={...meeting,p:[19,12],spot:[20,12]};
   const pauseStop={...meeting,p:[16,12],spot:[15,12]};
@@ -445,6 +445,20 @@ test('companion revisits require the appointment and both people at the puddle',
   assert.equal(revisit.walk,'pause');
   runtime.leaveRainWalkStop(revisit,n,false);
   assert.deepEqual([state.time,state.need.mood,revisit.walk],[640,68,'walking']);
+  P.x=200;n.x=216;
+  assert.equal(runtime.rainCompanionOptions(revisit,n).length,2);
+  write=false;runtime.finishRainCompanion(revisit,n,true);
+  assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy,state.rainSketches.garden],[640,68,false,20,undefined]);
+  write=true;runtime.finishRainCompanion(revisit,n,true);runtime.finishRainCompanion(revisit,n,true);
+  assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy],[680,77,true,24]);
+  assert.deepEqual({...state.rainSketches.garden},{resident:'gy',day:4,shared:true});
+  revisit.done=false;delete revisit.walk;state.time=620;
+  assert.equal(runtime.rainCompanionOptions(revisit,n).length,1);
+  runtime.finishRainCompanion(revisit,n,true);
+  assert.deepEqual([state.time,revisit.done],[620,false]);
+  delete state.rainSketches.garden;
+  runtime.finishRainCompanion(revisit,n,true);
+  assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy],[655,84,true,26]);
 });
 
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
