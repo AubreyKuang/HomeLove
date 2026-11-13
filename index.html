@@ -77,6 +77,11 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 #dialog .txt{font-size:15px;line-height:1.65}
 #dialog .more{position:absolute;right:12px;bottom:4px;font-size:12px;color:var(--muted);animation:bob .8s steps(2) infinite}
 @keyframes bob{50%{transform:translateY(2px)}}
+.weekMeter{grid-column:1/-1;display:block;width:min(100%,260px);height:15px;border:2px solid #664753;background:#9f727b;position:relative;overflow:hidden}
+.weekMeter::before{content:"";position:absolute;inset:0 auto 0 40%;width:20%;background:#729c75}
+.weekMeter i{position:absolute;inset:0 auto 0 0;width:3px;background:#fff6df;animation:weekShot 1.35s linear infinite alternate}
+@keyframes weekShot{to{left:calc(100% - 3px)}}
+@media(prefers-reduced-motion:reduce){.weekMeter i{animation:none;left:50%}}
 .choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:6px;margin-top:10px}
 .choice{display:flex;align-items:center;gap:6px;text-align:left;background:var(--panel-2);color:var(--ink);border:3px solid var(--line);border-radius:6px;padding:6px 10px;font-weight:700;font-size:14px;min-width:0}
 .choice:hover:not(:disabled),.choice:focus-visible{background:var(--sel);color:var(--sel-ink);outline:none}
@@ -375,11 +380,12 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js?v=snow-fishing-1"></script>
 <script src="resident-stories.js"></script>
-<script src="village-map.js?v=venues-1"></script>
-<script src="cottage-travel.js"></script>
-<script src="lang/zh.js?v=venues-1" charset="utf-8"></script>
-<script src="lang/en.js?v=venues-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=venues-1" charset="utf-8"></script>
+<script src="village-map.js?v=weekend-1"></script>
+<script src="cottage-travel.js?v=first-order-1"></script>
+<script src="village-weekend.js"></script>
+<script src="lang/zh.js?v=weekend-1" charset="utf-8"></script>
+<script src="lang/en.js?v=weekend-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=weekend-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -997,6 +1003,7 @@ const SFX={
   page:t=>noise(t,0.18,{vol:0.05,freq:3200,type:'highpass'}),
   whoosh:t=>{noise(t,0.3,{vol:0.05,freq:900,q:0.7});noise(t+0.05,0.25,{vol:0.04,freq:2400,q:0.7});},
   click:t=>tone(2200,t,0.03,{type:'square',vol:0.03}),
+  weekNote:(t,n)=>bell(mtof([60,64,67][n]),t,.12),
   villageSong:t=>[60,64,67,72,69,67,64].forEach((n,i)=>bell(mtof(n),t+i*.22,.12)),
   magic:t=>{[0,4,7,11,12,16,19,23,24,28].forEach((s,i)=>bell(mtof(72+s),t+i*0.06,0.07));noise(t,1.2,{vol:0.03,freq:6000,type:'highpass'});},
   start:t=>[72,79,84].forEach((m,i)=>bell(mtof(m),t+i*0.12,0.09)),
@@ -1067,7 +1074,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  villageVisits:{},travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
+  villageVisits:{},weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS='homelove-save-v1';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
@@ -1090,6 +1097,7 @@ function applySave(s){
   ['day','time','flowersTotal','lastRead','lastPet','summon','mealDay'].forEach(k=>{if(typeof s[k]==='number')state[k]=s[k];});
   state.villageVisits=VillageMap.loadVisits(s.villageVisits,state.day);
   state.travel=CottageTravel.load(s.travel,state.day);
+  state.weekend=VillageWeekend.load(s.weekend,state.day);
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
   state.snowFishing=SnowFishing.load(s.snowFishing,state.day);
@@ -1168,7 +1176,7 @@ fences.forEach(([x,y])=>block(x,y));
 VillageMap.props.forEach(p=>{
   for(let y=p.y;y<p.y+p.h;y++)for(let x=p.x;x<p.x+p.w;x++)block(x,y);
 });
-const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>(Object.hasOwn(VillageMap.places,p.id)||Object.hasOwn(VillageMap.exchanges,p.id)||p.id==='guide')&&
+const villagePropAt=(tx,ty)=>VillageMap.props.find(p=>(Object.hasOwn(VillageMap.places,p.id)||Object.hasOwn(VillageMap.exchanges,p.id)||['guide','weekendBoard','weekendStall'].includes(p.id))&&
   tx>=p.x&&tx<p.x+p.w&&ty>=p.y&&ty<p.y+p.h);
 const ICE_HOLES=[[19,6],[23,6]];
 const isIceHole=(x,y)=>ICE_HOLES.some(([tx,ty])=>tx===x&&ty===y);
@@ -1522,9 +1530,15 @@ const inCottageWindow=n=>{
   const {start,end}=visitWindow(n);
   return state.time>=start&&state.time<end;
 };
+const weekendGuestSpots=Object.fromEntries(Object.entries(VillageWeekend.activities).map(([id,event])=>[id,{spot:event.spot}]));
 function villageDuty(n){
-  if(rel(n).livesIn||summoned(n)||calling(n)||fishingInvitationReady(n)||inCottageWindow(n))return null;
-  return VillageMap.duty(n.id,state.time);
+  if(summoned(n)||calling(n)||fishingInvitationReady(n))return null;
+  for(const [id,event] of Object.entries(VillageWeekend.activities)){
+    if((event.host===n.id||event.guest===n.id)&&VillageWeekend.active(id,state.day,state.time)){
+      return event.host===n.id?VillageMap.places[id]:weekendGuestSpots[id];
+    }
+  }
+  return rel(n).livesIn||inCottageWindow(n)?null:VillageMap.duty(n.id,state.time);
 }
 // An unannounced visit: the resident shows up at any hour and comes looking for you, even indoors.
 const calling=n=>CottageBonds.calling(state.bonds,n.id,state.day,state.time);
@@ -1560,7 +1574,7 @@ function updNpc(n,dt){
     }
   }
   if(n.state==='away'){
-    if(r.livesIn){placeHome(n);return;}
+    if(r.livesIn&&!duty){placeHome(n);return;}
     if(present(n)&&(duty||invitation||summoned(n)||calling(n)||state.time<visitWindow(n).end-40)){
       const [x,y]=duty?.spot??VillageMap.gates[0];
       n.x=x*16+8;n.y=y*16+12;n.state='here';n.path=null;n.idle=0;n.leaving=false;n.lastVillageDuty=duty;
@@ -1573,7 +1587,7 @@ function updNpc(n,dt){
   if(duty!==n.lastVillageDuty&&present(n)){
     n.lastVillageDuty=duty;n.leaving=false;n.path=null;n.idle=0;
     if(duty)npcGo(n,...duty.spot);
-    else if(!invitation&&!summoned(n)&&!calling(n)&&!r.livesIn)npcGo(n,...pick(n.spots));
+    else if(!invitation&&!summoned(n)&&!calling(n))npcGo(n,...pick(r.livesIn?HOME_IN:n.spots));
   }
   if(!present(n)&&!n.leaving){n.leaving=true;npcGo(n,6,19);if(!n.path){n.state='away';n.x=n.y=-100;return;}}
   if(n.path&&n.path.length){
@@ -1591,6 +1605,12 @@ function updNpc(n,dt){
     n.moving=false;n.anim=0;n.path=null;
     const dx=P.x-n.x,dy=P.y-n.y,dp=Math.hypot(dx,dy),task=partnerTask(n);
     if(task!==n.lastTask){n.lastTask=task;n.idle=0;}
+    if(duty){
+      n.working=null;
+      if(Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)>3)npcGo(n,...duty.spot);
+      else if(dp<30)n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
+      return;
+    }
     const fixed=task==='cook'?STOVE_SPOT:task==='gym'?GYM_SPOT:null;
     if(fixed){const there=Math.hypot(fixed[0]*16+8-n.x,fixed[1]*16+12-n.y)<3;n.working=there?task:null;
       if(there){n.dir=task==='cook'?'up':'down';return;}
@@ -2735,8 +2755,11 @@ function npcMenu(n,back){
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
   const duty=villageDuty(n);
-  if(duty&&Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)<52){
-    opts.unshift(villageActivityOption(duty.id,n));
+  if(n.id==='gy'&&VillageWeekend.coffee(state.weekend,state.day,state.time)&&Math.hypot(n.x-14*16-8,n.y-22*16-12)<32){
+    opts.unshift({label:tr('weekCoffeeTaste'),fn:tasteMarketCoffee});
+  }
+  if(duty?.id&&Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)<52){
+    opts.unshift(...weekendOption(duty.id),villageActivityOption(duty.id,n));
   }
   if(n.id==='xy'&&state.snowFishing.invited&&CottageActivities.seasonOf(state.day)==='winter')
     opts.unshift({label:tr('worldTitle_snowRace'),fn:()=>openSnowFishing()});
@@ -3089,10 +3112,11 @@ function openTravelShop(){
   talk(tr('travelShop'),[tr('travelShopIntro',{shells:state.inv.shell})],opts);
 }
 function orderVehicle(id){
+  const first=state.travel.firstOrder;
   if(!CottageTravel.order(state.travel,state.inv,id,state.day))return;
   if(!save()){
     state.inv.shell+=CottageTravel.catalog[id].cost;
-    delete state.travel.orders[id];
+    delete state.travel.orders[id];state.travel.firstOrder=first;
     talk(tr('travelShop'),[tr('vehicleSaveFailed')]);return;
   }
   updateHud();sfx('ding');
@@ -3127,7 +3151,119 @@ function activeRide(){
   return CottageTravel.riding(state.travel,surface);
 }
 
+function weekendSchedule(){
+  const day=VillageWeekend.saleDay(state.day)+(VillageWeekend.weekday(state.day)>6||
+    (VillageWeekend.weekday(state.day)===6&&state.time>=1080)?7:0);
+  const [special,extra]=VillageWeekend.demand(day);
+  return [tr('weekDemand',{day:tr('day',{d:day}),a:itemLabel(special),b:itemLabel(extra)}),
+    ...Object.entries(VillageWeekend.activities).map(([id,event])=>
+      tr('weekSchedule',{day:tr('weekDay'+event.day),time:fmt(event.start)+'–'+fmt(event.end),event:tr('worldTitle_weekend_'+id)}))];
+}
+function openWeekendBoard(){
+  talk(tr('village_weekendBoard'),weekendSchedule(),[
+    {label:tr('weekStall'),fn:()=>openWeekendStall([])},
+    {label:tr('walkAway'),back:true,fn:null}
+  ]);
+}
+function openWeekendStall(items=[]){
+  const title=tr('weekStall');
+  if(!VillageWeekend.selling(state.day,state.time)||state.weekend.sale?.day===state.day){
+    talk(title,[tr(state.weekend.sale?.day===state.day?'weekAlreadySold':'weekStallHours')]);return;
+  }
+  const total=items.reduce((sum,item)=>sum+VillageWeekend.price(item,state.day),0);
+  const opts=[];
+  if(items.length)opts.push({label:tr('weekSell',{total}),fn:()=>sellWeekendStall(items)});
+  if(items.length<3){
+    for(const item of Object.keys(VillageWeekend.prices)){
+      const available=state.inv[item]-items.filter(i=>i===item).length;
+      if(available>0)opts.push({label:tr('weekSlot',{item:itemLabel(item),price:VillageWeekend.price(item,state.day),available}),fn:()=>openWeekendStall([...items,item])});
+    }
+  }
+  if(items.length)opts.push({label:tr('weekUndo'),fn:()=>openWeekendStall(items.slice(0,-1))});
+  opts.push({label:tr('walkAway'),back:true,fn:null});
+  talk(title,[tr('weekStock',{items:items.map(itemLabel).join(' · ')||tr('weekEmpty'),count:items.length})],opts);
+}
+function sellWeekendStall(items){
+  const before=state.weekend;
+  state.weekend=VillageWeekend.load(before,state.day);
+  const total=VillageWeekend.sell(state.weekend,state.inv,state.day,state.time,items);
+  if(!total){state.weekend=before;openWeekendStall();return;}
+  if(!save()){
+    state.weekend=before;
+    for(const item of items)state.inv[item]++;
+    state.inv.shell-=total;
+    talk(tr('weekStall'),[tr('villageTradeFailed')]);return;
+  }
+  updateHud();sfx('pickup');
+  const special=VillageWeekend.demand(state.day)[0];
+  talk(tr('weekStall'),[tr('weekSold',{total}),...(items.includes(special)?[tr('weekCoffeeHint',{item:itemLabel(special)})]:[])]);
+}
+function tasteMarketCoffee(){
+  const item=VillageWeekend.coffee(state.weekend,state.day,state.time);
+  if(!item)return;
+  const mood=state.need.mood;
+  state.weekend.sale.served=true;state.need.mood=clampN(mood+10);
+  if(!save()){
+    state.weekend.sale.served=false;state.need.mood=mood;
+    talk(tr('village_cafe'),[tr('weekSaveFailed')]);return;
+  }
+  updateHud();sfx('ding');
+  talk(nm(npcs.find(n=>n.id==='gy')),[tr('weekCoffeeServed',{item:itemLabel(item)})]);
+}
+function openWeekendActivity(id){
+  if(!VillageWeekend.active(id,state.day,state.time)||state.weekend.played[id]?.last===state.day)return;
+  const event=VillageWeekend.activities[id],n=npcs.find(n=>n.id===event.host),guest=npcs.find(n=>n.id===event.guest);
+  D.npc=n;
+  talk(nm(n),[tr('weekIntro_'+id),...(villageDuty(guest)===weekendGuestSpots[id]?[tr('weekGuest_'+id,{name:nm(guest)})]:[])],[
+    {label:tr('weekChoice_'+id+'_0'),fn:()=>id==='court'?weekendShot(1,0):id==='stage'?weekendNotes(1):finishWeekendActivity(id,0)},
+    {label:tr('weekChoice_'+id+'_1'),fn:()=>finishWeekendActivity(id,1)},
+    {label:tr('walkAway'),back:true,fn:null}
+  ]);
+}
+function weekendShot(shot,score){
+  const meter=el('div','weekMeter'),needle=el('i');
+  meter.setAttribute('aria-hidden','true');meter.append(needle);
+  const start=performance.now();
+  talk(tr('worldTitle_weekend_court'),[tr('weekShot',{shot,score})],[
+    {label:tr('weekShoot'),fn:()=>{
+      const phase=((performance.now()-start)/1350)%2;
+      const position=1-Math.abs(1-phase);
+      const total=score+Number(reducedMotion||(position>=.4&&position<=.6));
+      if(shot<3)weekendShot(shot+1,total);else finishWeekendActivity('court',0,tr('weekScore',{score:total}));
+    }},
+    {label:tr('walkAway'),back:true,fn:null}
+  ],null,meter);
+}
+function weekendNotes(beat){
+  talk(tr('worldTitle_weekend_stage'),[tr('weekNotes',{beat})],[
+    ...[0,1,2].map(note=>({label:tr('weekNote'+note),fn:()=>{
+      sfx('weekNote',note);
+      if(beat<3)weekendNotes(beat+1);else finishWeekendActivity('stage',0);
+    }})),
+    {label:tr('walkAway'),back:true,fn:null}
+  ]);
+}
+function finishWeekendActivity(id,choice,result){
+  const previous=state.weekend.played[id],mood=state.need.mood;
+  if(!VillageWeekend.play(state.weekend,id,state.day,state.time,choice))return;
+  state.need.mood=clampN(mood+(choice===0?10:7));
+  const n=npcs.find(person=>person.id===VillageWeekend.activities[id].host);
+  if(!save()){
+    if(previous)state.weekend.played[id]=previous;else delete state.weekend.played[id];
+    state.need.mood=mood;talk(nm(n),[tr('weekSaveFailed')]);return;
+  }
+  updateHud();sfx(id==='stage'?'villageSong':'ding');
+  talk(nm(n),[...(result?[result]:[]),tr('weekResult_'+id+'_'+choice)]);
+}
+function weekendOption(id){
+  if(!VillageWeekend.active(id,state.day,state.time))return [];
+  const played=state.weekend.played[id]?.last===state.day;
+  return [{label:tr(played?'villageDone':'worldTitle_weekend_'+id),disabled:played,fn:()=>openWeekendActivity(id)}];
+}
+
 function villageInteraction(id){
+  if(id==='weekendBoard'){openWeekendBoard();return;}
+  if(id==='weekendStall'){openWeekendStall();return;}
   const trades=VillageMap.exchanges[id];
   if(trades){
     const opts=VillageMap.marketOpen(state.time)?trades.map(offer=>({
@@ -3140,7 +3276,8 @@ function villageInteraction(id){
   if(id==='guide'){openVillageMap();return;}
   const n=npcs.find(person=>person.id===VillageMap.places[id].resident);
   const here=villageDuty(n)?.id===id&&n.state==='here'&&Math.hypot(n.x-P.x,n.y-P.y)<100;
-  const opts=[];
+  const opts=weekendOption(id);
+  if(id==='cafe'&&VillageWeekend.coffee(state.weekend,state.day,state.time))opts.push({label:tr('weekCoffeeTaste'),fn:tasteMarketCoffee});
   if(here)opts.push({label:tr('talkTo',{n:nm(n)}),fn:()=>npcMenu(n)});
   opts.push(villageActivityOption(id,here?n:null),{label:tr('walkAway'),fn:null});
   talk(tr('village_'+id),[tr('villageIntro_'+id)],opts);
@@ -3292,7 +3429,7 @@ const fmt=m=>{const h=Math.floor(m/60)%24,mm=Math.floor(m%60);return String(h).p
 function darkness(){const h=state.time/60;if(h<5)return 1;if(h<7)return 1-(h-5)/2;if(h<17)return 0;if(h<20)return (h-17)/3;return 1;}
 function updateHud(){
   const h=state.time/60,icon=h>=19||h<5?'🌙':h>=17?'🌇':'☀️';
-  $('#chipTime').textContent=`${icon} ${tr(CottageActivities.seasonOf(state.day))} · ${tr('day',{d:state.day})} ${fmt(state.time)}`;
+  $('#chipTime').textContent=`${icon} ${tr(CottageActivities.seasonOf(state.day))} · ${tr('day',{d:state.day})} · ${tr('weekDay'+VillageWeekend.weekday(state.day))} ${fmt(state.time)}`;
   const N=state.need;
   [['bE','barE',N.energy,'energy'],['bH','barH',N.hunger,'hunger'],['bM','barM',N.mood,'mood']].forEach(([b,w,v,t])=>{$('#'+b).style.width=v.toFixed(0)+'%';$('#'+w).classList.toggle('low',v<20);$('#'+w).title=tr(t)+' '+Math.round(v);});
   $('#cBag').textContent=bagCount();
@@ -3585,6 +3722,9 @@ function renderDiary(){
     })));
     b.append(section);
   }
+  const weekend=el('section','dsec');
+  weekend.append(el('h3',null,tr('village_weekendBoard')),...weekendSchedule().map(line=>el('div','rline',line)));
+  b.append(weekend);
   renderRecap(b);
   b.append(s1,s4,s2,pondLog,s3);
   renderRewind(b);
@@ -3597,7 +3737,7 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),SnowFishing.cards(state.snowFishing)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel)).sort((a,b)=>b.day-a.day);
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -3607,6 +3747,23 @@ function updateAlbumBadge(){
 function albumScene(card,n){
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.event==='firstOrder'){
+    MemoryAlbum.paint(g,'home');
+    blitChar(g,state.o,'down',0,25,20);
+    CottageTravel.paint(g,card.vehicle,65,41,'right',false);
+    CottageTravel.paint(g,card.vehicle,65,41,'right',true);
+    g.fillStyle='#785441';g.fillRect(47,29,9,8);
+    g.fillStyle='#f3d3a5';g.fillRect(48,30,7,6);
+    g.fillStyle='#c49873';g.fillRect(51,30,1,6);
+    return art;
+  }
+  if(card.event?.startsWith('weekend')){
+    MemoryAlbum.paint(g,card.event==='weekend_lookout'?'stars':card.event==='weekend_stage'?'pond':'garden');
+    VillageMap.paintProp(g,{id:card.event==='weekendStall'?'weekendStall':card.event.slice(8),x:4,y:2,w:card.event==='weekendStall'?2:1,h:1},false,false,0);
+    blitChar(g,state.o,'down',0,23,22);
+    if(n)blitChar(g,n.outfit,'down',0,48,22);
+    return art;
+  }
   if(card.event==='snowRace'||card.event==='snowDinner'){
     const dinner=card.event==='snowDinner';
     MemoryAlbum.paint(g,dinner?'home':'winterPond');
@@ -3680,6 +3837,9 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.event==='firstOrder')return tr('firstOrderCard',{name:tr('vehicle_'+card.vehicle)});
+  if(card.event==='weekendStall')return tr('weekStallCard');
+  if(card.event?.startsWith('weekend_'))return tr('weekResult_'+card.event.slice(8)+'_'+card.choice);
   if(card.event==='snowRace')return snowRaceSummary(state.snowFishing.stats.last);
   if(card.event==='snowDinner')return tr('snowDinnerConfession');
   if(card.kind==='story')return residentChapter(n.id,card.index)[3+card.choice];
@@ -3801,7 +3961,7 @@ function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addCo
 function drawPerson(g,o,dir,fr,px,py){const x=Math.round(px),y=Math.round(py);g.fillStyle='rgba(40,30,30,.22)';g.fillRect(x-5,y-1,10,2);g.fillRect(x-4,y+1,8,1);blitChar(g,o,dir,fr,x-10,y-25);}
 function drawVillageWork(g,n,time){
   const duty=villageDuty(n);
-  if(!duty||n.moving||Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)>18)return;
+  if(!duty?.id||n.moving||Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)>18)return;
   const x=Math.round(n.x),y=Math.round(n.y),t=reducedMotion?0:time;
   const rect=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
   if(duty.id==='cafe'){

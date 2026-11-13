@@ -12,13 +12,17 @@ const CottageTravel = (() => {
       const due=saved?.orders?.[id];
       if(!owned.includes(id)&&Number.isInteger(due)&&due>=2&&due<=day+1)orders[id]=due;
     }
-    return {owned,orders,selected:owned.includes(saved?.selected)?saved.selected:null};
+    const first=saved?.firstOrder;
+    const firstOrder=first&&Number.isInteger(first.day)&&first.day>=1&&first.day<=day&&
+      (owned.includes(first.id)||Object.hasOwn(orders,first.id))?{id:first.id,day:first.day}:null;
+    return {owned,orders,selected:owned.includes(saved?.selected)?saved.selected:null,firstOrder};
   }
   function order(travel,inventory,id,day){
     if(!Object.hasOwn(catalog,id)||travel.owned.includes(id)||travel.orders[id]||
         !(inventory.shell>=catalog[id].cost))return false;
     inventory.shell-=catalog[id].cost;
     travel.orders[id]=day+1;
+    travel.firstOrder??={id,day};
     return true;
   }
   function ready(travel,day){
@@ -71,5 +75,9 @@ const CottageTravel = (() => {
       R(a-2,-11,5,1,id==='scooter'?mint:'#dba477');
     }
   }
-  return {catalog,load,order,ready,receive,riding,paint};
+  function cards(travel){
+    const first=travel.firstOrder;
+    return first?[{key:'travel:firstOrder',kind:'world',event:'firstOrder',day:first.day,vehicle:first.id}]:[];
+  }
+  return {catalog,load,order,ready,receive,riding,paint,cards};
 })();
