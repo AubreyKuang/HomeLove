@@ -1325,3 +1325,14 @@ Object.assign(window.HL_LANG.zh.ui, {
   "blackoutRecall_court": "下回路灯再熄，我还记得你选的是哪条路。",
   "blackoutRecall_cafe": "那晚你把灯提来以后，我才发现咖啡馆的露台可以那么安静。"
 });
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "lanternNotice_gy": "灯来得正好。慢慢走，台阶我看着。",
+  "lanternNotice_xy": "你来啦！我在这边，路给你留着。",
+  "lanternNotice_jy": "我刚弹到这里。等你的灯过来，再接下一拍。",
+  "lanternNotice_by": "原来河边暗下去以后，灯会在水里亮两次。",
+  "lanternNotice_xm": "是你的灯呀。我认得这点暖光。"
+});
+
+window.HL_LANG.zh.objects.computer = {"name": "书桌电脑", "verb": "使用电脑"};
+window.HL_LANG.zh.ui.computerIntro = "你打开书桌上的电脑。想去网购商店看看吗？";
