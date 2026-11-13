@@ -42,6 +42,8 @@ function renderDiary(){
     section.append(el('h3',null,tr('rainDedicationVisitTitle')),el('p','rline',tr('rainDedicationVisitPlan',{
       name,place:tr(spot.name),day:tr('day',{d:dedication.day}),start:fmt(spot.start),
       last:fmt(spot.end-RAIN_DEDICATION_VISIT.minutes),...RAIN_DEDICATION_VISIT
+    })),el('p','rline',tr('rainDedicationComparePlan',{
+      last:fmt(spot.end-RAIN_DEDICATION_COMPARE.minutes),...RAIN_DEDICATION_COMPARE
     })));
     if(dedication.day===state.day){
       const route=el('button','pbtn',tr('rainDedicationVisitRoute'));

@@ -280,6 +280,7 @@ function renderAlbum(){
       const visit=activeDedicationVisit();
       if(selected.dedicationVisited){
         page.append(el('p',null,tr('rainDedicationVisitMemory',{place,day:tr('day',{d:selected.dedicationVisited}),name:nm(n)})));
+        if(selected.dedicationCompared)page.append(el('p',null,dedicationComparison(selected.dedication)));
       }else if(visit?.source===selected.place){
         page.append(el('p',null,tr('rainDedicationVisitInDiary')));
       }else{
