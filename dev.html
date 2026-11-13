@@ -168,6 +168,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .album-card canvas,.album-page canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #ac8063}
 .album-card small,.album-page small{color:#75594a}
 .album-page>.pbtn{margin:8px 8px 0 0}
+.moment-art{display:block;width:192px;max-width:100%;height:auto;image-rendering:pixelated;border:2px solid #735047;margin:8px auto}
 .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,128px),1fr));gap:10px;margin-top:8px}
 .badge{display:grid;justify-items:center;gap:4px;text-align:center;background:#fff5df;border:2px solid #b48667;color:#513b33;padding:8px;box-shadow:2px 3px #d7b595}
 .badge canvas{width:48px;height:48px;image-rendering:pixelated}
@@ -379,21 +380,21 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <div id="fade"></div>
 
 <script src="npc-memory.js"></script>
-<script src="save-manager.js?v=bonds-1"></script>
+<script src="save-manager.js?v=portable-saves-1"></script>
 <script src="cottage-activities.js?v=seasons-1"></script>
 <script src="cottage-events.js?v=snow-fishing-1"></script>
 <script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js?v=keepsake-frame-1"></script>
-<script src="resident-stories.js"></script>
+<script src="resident-stories.js?v=quiet-moments-1"></script>
 <script src="village-map.js?v=outlined-1"></script>
 <script src="cottage-travel.js?v=umbrella-1"></script>
 <script src="village-weekend.js"></script>
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js?v=rare-nights"></script>
-<script src="lang/zh.js?v=keepsake-frame-1" charset="utf-8"></script>
-<script src="lang/en.js?v=keepsake-frame-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=keepsake-frame-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=quiet-moments-1" charset="utf-8"></script>
+<script src="lang/en.js?v=quiet-moments-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=quiet-moments-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1099,13 +1100,15 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
+  moments:ResidentMoments.load(),offlineProgress:false,
   villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),blackout:VillageBlackout.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS='homelove-save-dev';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
-let playerReady=false;
+let playerReady=false,replacingSave=false;
 const validSave=s=>Number.isFinite(s.day)&&Number.isFinite(s.time)&&!!s.o&&!!s.rel&&!!s.inv;
 function save(){
+  if(replacingSave)return false;
   if(playerReady)state.position={x:P.x,y:P.y,dir:P.dir};
   state.savedAt=Date.now();
   return SaveManager.save(localStorage,LS,state,validSave);
@@ -1132,6 +1135,8 @@ function applySave(s){
   state.snowFishing=SnowFishing.load(s.snowFishing,state.day);
   state.xiaoman=XiaomanStory.load(s.xiaoman,state.day);
   state.stories=ResidentStories.load(s.stories,state.day);
+  state.moments=ResidentMoments.load(s.moments,state.day);
+  state.offlineProgress=s.offlineProgress===true;
   state.bonds=CottageBonds.load(s.bonds,NPCS.map(n=>n.id),state.day);
   savedAtLoad=Number.isFinite(s.savedAt)?s.savedAt:0;
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
@@ -2707,10 +2712,10 @@ function skyWatch(){
   B().shootingDay=state.day;
   if(CottageBonds.rare(B(),'shootingStar',state.day,Math.random,.05)){notify(tr('shootingStar'));sfx('levelup');}
 }
-// While the page was closed, the day kept going (up to 4 hours, never past 22:00).
+// Offline progress is optional and capped at four game hours.
 let offlineMinutes=0;
 function catchUpOffline(){
-  if(!savedAtLoad)return 0;
+  if(!savedAtLoad||!state.offlineProgress)return 0;
   const seconds=(Date.now()-savedAtLoad)/1000;
   const gm=Math.min(seconds*TIME_RATE,240,Math.max(0,22*60-state.time));
   if(gm<20)return 0;
@@ -2844,7 +2849,12 @@ function npcMenu(n,back){
   if(birthdayToday(n)&&!r.done.birthday)opts.push({label:lifeText('祝生日快乐','Wish a happy birthday','誕生日を祝う'),fn:()=>markLife(n,'birthday')});
   if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
+  if(momentAvailable(n))opts.unshift({label:tr('worldTitle_moment_'+n.id),fn:()=>openResidentMoment(n)});
   const lines=[greet];
+  if(!back){
+    const line=recallResidentMoment(n);
+    if(line)lines.push(line);
+  }
   if(!back&&alreadyMet&&!n.working){
     const frameLine=keepsakeFrameLine(n);
     if(frameLine)lines.push(frameLine);
@@ -2882,6 +2892,69 @@ function chat(n){
   if(!friends&&Math.random()<0.55){const qi=Math.floor(Math.random()*T.questions.length),q=T.questions[qi];
     talk(nm(n),lines.concat([q.q]),q.opts.map(([label,reply],oi)=>({label,fn:()=>{gain+=n.qv[qi][oi];D.npc=n;talk(nm(n),[reply],null,after);}})));}
   else talk(nm(n),lines,null,after);
+}
+function momentAvailable(n){
+  const scene=ResidentMoments.scenes[n?.id];
+  if(!scene||!rel(n).met||n.state!=='here'||n.leaving||blackoutActive()||
+    Math.hypot(n.x-P.x,n.y-P.y)>80)return false;
+  const [x,y]=VillageMap.places[scene.place].spot;
+  return Math.hypot(n.x-(x*16+8),n.y-(y*16+12))<30&&
+    ResidentMoments.available(state.moments,n.id,state.day,state.time,VillageRiverside.weather(state.day));
+}
+function momentArt(n,choice){
+  const art=mk(96,60),g=art.getContext('2d');
+  MemoryAlbum.paint(g,n.id==='gy'?'home':n.id==='by'?'stars':n.id==='xy'?'garden':'pond');
+  blitChar(g,n.outfit,'right',0,22,21);
+  blitChar(g,state.o,'left',0,57,21);
+  ResidentMoments.paint(g,n.id,48,51,choice);
+  art.className='moment-art';art.setAttribute('aria-label',tr('worldTitle_moment_'+n.id));
+  return art;
+}
+function openResidentMoment(n){
+  if(!momentAvailable(n))return;
+  const text=Lp.moments[n.id];
+  walkRoute=[];D.npc=n;
+  talk(nm(n),text.intro,[
+    ...text.choices.map((label,choice)=>({label,fn:()=>finishResidentMoment(n,choice)})),
+    {label:tr('momentLater'),back:true,fn:()=>{
+      state.moments.declined[n.id]=state.day;save();D.npc=n;
+      talk(nm(n),[text.later]);
+    }}
+  ],null,momentArt(n,0));
+}
+function finishResidentMoment(n,choice){
+  if(!momentAvailable(n))return;
+  if(!ResidentMoments.complete(state.moments,n.id,state.day,choice))return;
+  if(!save()){
+    delete state.moments.records[n.id];
+    talk(nm(n),[tr('weekSaveFailed')]);return;
+  }
+  if(n.id==='jy')sfx('villageMix',{order:['water','letter','chime'],ending:choice?'quiet':'open'});
+  else sfx('page');
+  D.npc=n;updateHud();
+  talk(nm(n),Lp.moments[n.id].endings[choice],[
+    {label:tr('momentKeep'),fn:()=>{
+      openAlbum('events');albumSelected='moment:'+n.id;renderAlbum();
+    }},
+    {label:tr('momentStay'),back:true,fn:null}
+  ],null,momentArt(n,choice));
+}
+function recallResidentMoment(n){
+  const record=state.moments.records[n.id];
+  if(!record||state.day-record.day<3||record.recalled===state.day||
+    (state.day-record.day)%4!==0)return '';
+  const before=record.recalled;record.recalled=state.day;
+  if(!save())record.recalled=before;
+  return Lp.moments[n.id].recall[record.choice];
+}
+function drawResidentMoments(g,time){
+  const offsets={gy:[-28,0],xy:[-21,-3],jy:[18,0],by:[-16,0]};
+  for(const [id,scene] of Object.entries(ResidentMoments.scenes)){
+    const n=npcs.find(person=>person.id===id),record=state.moments.records[id];
+    if(!record&&!momentAvailable(n))continue;
+    const [x,y]=VillageMap.places[scene.place].spot,[dx,dy]=offsets[id];
+    ResidentMoments.paint(g,id,x*16+8+dx,y*16+12+dy,record?.choice??0,reducedMotion?0:time);
+  }
 }
 function socialMenu(n){
   const r=rel(n),h=hearts(r);D.npc=n;
@@ -3753,6 +3826,7 @@ function villageInteraction(id){
   const n=npcs.find(person=>person.id===VillageMap.places[id].resident);
   const here=villageDuty(n)?.id===id&&n.state==='here'&&Math.hypot(n.x-P.x,n.y-P.y)<100;
   const opts=weekendOption(id);
+  if(n&&momentAvailable(n))opts.unshift({label:tr('worldTitle_moment_'+n.id),fn:()=>openResidentMoment(n)});
   if(id==='stage'&&state.projects.music)opts.push({label:tr('projectMusicPlay'),fn:()=>sfx('villageMix',state.projects.music)});
   if(id==='lookout'&&state.projects.hung)opts.push({label:tr('projectArtOnWall'),fn:()=>viewVillageSketch(n,state.projects.hung)});
   if(id==='cafe'&&state.projects.cafe&&state.day>=VillageProjects.menuDay(state.projects.cafe.day)&&!here){
@@ -4239,6 +4313,51 @@ function renderDiary(){
   renderRecap(b);
   b.append(s1,s4,s2,pondLog,s3);
   renderRewind(b);
+  renderQuietSettings(b);
+}
+function renderQuietSettings(body){
+  const section=el('section','dsec');
+  section.append(el('h3',null,tr('quietSettings')));
+  const clock=el('button','pbtn',tr(state.offlineProgress?'offlineOn':'offlineOff'));
+  clock.type='button';clock.setAttribute('aria-pressed',String(state.offlineProgress));
+  clock.onclick=()=>{
+    state.offlineProgress=!state.offlineProgress;
+    if(!save()){state.offlineProgress=!state.offlineProgress;notify(tr('weekSaveFailed'));}
+    renderDiary();
+  };
+  const backup=el('button','pbtn',tr('saveExport'));backup.type='button';
+  backup.onclick=()=>{
+    const data={...snapshot(),position:{x:P.x,y:P.y,dir:P.dir},saveVersion:SaveManager.version,savedAt:Date.now()};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+    const link=el('a');link.href=url;link.download='HomeLove-day-'+state.day+'.json';link.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  section.append(el('p','rline',tr('offlineHint')),clock,backup);
+  const restore=el('button','pbtn',tr('saveImport'));restore.type='button';
+  const file=el('input');file.type='file';file.accept='.json,application/json';file.hidden=true;
+  restore.onclick=()=>file.click();
+  file.onchange=async()=>{
+    const chosen=file.files?.[0];file.value='';
+    if(!chosen)return;
+    let data;
+    try{
+      if(chosen.size>2*1024*1024)throw Error('Large save');
+      data=SaveManager.decode(await chosen.text(),validSave,migrateSave);
+      if(!data||!Number.isInteger(data.day)||data.day<1||data.time<0||data.time>1560||
+        ['o','rel','inv'].some(k=>typeof data[k]!=='object'||Array.isArray(data[k])))throw Error('Invalid save');
+    }catch(e){notify(tr('saveInvalid'));return;}
+    closeDiary();
+    talk(tr('saveImport'),[tr('saveImportConfirm',{day:data.day})],[
+      {label:tr('saveImportAccept'),fn:()=>{
+        data.savedAt=Date.now();
+        if(!SaveManager.save(localStorage,LS,data,validSave)){notify(tr('weekSaveFailed'));return;}
+        replacingSave=true;location.reload();
+      }},
+      {label:tr('never'),back:true,fn:null}
+    ]);
+  };
+  section.append(restore,file);
+  body.append(section);
 }
 function openDiary(){if(mapOpen||dressOpen||diaryOpen||albumOpen||busy||startOpen||D.modal||FISH.on)return;sfx('page');diaryOpen=true;keys.clear();touchKeys.clear();renderDiary();$('#diary').classList.remove('hidden');$('#diaryClose').focus();}
 function closeDiary(){sfx('page');diaryOpen=false;$('#diary').classList.add('hidden');cv.focus({preventScroll:true});}
@@ -4248,7 +4367,7 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects),VillageBlackout.cards(state.blackout)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),ResidentMoments.cards(state.moments),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects),VillageBlackout.cards(state.blackout)).sort((a,b)=>b.day-a.day);
 const KEEPSAKE_FRAME={x:117,y:33,width:20,height:12};
 function setKeepsakeFrame(frame){
   const previous=state.album.framed;
@@ -4281,6 +4400,7 @@ function updateAlbumBadge(){
   button.setAttribute('aria-label',count?tr('albumUnread',{count}):tr('btnAlbum'));
 }
 function albumScene(card,n){
+  if(card.event?.startsWith('moment_'))return momentArt(n,card.choice);
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
   if(card.event==='blackout'){
@@ -4395,6 +4515,7 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.event?.startsWith('moment_'))return Lp.moments[n.id].endings[card.choice].join(' ');
   if(card.event==='blackout')return tr('blackoutResult_'+card.choice);
   if(card.event==='project_cafe'){
     const menu=state.projects.cafe;
@@ -4803,6 +4924,7 @@ function render(time){
     if(cat.dir<0){g.save();g.translate(x+9,y-14);g.scale(-1,1);g.drawImage(s,0,0);g.restore();}else g.drawImage(s,x-9,y-14);
   }});
   ents.sort((a,b)=>a.key-b.key);for(const e of ents)e.draw(ctx,art);
+  drawResidentMoments(ctx,time);
   if(readyVehicles().length||unreadAlbumPostcard()||hasNeighborMail()){
     const x=7*16+4,y=10*16-16+(Math.sin(time*4)>0?1:0);
     ctx.fillStyle='#714c48';ctx.fillRect(x-1,y-1,10,8);
@@ -4845,7 +4967,7 @@ function render(time){
 /* ---------------- loop ---------------- */
 let hudT=0,saveT=0,stepT=0,bondsT=0;
 function update(dt){
-  const paused=startOpen||dressOpen||diaryOpen||albumOpen||mapOpen||D.modal||busy;
+  const paused=document.hidden||startOpen||dressOpen||diaryOpen||albumOpen||mapOpen||D.modal||busy;
   let dx=0,dy=0;
   if(paused||FISH.on)walkRoute=[];
   if(!paused&&!FISH.on){
@@ -4889,6 +5011,10 @@ function update(dt){
   if(dressOpen&&pWalk){pTimer+=dt;if(pTimer>.18){pTimer=0;pFrame=(pFrame+1)%4;drawPreview();}}
 }
 let last=performance.now();
+document.addEventListener('visibilitychange',()=>{
+  last=performance.now();keys.clear();touchKeys.clear();
+  if(document.hidden)save();
+});
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);render(t/1000);requestAnimationFrame(loop);}
 // Start of session: yesterday's baseline, today's possible visitor, and the hours that passed while the page was closed.
 if(!B().dayStart)CottageBonds.startDay(B(),state.day,ptsMap());
@@ -4982,6 +5108,21 @@ snapPets();
       Object.assign(P,{x:15*16+8,y:25*16+12,dir:'up'});
       walkRoute=[];snapPets();updateHud();save();
     },
+    previewMoment(id){
+      if(!canPreview())return;
+      const scene=ResidentMoments.scenes[id],n=npcs.find(person=>person.id===id);
+      if(state.moments.records[id]){
+        openAlbum('events');albumSelected='moment:'+id;renderAlbum();return;
+      }
+      let day=Math.max(2,state.day);
+      while(!ResidentMoments.available(state.moments,id,day,scene.start+5,VillageRiverside.weather(day)))day++;
+      state.day=day;state.time=scene.start+5;
+      const place=VillageMap.places[scene.place],[x,y]=place.spot;
+      rel(n).met=true;
+      Object.assign(n,{x:x*16+8,y:y*16+12,state:'here',leaving:false,path:null});
+      Object.assign(P,{x:x*16+8,y:(y+1)*16+12,dir:'up'});
+      walkRoute=[];snapPets();fillNeeds();updateHud();openResidentMoment(n);
+    },
     previewProject(id){
       if(!canPreview())return;
       const place=VillageMap.places[id];
@@ -5068,6 +5209,7 @@ snapPets();
   btn('🏮 预览提灯女神',()=>A.previewBlackout());
   btn('🏮 跳到下一次停电',()=>A.previewBlackout(true));
   btn('🌿 预览共同活动',()=>A.previewProject(({gy:'cafe',xy:'court',jy:'stage',by:'lookout'})[stories.value]));
+  btn('🍂 预览不期而遇',()=>A.previewMoment(stories.value));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;
