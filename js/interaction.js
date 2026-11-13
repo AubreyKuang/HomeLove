@@ -608,6 +608,7 @@ function villageInteraction(id){
     })])});
   }
   if(id==='cafe'&&VillageWeekend.coffee(state.weekend,state.day,state.time))opts.push({label:tr('weekCoffeeTaste'),fn:tasteMarketCoffee});
+  if(id==='cafe'&&canShareLunch(n))opts.push({label:tr('boxShare',LUNCH_SHARE),fn:()=>shareLunch(n)});
   if(here)opts.push(projectOption(id,n),{label:tr('talkTo',{n:nm(n)}),fn:()=>npcMenu(n)});
   opts.push(villageActivityOption(id,here?n:null),{label:tr('walkAway'),fn:null});
   talk(tr('village_'+id),[tr('villageIntro_'+id)],opts);
