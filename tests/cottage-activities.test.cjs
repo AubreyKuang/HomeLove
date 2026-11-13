@@ -249,15 +249,58 @@ test('a short date consumes the appointment and day only when both meet on site'
     addPts(n,points){saved=[state.datePlan,relation.done.date,state.time,state.need.mood,points];},
     updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
   runSection(runtime,'function activeDatePlan(','function planDateMenu(');
-  runSection(runtime,'function walkPlannedDate(','function dateWith(');
-  runtime.walkPlannedDate(n,plan);
+  runSection(runtime,'function finishShortDate(','function dateWith(');
+  runtime.finishShortDate(n,plan);
   assert.equal(state.datePlan,plan);
   Object.assign(P,{x:312,y:124});
-  runtime.walkPlannedDate(n,plan);
-  runtime.walkPlannedDate(n,plan);
+  runtime.finishShortDate(n,plan);
+  runtime.finishShortDate(n,plan);
   assert.deepEqual(saved,[null,true,980,46,5]);
   assert.equal(state.time,980);
   assert.deepEqual(state.life,{});
+});
+
+test('a rainy date can change venue and award tea only at the cottage', () => {
+  const plan={resident:'gy',place:'garden',day:3};
+  const relation={done:{}};
+  const state={day:2,time:599,datePlan:plan,rel:{gy:relation},need:{mood:40}};
+  const outside={start:600,end:660,spot:[20,12]};
+  const inside={...outside,spot:[7,7],indoors:true};
+  const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};
+  let rainy=true,writesSucceed=false;
+  const runtime=game({state,P,busy:false,rel:()=>relation,DATE_MEETINGS:{garden:outside},
+    SHELTERED_DATE_MEETINGS:{garden:inside},DATE_SHELTER:{minutes:30,mood:9,points:7},
+    VillageRiverside:{weather:()=>rainy?'rain':'clear'},save:()=>writesSucceed,clampN:n=>n,
+    advanceTime:m=>{state.time+=m;},addPts(_,points){relation.points=points;},
+    updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  runSection(runtime,'function finishShortDate(','function dateWith(');
+  assert.equal(runtime.changeDateShelter(plan),false);
+  state.day=3;rainy=false;
+  assert.equal(runtime.changeDateShelter(plan),false);
+  rainy=true;
+  assert.equal(runtime.changeDateShelter(plan),false);
+  assert.equal(state.datePlan,plan);
+  writesSucceed=true;
+  assert.equal(runtime.changeDateShelter(plan),true);
+  assert.deepEqual({...state.datePlan},{...plan,shelter:true});
+  assert.equal(runtime.plannedDateMeeting(n),inside);
+  state.time=600;
+  runtime.finishShortDate(n,state.datePlan);
+  assert.equal(state.datePlan.shelter,true);
+  assert.equal(runtime.changeDateShelter(state.datePlan),true);
+  assert.deepEqual({...state.datePlan},plan);
+  assert.equal(runtime.plannedDateMeeting(n),outside);
+  runtime.changeDateShelter(state.datePlan);
+  Object.assign(n,{x:120,y:124});
+  Object.assign(P,{x:104,y:124});
+  state.time=660;
+  assert.equal(runtime.changeDateShelter(state.datePlan),false);
+  runtime.finishShortDate(n,state.datePlan);
+  assert.equal(state.datePlan.shelter,true);
+  state.time=659;
+  runtime.finishShortDate(n,state.datePlan);
+  assert.deepEqual([state.datePlan,relation.done.date,state.time,state.need.mood,relation.points],[null,true,689,49,7]);
 });
 
 test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
