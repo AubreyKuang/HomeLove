@@ -1333,3 +1333,6 @@ Object.assign(window.HL_LANG.en.ui, {
   "lanternNotice_by": "When the river goes dark, your lantern shines twice.",
   "lanternNotice_xm": "That’s your lantern. I know that warm little light."
 });
+
+window.HL_LANG.en.objects.computer = {"name": "Desk computer", "verb": "Use the computer"};
+window.HL_LANG.en.ui.computerIntro = "You turn on the computer. Want to browse the online shop?";

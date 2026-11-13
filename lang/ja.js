@@ -1333,3 +1333,6 @@ Object.assign(window.HL_LANG.ja.ui, {
   "lanternNotice_by": "川が暗くなると、灯りが二つに見えるんだね。",
   "lanternNotice_xm": "あなたの提灯だ。そのあたたかい光、覚えてる。"
 });
+
+window.HL_LANG.ja.objects.computer = {"name": "机のパソコン", "verb": "パソコンを使う"};
+window.HL_LANG.ja.ui.computerIntro = "机のパソコンをつけた。通販を見てみる？";

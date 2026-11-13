@@ -1333,3 +1333,6 @@ Object.assign(window.HL_LANG.zh.ui, {
   "lanternNotice_by": "原来河边暗下去以后，灯会在水里亮两次。",
   "lanternNotice_xm": "是你的灯呀。我认得这点暖光。"
 });
+
+window.HL_LANG.zh.objects.computer = {"name": "书桌电脑", "verb": "使用电脑"};
+window.HL_LANG.zh.ui.computerIntro = "你打开书桌上的电脑。想去网购商店看看吗？";
