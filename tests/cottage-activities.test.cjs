@@ -76,6 +76,48 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   assert.equal(runtime.hasNeighborMail(),false);
 });
 
+test('mailbox delivery holds the reward overnight and survives the deadline and reload', () => {
+  const n={id:'gy'};
+  const state={day:3,inv:{cookie:1,berry:0,flower:0},rel:{gy:{met:true}},
+    neighborRequest:{day:1,resident:'gy',status:'accepted'}};
+  let choices,saved,message;
+  const runtime=game({
+    state,npcs:[n],D:{},VillageMap:{places:{cafe:{hours:[750,1020]}}},
+    ITEM_ICONS:{berry:'🍓',cookie:'🍪',flower:'🌼'},fmt:String,
+    tr:key=>key,itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,
+    say(_who,line){message=line;},talk(_who,_lines,options){choices=options;},updateHud(){},
+    save(){saved=JSON.parse(JSON.stringify(state.neighborRequest));}
+  });
+  runSection(runtime,'function unreadAlbumPostcard(','function petCat(');
+  runtime.checkMail();
+  choices[0].fn();
+  assert.equal(choices[0].disabled,true);
+  choices[0].fn();
+  assert.equal(state.neighborRequest.status,'accepted');
+  const drop=choices[1].fn;
+  drop();drop();
+  assert.equal(saved.status,'dropped');
+  assert.equal(saved.closedDay,3);
+  assert.deepEqual(state.inv,{cookie:0,berry:0,flower:0});
+  assert.equal(runtime.acceptedNeighborRequest(n),null);
+  assert.equal(runtime.hasNeighborMail(),false);
+  runtime.checkMail();
+  assert.equal(message,'requestMailboxPending');
+  assert.equal(runtime.activities.collectRequestReward(state.neighborRequest,3,state.inv),null);
+  state.neighborRequest=runtime.activities.loadRequest(saved);
+  state.day=6;
+  assert.equal(runtime.hasNeighborMail(),true);
+  assert.equal(runtime.activities.nextRequest(6,state.neighborRequest,state.rel),null);
+  runtime.checkMail();
+  const collect=choices[0].fn;
+  collect();collect();
+  assert.equal(saved.status,'delivered');
+  assert.equal(saved.closedDay,6);
+  assert.equal(state.inv.flower,2);
+  assert.equal(message,'requestMailboxReward');
+  assert.equal(runtime.hasNeighborMail(),false);
+});
+
 test('the café request shares the regular payout, spends time only when feasible, and persists one keepsake', () => {
   const n={id:'gy',state:'here',x:232,y:364};
   const cafe={spot:[14,22],hours:[750,1020]};
