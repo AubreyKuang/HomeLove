@@ -45,7 +45,8 @@ function renderDiary(){
       name
     })));
     if(revisit.day>state.day||state.time<spot.end){
-      section.append(el('p','rline',tr(revisit.together?'rainCompanionBooked':'rainCompanionHint',{
+      section.append(el('p','rline',tr(!revisit.together?'rainCompanionHint':revisit.walk==='meet'?'rainCompanionWalkBooked':
+        revisit.walk==='walking'?'rainCompanionWalking':'rainCompanionBooked',{
         name,start:fmt(spot.start),end:fmt(spot.end),...RAIN_COMPANION
       })));
       const conflict=!revisit.together&&rainCompanionConflict(revisit);
@@ -60,15 +61,28 @@ function renderDiary(){
       };
       invite.dataset.rainCompanion='';
       section.append(invite);
+      if(revisit.together&&revisit.walk!=='walking'&&(revisit.day>state.day||state.time<spot.start)){
+        section.append(el('p','rline',tr('rainCompanionWalkHint',RAIN_COMPANION_WALK)));
+        const walk=el('button','pbtn',tr(revisit.walk==='meet'?'rainCompanionDirect':'rainCompanionWalk'));
+        walk.type='button';walk.dataset.rainCompanionWalk='';
+        walk.onclick=()=>{
+          if(setRainCompanionWalk(revisit)){
+            renderDiary();
+            b.querySelector('[data-rain-companion-walk]')?.focus();
+          }
+        };
+        section.append(walk);
+      }
     }else if(revisit.together)section.append(el('p','rline',tr('rainCompanionMissed')));
     if(!state.rainSketches[revisit.place]&&(revisit.day>state.day||!rainSketchLimit(revisit))){
       section.append(el('p','rline',tr('dateRainSketchHint',RAIN_SKETCH)));
     }
     if(rainReturnReady()){
-      const route=el('button','pbtn',tr('dateRainReturnRoute'));
+      const meetingFirst=revisit.together&&revisit.walk==='meet'&&state.time<spot.end;
+      const route=el('button','pbtn',tr(meetingFirst?'rainCompanionWalkRoute':'dateRainReturnRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=spot.p;
+        const [x,y]=(meetingFirst?rainCompanionStop(revisit):spot).p;
         closeDiary();
         if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
       };
