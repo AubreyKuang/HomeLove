@@ -386,9 +386,10 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="village-weekend.js"></script>
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
-<script src="lang/zh.js?v=projects-1" charset="utf-8"></script>
-<script src="lang/en.js?v=projects-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=projects-1" charset="utf-8"></script>
+<script src="village-blackout.js"></script>
+<script src="lang/zh.js?v=lantern-1" charset="utf-8"></script>
+<script src="lang/en.js?v=lantern-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=lantern-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1094,7 +1095,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
+  villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),blackout:VillageBlackout.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS='homelove-save-dev';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
@@ -1120,6 +1121,7 @@ function applySave(s){
   state.weekend=VillageWeekend.load(s.weekend,state.day);
   state.riverside=VillageRiverside.load(s.riverside,state.day);
   state.projects=VillageProjects.load(s.projects,state.day);
+  state.blackout=VillageBlackout.load(s.blackout,state.day);
   state.riverRest=s.riverRest===state.day?state.day:0;
   state.album=MemoryAlbum.load(s.album,ALBUM_RESIDENTS,state.day);
   state.events=CottageEvents.load(s.events,state.day);
@@ -1558,7 +1560,18 @@ const inCottageWindow=n=>{
   return state.time>=start&&state.time<end;
 };
 const weekendGuestSpots=Object.fromEntries(Object.entries(VillageWeekend.activities).map(([id,event])=>[id,{spot:event.spot}]));
+const blackoutCafeGuest={spot:[15,22]},blackoutStageGuest={spot:[24,29]};
 function villageDuty(n){
+  if(blackoutActive()){
+    const record=state.blackout.last;
+    if(record?.day===state.day){
+      if(record.place==='cafe'&&record.choice===n.id)return blackoutCafeGuest;
+      if(record.place==='stage'&&record.choice==='circle'&&n.id==='by')return blackoutStageGuest;
+    }
+    for(const [id,scene] of Object.entries(VillageBlackout.scenes)){
+      if(scene.host===n.id)return VillageMap.places[id];
+    }
+  }
   if(summoned(n)||calling(n)||fishingInvitationReady(n))return null;
   for(const [id,event] of Object.entries(VillageWeekend.activities)){
     if((event.host===n.id||event.guest===n.id)&&VillageWeekend.active(id,state.day,state.time)){
@@ -2545,6 +2558,7 @@ function rememberPlayer(n,type,outcome,emotion,impact,object){
 function memoryLine(n,entry){
   const data=entry.interpretation;
   if(!data||typeof data!=='object')return '';
+  if(data.type==='blackout')return tr('blackoutRecall_'+data.object?.place);
   if(data.type==='villageProject')return tr('projectRecall_'+data.object);
   if(data.type==='riverApron'||data.type==='riverLetter')return tr(data.type+'Recall');
   if(data.type==='xiaomanConfession'&&data.object==='friends')return tr('xmRecallFriends');
@@ -2796,7 +2810,7 @@ function npcMenu(n,back){
     opts.unshift({label:tr('weekCoffeeTaste'),fn:tasteMarketCoffee});
   }
   if(duty?.id&&Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)<52){
-    opts.unshift(projectOption(duty.id,n),...weekendOption(duty.id),villageActivityOption(duty.id,n));
+    opts.unshift(...blackoutOption(duty.id),projectOption(duty.id,n),...weekendOption(duty.id),villageActivityOption(duty.id,n));
   }
   if(n.id==='gy'&&apron?.status==='found')opts.unshift({label:tr('riverReturnApron'),fn:()=>returnApron('returned')});
   if(n.id==='xy'&&state.snowFishing.invited&&CottageActivities.seasonOf(state.day)==='winter')
@@ -3183,7 +3197,7 @@ function collectVehicle(id){
   ]);
 }
 function activeRide(){
-  if(!state.travel.selected||FISH.on||busy)return null;
+  if(!state.travel.selected||FISH.on||busy||blackoutActive())return null;
   const t=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));
   const surface=t===FLOOR||t===DOOR?'inside':[PATH,STONE,BRIDGE].includes(t)?'road':'outdoor';
   return CottageTravel.riding(state.travel,surface);
@@ -3589,7 +3603,51 @@ function drawVillageSketch(g,light,draft){
   for(let i=0;i<5;i++)r(9+i*15,47+(i%2)*3,8-i%3,1,'#c8d9cb');
 }
 
+function blackoutActive(){
+  return VillageBlackout.active(state.day,state.time);
+}
+function blackoutOption(id){
+  if(!blackoutActive()||state.blackout.last?.day===state.day||!Object.hasOwn(VillageBlackout.scenes,id))return [];
+  return [{label:tr('blackoutBring_'+id),fn:()=>openBlackoutScene(id)}];
+}
+function openBlackoutScene(id){
+  if(!blackoutOption(id).length)return;
+  const scene=VillageBlackout.scenes[id],n=npcs.find(person=>person.id===scene.host);
+  const memory=state.blackout.visits[id];
+  const repeat=!!memory;
+  D.npc=n;
+  talk(nm(n),[tr(repeat?'blackoutRepeat_'+id:'blackoutIntro_'+id,repeat?{
+    choice:tr('blackoutChoice_'+memory.choice)
+  }:undefined)],[
+    ...scene.choices.map(choice=>({label:tr('blackoutChoice_'+choice),fn:()=>finishBlackout(id,choice)})),
+    {label:tr('projectLater'),back:true,fn:null}
+  ]);
+}
+function finishBlackout(id,choice){
+  const previous=state.blackout,next=VillageBlackout.complete(previous,state.day,state.time,id,choice);
+  if(!next)return;
+  state.blackout=next;
+  if(!save()){
+    state.blackout=previous;talk(tr('worldTitle_blackout'),[tr('weekSaveFailed')]);return;
+  }
+  const n=npcs.find(person=>person.id===VillageBlackout.scenes[id].host);
+  rememberPlayer(n,'blackout','completed',.85,88,{place:id,choice});save();
+  if(id==='stage')sfx(state.projects.music?'villageMix':'villageSong',state.projects.music);
+  else sfx('ding');
+  updateHud();D.npc=n;
+  talk(nm(n),[tr('blackoutResult_'+choice)]);
+}
+let noticedBlackout=false;
+function updateBlackout(){
+  const active=blackoutActive();
+  if(active===noticedBlackout)return;
+  noticedBlackout=active;
+  sfx(active?'whoosh':'ding');
+  notify(tr(active?'blackoutArrives':'blackoutEnds'));
+}
+
 function villageInteraction(id){
+  if(blackoutOption(id).length){openBlackoutScene(id);return;}
   if(id==='ferry'){ferryMenu();return;}
   if(id==='post'){postMenu();return;}
   if(id==='weekendBoard'){openWeekendBoard();return;}
@@ -3709,6 +3767,7 @@ function openVillageMap(){
     if(n)words.append(el('small',null,nm(n)+' · '+fmt(place.hours[0])+'–'+fmt(place.hours[1])));
     if(id==='cafe')words.append(el('small',null,tr('projectCafeMapHours')));
     if(id==='lookout')words.append(el('small',null,tr('projectArtMapHours')));
+    if(blackoutOption(id).length)words.append(el('small',null,tr('blackoutMap')));
     if(id==='market')words.append(el('small',null,'09:00–18:00'));
     button.append(dot,words);
     button.onclick=()=>{
@@ -3726,6 +3785,12 @@ $('#villageClose').addEventListener('click',closeVillageMap);
 $('#villageMap').addEventListener('click',e=>{if(e.target.id==='villageMap')closeVillageMap();});
 
 function findTarget(){
+  if(blackoutActive()&&state.blackout.last?.day!==state.day){
+    for(const id of Object.keys(VillageBlackout.scenes)){
+      const [x,y]=VillageMap.places[id].anchor;
+      if(Math.hypot(P.x-(x*16+8),P.y-(y*16+12))<13)return {kind:'village',id,verb:tr('blackoutBring_'+id),x:x*16+8,y:y*16-14};
+    }
+  }
   const visitor=visitorTarget();
   if(visitor)return visitor;
   const d=DV[P.dir],fx=P.x+d[0]*12,fy=P.y-3+d[1]*12;
@@ -3776,7 +3841,7 @@ const fmt=m=>{const h=Math.floor(m/60)%24,mm=Math.floor(m%60);return String(h).p
 function darkness(){const h=state.time/60;if(h<5)return 1;if(h<7)return 1-(h-5)/2;if(h<17)return 0;if(h<20)return (h-17)/3;return 1;}
 function updateHud(){
   const h=state.time/60,icon=h>=19||h<5?'🌙':h>=17?'🌇':'☀️';
-  $('#chipTime').textContent=`${icon} ${tr(CottageActivities.seasonOf(state.day))} · ${tr('day',{d:state.day})} · ${tr('weekDay'+VillageWeekend.weekday(state.day))} ${fmt(state.time)} · ${tr('riverWeather_'+VillageRiverside.weather(state.day))}`;
+  $('#chipTime').textContent=`${icon} ${tr(CottageActivities.seasonOf(state.day))} · ${tr('day',{d:state.day})} · ${tr('weekDay'+VillageWeekend.weekday(state.day))} ${fmt(state.time)} · ${tr('riverWeather_'+VillageRiverside.weather(state.day))}`+(blackoutActive()?' · '+tr('blackoutHud'):'');
   const N=state.need;
   [['bE','barE',N.energy,'energy'],['bH','barH',N.hunger,'hunger'],['bM','barM',N.mood,'mood']].forEach(([b,w,v,t])=>{$('#'+b).style.width=v.toFixed(0)+'%';$('#'+w).classList.toggle('low',v<20);$('#'+w).title=tr(t)+' '+Math.round(v);});
   $('#cBag').textContent=bagCount();
@@ -4092,7 +4157,7 @@ $('#diary').addEventListener('click',e=>{if(e.target.id==='diary')closeDiary();}
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects),VillageBlackout.cards(state.blackout)).sort((a,b)=>b.day-a.day);
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -4102,6 +4167,11 @@ function updateAlbumBadge(){
 function albumScene(card,n){
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.event==='blackout'){
+    MemoryAlbum.paint(g,'stars');
+    blitChar(g,state.o,'down',0,36,22);blitChar(g,n.outfit,'down',0,58,22);
+    drawBlackoutLightForCard(g);return art;
+  }
   if(card.event==='project_lookout'){
     drawVillageSketch(g,card.light,card.draft);return art;
   }
@@ -4209,6 +4279,7 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.event==='blackout')return tr('blackoutResult_'+card.choice);
   if(card.event==='project_cafe'){
     const menu=state.projects.cafe;
     return tr('projectCafeCard',{name:menu.caption||tr('projectCafeName_'+menu.name),items:menu.items.map(itemLabel).join(' + ')});
@@ -4422,14 +4493,61 @@ function drawProjectDisplay(g,prop){
   }
 }
 let studioDisplayKey='',studioDisplay;
+function drawLantern(g,x,y){
+  x=Math.round(x);y=Math.round(y);
+  g.fillStyle='#543940';g.fillRect(x-2,y-10,5,5);g.fillRect(x-4,y-7,9,9);
+  g.fillStyle='#ba8757';g.fillRect(x-1,y-9,3,2);g.fillRect(x-3,y-6,7,7);
+  g.fillStyle='#ffe5a0';g.fillRect(x-2,y-5,5,5);
+  g.fillStyle='#fff6d7';g.fillRect(x,y-4,2,3);
+}
+function drawBlackoutLight(g,cx,cy,w,h,time){
+  const [dx,dy]=DV[P.dir];
+  const x=Math.round(P.x+dx*6+(dx===0?7:0)),y=Math.round(P.y-8+dy*4);
+  const radius=79+(reducedMotion?0:Math.sin(time*2.2)*2);
+  const mask=g.createRadialGradient(x,y,0,x,y,radius);
+  mask.addColorStop(0,'rgba(17,18,38,.04)');
+  mask.addColorStop(.37,'rgba(18,19,42,.12)');
+  mask.addColorStop(.73,'rgba(19,20,44,.66)');
+  mask.addColorStop(1,'rgba(16,17,34,.96)');
+  g.fillStyle=mask;g.fillRect(cx,cy,w,h);
+  glow(g,x,y,radius*.76,'rgba(250,181,90,.21)');
+  drawLantern(g,x,y);
+}
+function drawBlackoutGathering(g,record){
+  const [tx,ty]=VillageMap.places[record.place].anchor;
+  const x=tx*16,y=ty*16;
+  const R=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
+  if(record.place==='court'){
+    const right=record.choice==='river'?1:-1;
+    for(let i=0;i<6;i++){
+      R(8+right*(9+i*6),18+(i%2)*3,3,2,'#8c756b');
+      R(9+right*(9+i*6),18+(i%2)*3,2,1,'#e0c9a2');
+    }
+  }else if(record.place==='stage'){
+    const row=record.choice==='circle'?[[0,8],[18,8],[0,22],[18,22]]:[[-2,18],[8,18],[18,18]];
+    for(const [a,b] of row){R(a,b,7,5,'#5c4240');R(a+1,b,5,3,'#c29470');}
+  }else{
+    R(15,9,13,7,'#634640');R(16,9,11,4,'#cb9c75');
+    R(18,8,2,3,'#ffe3b8');R(22,8,2,3,'#ffe3b8');
+  }
+}
+function drawBlackoutLightForCard(g){
+  const shade=g.createRadialGradient(53,37,0,53,37,43);
+  shade.addColorStop(0,'rgba(20,22,44,.03)');shade.addColorStop(1,'rgba(20,22,44,.92)');
+  g.fillStyle=shade;g.fillRect(0,0,96,60);
+  glow(g,53,37,32,'rgba(248,179,99,.25)');drawLantern(g,53,37);
+}
 function render(time){
   updateMiniMap();
   ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#2a2230';ctx.fillRect(0,0,cv.width,cv.height);
   const S=scale,vw=cv.width/S,vh=cv.height/S,dark=darkness();
-  const [cx,cy]=cameraOrigin();
+  const [cx,cy]=cameraOrigin(),blackout=blackoutActive();
   ctx.setTransform(S,0,0,S,-cx*S,-cy*S);ctx.imageSmoothingEnabled=false;
   const season=CottageActivities.seasonOf(state.day),art=SEASON_ART[season],winter=season==='winter';
   ctx.drawImage(art.ground,0,0);
+  if(blackout){
+    for(const record of Object.values(state.blackout.visits))drawBlackoutGathering(ctx,record);
+  }
   if(walkRoute.length){
     const [x,y]=walkRoute.at(-1).map(Math.round);
     ctx.fillStyle='#704844';ctx.fillRect(x-4,y-4,8,4);
@@ -4443,7 +4561,7 @@ function render(time){
   for(const [kind,[x,y]] of visibleRiverClues()){
     drawRiverClue(ctx,kind,x*16+8,y*16+10,reducedMotion?0:time);
   }
-  drawWindows(ctx,dark>0.5);
+  drawWindows(ctx,dark>0.5||blackout);
   state.garden.forEach((plot,i)=>{
     if(!plot)return;
     const x=(17+i%6)*16,y=(13+Math.floor(i/6))*16;
@@ -4480,7 +4598,7 @@ function render(time){
     const x=prop.x*16,y=(prop.y+prop.h)*16;
     if(x+prop.w*16>cx&&x<cx+vw&&y>cy&&y-52<cy+vh)
       ents.push({key:y-1,draw:g=>{
-        VillageMap.paintProp(g,prop,winter,dark>.5,time);drawProjectDisplay(g,prop);
+        VillageMap.paintProp(g,prop,winter,!blackout&&dark>.5,time);drawProjectDisplay(g,prop);
       }});
   }
   for(const s of statics)if(s.x+s.w>cx&&s.x<cx+vw&&s.y+s.h>cy&&s.y<cy+vh)ents.push(s);
@@ -4517,7 +4635,7 @@ function render(time){
   drawPuffs(ctx);
   for(const p of parts)drawHeart(ctx,p.x,p.y-p.t*14,Math.max(0,1-p.t/1.2));
   if(target&&!busy&&!dressOpen&&!diaryOpen&&!albumOpen&&!mapOpen&&!startOpen&&!D.modal&&!FISH.on)drawArrow(ctx,target.x,target.y+(Math.sin(time*6)>0?-1:0));
-  if(dark>0){
+  if(dark>0&&!blackout){
     const h=state.time/60,dusk=h>=17&&h<20;
     ctx.fillStyle=dusk?`rgba(${Math.round(60-40*dark)},${Math.round(30-8*dark)},60,${(0.52*dark).toFixed(3)})`:`rgba(20,22,62,${(0.52*dark).toFixed(3)})`;
     ctx.fillRect(cx,cy,vw,vh);
@@ -4542,6 +4660,7 @@ function render(time){
   }
   if(winter||season==='autumn')drawSeasonParticles(ctx,time,winter);
   drawRiverWeather(ctx,time,VillageRiverside.weather(state.day));
+  if(blackout)drawBlackoutLight(ctx,cx,cy,vw,vh,time);
 }
 
 /* ---------------- loop ---------------- */
@@ -4570,6 +4689,7 @@ function update(dt){
   }else P.anim=0;
   if(!paused){
     const gm=dt*TIME_RATE;state.time+=gm;decay(gm,P.moving);
+    updateBlackout();
     updateNightVisitor();
     checkSnowKnock();
     skyWatch();
@@ -4671,6 +4791,16 @@ snapPets();
       Object.assign(P,{x:x*16+8,y:y*16+12,dir:kind==='glass'?'right':'down'});
       walkRoute=[];snapPets();save();
     },
+    previewBlackout(next=false){
+      if(!canPreview())return;
+      let day=state.day+Number(next||state.blackout.last?.day===state.day);
+      while(!VillageBlackout.night(day))day++;
+      if(day!==state.day){state.day=day-1;newDay(VillageBlackout.start-1);}
+      A.time(18);
+      state.time=VillageBlackout.start-0.15;
+      Object.assign(P,{x:15*16+8,y:25*16+12,dir:'up'});
+      walkRoute=[];snapPets();updateHud();save();
+    },
     previewProject(id){
       if(!canPreview())return;
       const place=VillageMap.places[id];
@@ -4754,6 +4884,8 @@ snapPets();
   }
   stories.value='gy';body.append(stories);
   btn('📖 预览男主下一章',()=>A.previewStory(stories.value));
+  btn('🏮 预览提灯女神',()=>A.previewBlackout());
+  btn('🏮 跳到下一次停电',()=>A.previewBlackout(true));
   btn('🌿 预览共同活动',()=>A.previewProject(({gy:'cafe',xy:'court',jy:'stage',by:'lookout'})[stories.value]));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);

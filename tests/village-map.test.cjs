@@ -193,3 +193,22 @@ test('court rewards two kinds of teamwork and river light allows three independe
   assert.equal(projects.lightAt(4,18*60),'dusk');
   assert.equal(projects.lightAt(4,21*60),null);
 });
+
+vm.runInContext(read('village-blackout.js')+'\nthis.blackoutAPI=VillageBlackout;',ctx);
+const blackout=ctx.blackoutAPI;
+
+test('blackout light window and player choices survive repeat visits to multiple venues',()=>{
+  assert.equal(blackout.active(5,1140),false);
+  assert.equal(blackout.active(6,1089),false);
+  assert.equal(blackout.active(6,1090),true);
+  assert.equal(blackout.active(6,1320),false);
+  assert.equal(blackout.active(13,1140),false);
+  const first=blackout.complete(blackout.load(),6,1140,'stage','circle');
+  assert.equal(blackout.complete(first,6,1140,'cafe','quiet'),null);
+  const second=blackout.complete(first,20,1140,'cafe','by');
+  const restored=blackout.load(JSON.parse(JSON.stringify(second)),34);
+  assert.equal(restored.visits.stage.choice,'circle');
+  assert.equal(restored.visits.cafe.choice,'by');
+  assert.equal(blackout.cards(restored)[0].place,'stage');
+  assert.equal(blackout.complete(restored,34,1140,'court','circle'),null);
+});
