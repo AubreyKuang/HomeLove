@@ -254,6 +254,9 @@ const RAIN_SKETCH_DRAFT_MINUTES=10, RAIN_SHARED_DRAFT_SAVING=15;
 const RAIN_DRAFT_BANK_BONUS=5;
 const RAIN_DRAFT_RELOCATION_MINUTES=5;
 const RAIN_DRAFT_CHANGE={minutes:10,trust:2};
+const RAIN_LOCAL_SKETCH={minutes:30,mood:7};
+const RAIN_LOCAL_CHANGE_MINUTES=5;
+const RAIN_LOCAL_SUBJECT={garden:'reflection',pond:'bank'};
 const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 const RAIN_COMPANION_WALK={minutes:30,mood:13,trust:6};
 const RAIN_WALK_PAUSE={minutes:10,mood:4};
@@ -359,10 +362,14 @@ function rainCompanionActivity(revisit,sketch=false,changeSubject=false){
   const {minutes,mood,trust}=revisit.walk==='walking'?RAIN_COMPANION_WALK:RAIN_COMPANION;
   const saving=revisit.draft?RAIN_SHARED_DRAFT_SAVING-(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
   if(!sketch)return {minutes,mood,trust};
-  return {minutes:minutes+10-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0)+(changeSubject?RAIN_DRAFT_CHANGE.minutes:0),
+  const changeMinutes=changeSubject?(canSketchLocalScene(revisit)?RAIN_LOCAL_CHANGE_MINUTES:RAIN_DRAFT_CHANGE.minutes):0;
+  return {minutes:minutes+10-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0)+changeMinutes,
     mood:mood-4,trust:trust-2+(changeSubject?RAIN_DRAFT_CHANGE.trust:0)};
 }
 const otherRainSketchSubject=revisit=>revisit.subject==='bank'?'reflection':'bank';
+function canSketchLocalScene(revisit){
+  return revisit.relocated&&revisit.draft&&otherRainSketchSubject(revisit)===RAIN_LOCAL_SUBJECT[revisit.place];
+}
 const rainSketchSubjectLabel=subject=>tr(subject==='bank'?'rainSketchBank':'rainSketchReflection');
 function rainCompanionOptions(revisit,n){
   const choices=[{label:tr('rainCompanionAction',rainCompanionActivity(revisit)),fn:()=>finishRainCompanion(revisit,n)}];
@@ -402,9 +409,9 @@ function soloRainSketch(revisit){
   const saving=revisit.draft?RAIN_SKETCH_DRAFT_MINUTES+(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
   return {...RAIN_SKETCH,minutes:RAIN_SKETCH.minutes-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0)};
 }
-function rainSketchLimit(revisit){
+function rainSketchLimit(revisit,activity=soloRainSketch(revisit)){
   if(state.rainSketches[revisit.place])return 'dateRainSketchCollected';
-  if(state.time+soloRainSketch(revisit).minutes>=26*60)return 'dateRainSketchLate';
+  if(state.time+activity.minutes>=26*60)return 'dateRainSketchLate';
   return '';
 }
 function canDraftRainSketch(revisit,n){
@@ -438,6 +445,12 @@ function rainReturnMenu(revisit){
     {label:tr(revisit.draft?'rainSketchDraftFinish':'dateRainSketch',soloRainSketch(revisit)),disabled:!!limit,fn:()=>finishRainReturn(revisit,true)},
     {label:tr('never')}
   ];
+  const localScene=canSketchLocalScene(revisit);
+  if(localScene&&!state.rainSketches[revisit.place]){
+    opts.splice(2,0,{label:tr('rainSketchLocalAction',{...RAIN_LOCAL_SKETCH,
+      subject:rainSketchSubjectLabel(RAIN_LOCAL_SUBJECT[revisit.place])}),
+      disabled:!!rainSketchLimit(revisit,RAIN_LOCAL_SKETCH),fn:()=>finishRainReturn(revisit,true,true)});
+  }
   const n=revisit.together&&npcs.find(n=>n.id===revisit.resident);
   if(canFinishRainCompanion(revisit,n))opts.unshift(...rainCompanionOptions(revisit,n));
   else if(revisit.together&&canDraftRainSketch(revisit,n)){
@@ -450,16 +463,18 @@ function rainReturnMenu(revisit){
       }),fn:()=>draftRainSketch(revisit,subject)});
     }
   }
-  talk(tr('you'),[tr(limit||(revisit.draft?'rainSketchDraftPrompt':'dateRainReturnPrompt'))],opts);
+  talk(tr('you'),[tr(limit||(localScene?'rainSketchLocalPrompt':revisit.draft?'rainSketchDraftPrompt':'dateRainReturnPrompt'))],opts);
 }
-function finishRainReturn(revisit,sketch=false){
+function finishRainReturn(revisit,sketch=false,localScene=false){
   if(!revisit||rainReturnReady()!==revisit||!atRainReturn(revisit))return;
-  if(sketch&&rainSketchLimit(revisit))return;
-  const activity=sketch?soloRainSketch(revisit):RAIN_RETURN;
+  if(localScene&&(!sketch||!canSketchLocalScene(revisit)))return;
+  const activity=sketch?(localScene?RAIN_LOCAL_SKETCH:soloRainSketch(revisit)):RAIN_RETURN;
+  if(sketch&&rainSketchLimit(revisit,activity))return;
+  const subject=localScene?RAIN_LOCAL_SUBJECT[revisit.place]:revisit.subject;
   const before={time:state.time,need:{...state.need}};
   revisit.done=true;
   if(sketch)state.rainSketches[revisit.place]={resident:revisit.resident,day:state.day,
-    ...(revisit.subject?{subject:revisit.subject}:{})};
+    ...(subject?{subject}:{})};
   advanceTime(activity.minutes);
   state.need.mood=clampN(state.need.mood+activity.mood);
   if(!save()){
@@ -469,7 +484,7 @@ function finishRainReturn(revisit,sketch=false){
     return;
   }
   updateHud();
-  talk(tr('you'),[tr(sketch?(revisit.subject==='bank'?'rainSketchBankDone':'dateRainSketchDone'):'dateRainReturnDone')]);
+  talk(tr('you'),[tr(sketch?(subject==='bank'?'rainSketchBankDone':'dateRainSketchDone'):'dateRainReturnDone')]);
 }
 function hasSharedExperience(n){
   const life=state.life[n.id];
