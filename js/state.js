@@ -134,7 +134,7 @@ function applySave(s){
     Number.isInteger(revisit.day)&&revisit.day>=state.day&&revisit.day<=state.day+1
     ? {resident:revisit.resident,place:revisit.place,day:revisit.day,done:revisit.done===true,
       ...(revisit.together===true?{together:true,
-        ...(['meet','walking'].includes(revisit.walk)?{walk:revisit.walk}:{})}:{})}:null;
+        ...(['meet','pause','walking'].includes(revisit.walk)?{walk:revisit.walk}:{})}:{})}:null;
   state.rainSketches={};
   for(const place of Object.keys(RAIN_DATE_MEETINGS)){
     const sketch=s.rainSketches?.[place];

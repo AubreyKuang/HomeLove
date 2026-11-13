@@ -252,6 +252,12 @@ const RAIN_RETURN={minutes:15,mood:8};
 const RAIN_SKETCH={minutes:30,mood:4};
 const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 const RAIN_COMPANION_WALK={minutes:30,mood:13,trust:6};
+const RAIN_WALK_PAUSE={minutes:10,mood:4};
+const RAIN_WALK_TRAVEL_BUFFER=10;
+const RAIN_WALK_STOPS={
+  garden:{...RAIN_DATE_MEETINGS.garden,p:[16,12],spot:[15,12]},
+  pond:{...RAIN_DATE_MEETINGS.pond,p:[21,7],spot:[22,7]}
+};
 const RAIN_COMPANION_STARTS=Object.fromEntries(Object.entries(DATE_MEETINGS).map(([place,meeting])=>
   [place,{...meeting,p:DATES[place].p,name:'rainCompanionStartWalk'}]));
 function rainReturnReady(){
@@ -270,6 +276,7 @@ function rainCompanionMeeting(n){
   if(state.time>=meeting.start-20&&state.time<meeting.end)return meeting;
 }
 function rainCompanionStop(revisit){
+  if(revisit.walk==='pause')return RAIN_WALK_STOPS[revisit.place];
   return (revisit.walk==='meet'?RAIN_COMPANION_STARTS:RAIN_DATE_MEETINGS)[revisit.place];
 }
 function rainCompanionConflict(revisit,plan=activeDatePlan()){
@@ -289,7 +296,7 @@ function setRainCompanion(revisit){
   return false;
 }
 function setRainCompanionWalk(revisit){
-  if(state.rainReturn!==revisit||!revisit.together||revisit.done||revisit.walk==='walking'||
+  if(state.rainReturn!==revisit||!revisit.together||revisit.done||(revisit.walk&&revisit.walk!=='meet')||
     !(revisit.day===state.day+1||(revisit.day===state.day&&state.time<RAIN_DATE_MEETINGS[revisit.place].start)))return false;
   const previous=revisit.walk;
   if(previous==='meet')delete revisit.walk;else revisit.walk='meet';
@@ -297,15 +304,36 @@ function setRainCompanionWalk(revisit){
   if(previous===undefined)delete revisit.walk;else revisit.walk=previous;
   return false;
 }
-function startRainCompanionWalk(revisit,n){
+function startRainCompanionWalk(revisit,n,stop=false){
   if(state.rainReturn!==revisit||revisit.walk!=='meet'||!atPlannedDate(n,rainCompanionMeeting(n)))return;
-  revisit.walk='walking';
+  if(stop&&!rainWalkCanPause(revisit))return;
+  revisit.walk=stop?'pause':'walking';
   if(!save()){revisit.walk='meet';return;}
-  const [x,y]=RAIN_DATE_MEETINGS[revisit.place].p;
+  followRainCompanion(revisit);
+}
+function rainWalkCanPause(revisit){
+  return state.time+RAIN_WALK_PAUSE.minutes+RAIN_WALK_TRAVEL_BUFFER<RAIN_DATE_MEETINGS[revisit.place].end;
+}
+function followRainCompanion(revisit){
+  const [x,y]=rainCompanionStop(revisit).p;
   if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
 }
+function leaveRainWalkStop(revisit,n,pause){
+  if(state.rainReturn!==revisit||revisit.walk!=='pause'||!atPlannedDate(n,rainCompanionMeeting(n)))return;
+  if(pause&&!rainWalkCanPause(revisit))return;
+  const before={time:state.time,need:{...state.need}};
+  revisit.walk='walking';
+  if(pause){
+    advanceTime(RAIN_WALK_PAUSE.minutes);
+    state.need.mood=clampN(state.need.mood+RAIN_WALK_PAUSE.mood);
+  }
+  if(!save()){revisit.walk='pause';Object.assign(state,before);return;}
+  updateHud();
+  if(pause)say(nm(n),tr('rainWalkPauseDone'));
+  followRainCompanion(revisit);
+}
 function canFinishRainCompanion(revisit,n){
-  return !!(revisit?.together&&revisit.walk!=='meet'&&n&&rainReturnReady()===revisit&&atPlannedDate(n,rainCompanionMeeting(n)));
+  return !!(revisit?.together&&(!revisit.walk||revisit.walk==='walking')&&n&&rainReturnReady()===revisit&&atPlannedDate(n,rainCompanionMeeting(n)));
 }
 function finishRainCompanion(revisit,n){
   if(!canFinishRainCompanion(revisit,n))return;
@@ -443,7 +471,12 @@ function npcMenu(n,back){
   if(momentAvailable(n))opts.unshift({label:tr('worldTitle_moment_'+n.id),fn:()=>openResidentMoment(n)});
   const revisit=state.rainReturn;
   if(revisit?.walk==='meet'&&atPlannedDate(n,rainCompanionMeeting(n))){
-    opts.unshift({label:tr('rainCompanionStartWalk'),fn:()=>startRainCompanionWalk(revisit,n)});
+    opts.unshift({label:tr('rainCompanionStartWalk'),fn:()=>startRainCompanionWalk(revisit,n)},
+      {label:tr('rainWalkChoosePause',RAIN_WALK_PAUSE),disabled:!rainWalkCanPause(revisit),fn:()=>startRainCompanionWalk(revisit,n,true)});
+  }else if(revisit?.walk==='pause'&&atPlannedDate(n,rainCompanionMeeting(n))){
+    const canPause=rainWalkCanPause(revisit);
+    opts.unshift({label:tr(canPause?'rainWalkPause':'rainWalkTooLate',RAIN_WALK_PAUSE),disabled:!canPause,fn:()=>leaveRainWalkStop(revisit,n,true)},
+      {label:tr('rainCompanionStartWalk'),fn:()=>leaveRainWalkStop(revisit,n,false)});
   }else if(canFinishRainCompanion(revisit,n)){
     opts.unshift({label:tr('rainCompanionAction',revisit.walk==='walking'?RAIN_COMPANION_WALK:RAIN_COMPANION),fn:()=>finishRainCompanion(revisit,n)});
   }

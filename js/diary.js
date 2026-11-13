@@ -46,7 +46,7 @@ function renderDiary(){
     })));
     if(revisit.day>state.day||state.time<spot.end){
       section.append(el('p','rline',tr(!revisit.together?'rainCompanionHint':revisit.walk==='meet'?'rainCompanionWalkBooked':
-        revisit.walk==='walking'?'rainCompanionWalking':'rainCompanionBooked',{
+        revisit.walk==='pause'?'rainWalkPauseBooked':revisit.walk==='walking'?'rainCompanionWalking':'rainCompanionBooked',{
         name,start:fmt(spot.start),end:fmt(spot.end),...RAIN_COMPANION
       })));
       const conflict=!revisit.together&&rainCompanionConflict(revisit);
@@ -61,7 +61,7 @@ function renderDiary(){
       };
       invite.dataset.rainCompanion='';
       section.append(invite);
-      if(revisit.together&&revisit.walk!=='walking'&&(revisit.day>state.day||state.time<spot.start)){
+      if(revisit.together&&(!revisit.walk||revisit.walk==='meet')&&(revisit.day>state.day||state.time<spot.start)){
         section.append(el('p','rline',tr('rainCompanionWalkHint',RAIN_COMPANION_WALK)));
         const walk=el('button','pbtn',tr(revisit.walk==='meet'?'rainCompanionDirect':'rainCompanionWalk'));
         walk.type='button';walk.dataset.rainCompanionWalk='';
@@ -79,10 +79,11 @@ function renderDiary(){
     }
     if(rainReturnReady()){
       const meetingFirst=revisit.together&&revisit.walk==='meet'&&state.time<spot.end;
-      const route=el('button','pbtn',tr(meetingFirst?'rainCompanionWalkRoute':'dateRainReturnRoute'));
+      const stopping=revisit.together&&revisit.walk==='pause'&&state.time<spot.end;
+      const route=el('button','pbtn',tr(meetingFirst?'rainCompanionWalkRoute':stopping?'rainWalkPauseRoute':'dateRainReturnRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=(meetingFirst?rainCompanionStop(revisit):spot).p;
+        const [x,y]=(meetingFirst||stopping?rainCompanionStop(revisit):spot).p;
         closeDiary();
         if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
       };
