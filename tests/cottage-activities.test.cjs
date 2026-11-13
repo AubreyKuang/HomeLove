@@ -237,6 +237,29 @@ test('a missed garden date can move to the remaining pond slot or tomorrow with 
   assert.equal(runtime.missedDatePlan(),undefined);
 });
 
+test('a short date consumes the appointment and day only when both meet on site', () => {
+  const n={id:'gy',state:'here',x:328,y:124};
+  const plan={resident:'gy',place:'pond',day:2};
+  const relation={done:{}};
+  const state={day:2,time:960,datePlan:plan,need:{mood:40},life:{}};
+  const P={x:0,y:0};
+  let saved;
+  const runtime=game({state,P,busy:false,rel:()=>relation,DATE_MEETINGS:{pond:{start:960,end:1020,spot:[20,7]}},
+    SHORT_DATE:{minutes:20,mood:6,points:5},clampN:n=>n,advanceTime:m=>{state.time+=m;},
+    addPts(n,points){saved=[state.datePlan,relation.done.date,state.time,state.need.mood,points];},
+    updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  runSection(runtime,'function walkPlannedDate(','function dateWith(');
+  runtime.walkPlannedDate(n,plan);
+  assert.equal(state.datePlan,plan);
+  Object.assign(P,{x:312,y:124});
+  runtime.walkPlannedDate(n,plan);
+  runtime.walkPlannedDate(n,plan);
+  assert.deepEqual(saved,[null,true,980,46,5]);
+  assert.equal(state.time,980);
+  assert.deepEqual(state.life,{});
+});
+
 test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
   const state={day:1,time:1200,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
   const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40},

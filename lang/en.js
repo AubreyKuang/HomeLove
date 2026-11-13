@@ -420,6 +420,8 @@ window.HL_LANG.en = {
     dateMeetingChoice: "{place} · meet {start}–{end} · {minutes}-minute date",
     dateMeetingBooked: "{day} · Meet {name} at {place} between {start} and {end}. Allow {minutes} minutes for the date.",
     dateMeetingStart: "Start our planned date",
+    dateMeetingWalk: "Take a short walk · {minutes} min · affection +{points} · mood +{mood} · uses today’s date",
+    dateMeetingWalkDone: "You take a short walk, talk about your plans for the day, then wave goodbye.",
     dateMeetingWait: "Our date starts at {t}",
     dateMeetingGo: "Meet at {place} to start the date",
     dateMeetingRoute: "Walk to the meeting place",

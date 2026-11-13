@@ -245,6 +245,7 @@ function renderRewind(container){
   sec.append(row);container.append(sec);
 }
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
+const SHORT_DATE={minutes:20,points:5,mood:6};
 function hasSharedExperience(n){
   const life=state.life[n.id];
   return !!(life?.firstDate||state.moments.records[n.id]||life?.fishingInvitation?.catch);
@@ -278,6 +279,7 @@ function npcMenu(n,back){
       const label=ready?'dateMeetingStart':state.time<meeting.start?'dateMeetingWait':'dateMeetingGo';
       opts.push({label:tr(label,{t:fmt(meeting.start),place:Lp.dates[reserved.place].name}),
         disabled:!ready||!!r.done.date,fn:()=>dateWith(n,reserved.place,reserved)});
+      if(ready&&!r.done.date)opts.push({label:tr('dateMeetingWalk',SHORT_DATE),fn:()=>walkPlannedDate(n,reserved)});
     }else if(r.done.date&&!reserved)opts.push({label:tr('dateMeetingTomorrow'),fn:()=>planDateMenu(n)});
     else opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
   }
@@ -550,6 +552,19 @@ function dateMenu(n){
 function dateBlock(d){
   if(d.dark&&darkness()<=.5)return 'needDark';
   if(state.time+d.minutes>=26*60)return 'dateTooLate';
+}
+function walkPlannedDate(n,plan){
+  const r=rel(n);
+  if(busy||r.done.date||activeDatePlan()!==plan||!atPlannedDate(n,plannedDateMeeting(n)))return;
+  const {minutes,mood,points}=SHORT_DATE;
+  r.done.date=true;
+  state.datePlan=null;
+  advanceTime(minutes);
+  state.need.mood=clampN(state.need.mood+mood);
+  addPts(n,points);
+  updateHud();
+  D.npc=n;
+  talk(nm(n),[tr('dateMeetingWalkDone')],null,()=>milestone(n));
 }
 function dateWith(n,loc,plan=null){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];
