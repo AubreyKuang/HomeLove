@@ -430,7 +430,7 @@ function stoveMenu(){
   talk(objName('stove'),[tr('stoveQ')],opts.concat({label:tr('walkAway'),fn:null}));
 }
 function breakfastBoxBlock(recipe){
-  if(state.breakfastBoxDay===state.day+1||breakfastBoxReady())return 'boxAlready';
+  if(state.breakfastBoxDay===state.day+1||breakfastBoxReady(true))return 'boxAlready';
   if(!canCook(recipe))return 'boxIngredients';
   if(state.time+BREAKFAST_BOX.prepMinutes>=26*60)return 'dateTooLate';
 }
