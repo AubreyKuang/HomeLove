@@ -86,6 +86,17 @@ PANEL = r'''
       Object.assign(P,{x:x*16+8,y:y*16+12,dir:kind==='glass'?'right':'down'});
       walkRoute=[];snapPets();save();
     },
+    previewProject(id){
+      if(!canPreview())return;
+      const place=VillageMap.places[id];
+      state.time={cafe:18*60+5,court:9*60,stage:12*60,lookout:18*60}[id];
+      if(id==='cafe')for(const item of VillageProjects.ingredients)state.inv[item]=Math.max(state.inv[item],1);
+      const n=npcs.find(person=>person.id===place.resident);
+      const [x,y]=place.anchor,[nx,ny]=place.spot;
+      Object.assign(P,{x:x*16+8,y:y*16+12,dir:'up'});
+      Object.assign(n,{x:nx*16+8,y:ny*16+12,state:'here',path:null,leaving:false,moving:false});
+      walkRoute=[];snapPets();updateHud();openVillageProject(id,n);
+    },
     previewSnowFishing(){
       if(!canPreview())return;
       A.previewSeason('winter');
@@ -158,6 +169,7 @@ PANEL = r'''
   }
   stories.value='gy';body.append(stories);
   btn('📖 预览男主下一章',()=>A.previewStory(stories.value));
+  btn('🌿 预览共同活动',()=>A.previewProject(({gy:'cafe',xy:'court',jy:'stage',by:'lookout'})[stories.value]));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
   window.__dev=A;
