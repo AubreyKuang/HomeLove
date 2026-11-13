@@ -390,9 +390,9 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js"></script>
-<script src="lang/zh.js?v=lantern-reactions-1" charset="utf-8"></script>
-<script src="lang/en.js?v=lantern-reactions-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=lantern-reactions-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=home-computer-1" charset="utf-8"></script>
+<script src="lang/en.js?v=home-computer-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=home-computer-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1226,6 +1226,7 @@ const OBJS=[
   {id:'fridge',tx:12,ty:4,tw:1,th:1,act(){say(objName('fridge'),pick(Lp.fridgeLines));}},
   {id:'stove',tx:13,ty:4,tw:1,th:1,act(){stoveMenu();}},
   {id:'counter',tx:14,ty:4,tw:2,th:1,act(){say(objName('counter'),tr('counterLine'));}},
+  {id:'computer',tx:13,ty:8,tw:2,th:1,act(){computerMenu();}},
   {id:'gym',tx:12,ty:8,tw:1,th:1,act(){workout();}},
   {id:'mailbox',tx:7,ty:10,tw:1,th:1,act(){checkMail();}},
   {id:'capsule',tx:9,ty:10,tw:1,th:1,act(){capsuleMenu();}},
@@ -1286,6 +1287,15 @@ SPR.mirror=spr(16,32,R=>{
   R(3,3,10,24,'#d1a061');R(6,1,4,2,'#d1a061');R(5,5,6,20,'#c4e6f2');R(5,21,6,4,'#a9d6e6');
   R(6,7,1,5,'#ffffff');R(7,6,1,2,'#ffffff');R(9,14,1,3,'#e6f6fb');
   R(3,26,10,1,'#b98a50');R(4,27,2,3,'#a86a40');R(10,27,2,3,'#a86a40');
+});
+SPR.computer=spr(32,27,R=>{
+  R(3,19,26,4,'#78503d');R(4,22,3,4,'#78503d');R(25,22,3,4,'#78503d');
+  R(2,16,28,4,'#916249');R(3,16,26,2,'#dcab79');R(5,20,22,1,'#ad7855');
+  R(9,2,15,11,'#4a3a48');R(10,3,13,8,'#638a9d');R(11,4,11,6,'#a3cbcf');
+  R(12,5,6,1,'#e7f1dd');R(12,7,3,1,'#7299aa');R(20,5,1,4,'#789aab');
+  R(15,13,3,3,'#66515a');R(13,15,7,1,'#4a3a48');
+  R(10,17,12,2,'#534651');R(11,17,10,1,'#c9b7a6');R(24,17,3,2,'#e2c8a5');
+  R(4,13,3,3,'#da9490');R(5,12,1,2,'#7b9a76');
 });
 SPR.shelf=spr(32,34,R=>{
   R(1,1,30,32,'#8c5532');R(1,1,30,1,'#a86a40');R(3,3,26,28,'#5e3a22');R(3,12,26,2,'#8c5532');R(3,22,26,2,'#8c5532');
@@ -3153,6 +3163,12 @@ function resolveWorldEvent(n,kind,choice,plotIndex){
 /* ---------------- village delivery and transport ---------------- */
 function readyVehicles(){
   return state.travel?CottageTravel.ready(state.travel,state.day):[];
+}
+function computerMenu(){
+  talk(objName('computer'),[tr('computerIntro')],[
+    {label:tr('travelShop'),fn:openTravelShop},
+    {label:tr('walkAway'),back:true,fn:null}
+  ]);
 }
 function openTravelShop(){
   if(startOpen||mapOpen||busy||dressOpen||diaryOpen||albumOpen||D.modal||FISH.on)return;
