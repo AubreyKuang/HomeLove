@@ -461,6 +461,8 @@ window.HL_LANG.en = {
     rainSketchBankSharedCard: "After the rain, you and {name} sketched the grass and wet stones along the bank at {place}.",
     rainSketchBankTogetherDone: "You've drawn the grass. I'll add the light on the wet stones. You can take this one home.",
     rainSketchBankDone: "The grass and wet stones are finished. You slip the sketch into your album.",
+    rainSketchChangeSubject: "Talk it over and sketch {subject} · {minutes} min · mood +{mood} · trust +{trust} · album card",
+    rainSketchChangeDone: "Thanks for trying a different angle with me. Take our sketch of {subject} home with you.",
     rainCompanionWalk: "Meet first and walk together",
     rainCompanionDirect: "Meet directly at the puddle",
     rainCompanionStartWalk: "Walk to the puddle together",

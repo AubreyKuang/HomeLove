@@ -461,6 +461,8 @@ window.HL_LANG.ja = {
     rainSketchBankSharedCard: "雨上がりの{place}で、{name}と岸辺の草と濡れた石を一緒に描いた。",
     rainSketchBankTogetherDone: "草は描けたね。濡れた石に光を足すよ。この絵は持って帰っていいよ。",
     rainSketchBankDone: "草と濡れた石を描き終え、スケッチをアルバムに挟んだ。",
+    rainSketchChangeSubject: "相談して{subject}を描く · {minutes}分 · 気分 +{mood} · 信頼 +{trust} · アルバムカード",
+    rainSketchChangeDone: "違う景色も一緒に描いてくれてありがとう。二人で描いた{subject}、持って帰ってね。",
     rainCompanionWalk: "待ち合わせてから一緒に歩く",
     rainCompanionDirect: "水たまりで直接会う",
     rainCompanionStartWalk: "一緒に水たまりへ歩く",
