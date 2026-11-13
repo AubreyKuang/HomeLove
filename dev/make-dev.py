@@ -86,6 +86,16 @@ PANEL = r'''
       Object.assign(P,{x:x*16+8,y:y*16+12,dir:kind==='glass'?'right':'down'});
       walkRoute=[];snapPets();save();
     },
+    previewBlackout(next=false){
+      if(!canPreview())return;
+      let day=state.day+Number(next||state.blackout.last?.day===state.day);
+      while(!VillageBlackout.night(day))day++;
+      if(day!==state.day){state.day=day-1;newDay(VillageBlackout.start-1);}
+      A.time(18);
+      state.time=VillageBlackout.start-0.15;
+      Object.assign(P,{x:15*16+8,y:25*16+12,dir:'up'});
+      walkRoute=[];snapPets();updateHud();save();
+    },
     previewProject(id){
       if(!canPreview())return;
       const place=VillageMap.places[id];
@@ -169,6 +179,8 @@ PANEL = r'''
   }
   stories.value='gy';body.append(stories);
   btn('📖 预览男主下一章',()=>A.previewStory(stories.value));
+  btn('🏮 预览提灯女神',()=>A.previewBlackout());
+  btn('🏮 跳到下一次停电',()=>A.previewBlackout(true));
   btn('🌿 预览共同活动',()=>A.previewProject(({gy:'cafe',xy:'court',jy:'stage',by:'lookout'})[stories.value]));
   btn('🗑 清空测试存档',A.wipe);
   document.body.append(box);
