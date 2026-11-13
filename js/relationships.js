@@ -247,6 +247,7 @@ function renderRewind(container){
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 const SHORT_DATE={minutes:20,points:5,mood:6};
 const UMBRELLA_DATE={minutes:25,points:6,mood:10};
+const RAIN_DETOUR_DATE={minutes:35,points:8,mood:13};
 function hasSharedExperience(n){
   const life=state.life[n.id];
   return !!(life?.firstDate||state.moments.records[n.id]||life?.fishingInvitation?.catch);
@@ -280,13 +281,22 @@ function npcMenu(n,back){
       if(!ready){
         const label=state.time<meeting.start?'dateMeetingWait':'dateMeetingGo';
         opts.push({label:tr(label,{t:fmt(meeting.start),place:datePlanPlace(reserved)}),disabled:true});
+      }else if(reserved.rainWalk){
+        opts.push({label:tr('dateRainWatch',RAIN_DETOUR_DATE),disabled:!!r.done.date||!activeUmbrella(),
+          fn:()=>finishShortDate(n,reserved,true)});
       }else if(reserved.shelter){
         opts.push({label:tr('dateMeetingTea',DATE_SHELTER),disabled:!!r.done.date,fn:()=>finishShortDate(n,reserved)});
       }else{
         opts.push({label:tr('dateMeetingStart'),disabled:!!r.done.date,fn:()=>dateWith(n,reserved.place,reserved)});
         if(!r.done.date){
           opts.push({label:tr('dateMeetingWalk',SHORT_DATE),fn:()=>finishShortDate(n,reserved)});
-          if(activeUmbrella())opts.push({label:tr('dateMeetingUmbrella',UMBRELLA_DATE),fn:()=>finishShortDate(n,reserved,true)});
+          if(activeUmbrella()){
+            opts.push({label:tr('dateMeetingUmbrella',UMBRELLA_DATE),fn:()=>finishShortDate(n,reserved,true)});
+            opts.push({label:tr('dateRainDetour',{place:tr(RAIN_DATE_MEETINGS[reserved.place].name)}),
+              fn:()=>{
+                if(changeRainDateRoute(reserved))say(nm(n),tr('dateRainMeetThere'));
+              }});
+          }
         }
       }
     }else if(r.done.date&&!reserved)opts.push({label:tr('dateMeetingTomorrow'),fn:()=>planDateMenu(n)});
@@ -501,7 +511,7 @@ function activeDatePlan(){
   }
 }
 function dateMeetingFor(plan){
-  return (plan.shelter?SHELTERED_DATE_MEETINGS:DATE_MEETINGS)[plan.place];
+  return (plan.shelter?SHELTERED_DATE_MEETINGS:plan.rainWalk?RAIN_DATE_MEETINGS:DATE_MEETINGS)[plan.place];
 }
 function plannedDateMeeting(n){
   const plan=activeDatePlan();
@@ -511,16 +521,18 @@ function plannedDateMeeting(n){
 }
 function atPlannedDate(n,meeting){
   return meeting&&state.time>=meeting.start&&n.state==='here'&&!n.leaving&&
-    Math.hypot(n.x-meeting.spot[0]*16-8,n.y-meeting.spot[1]*16-12)<32&&
+    (!meeting.name||Math.hypot(P.x-meeting.p[0]*16-8,P.y-meeting.p[1]*16-12)<16)&&
+    Math.hypot(n.x-meeting.spot[0]*16-8,n.y-meeting.spot[1]*16-12)<(meeting.name?16:32)&&
     Math.hypot(n.x-P.x,n.y-P.y)<45;
 }
 function datePlanPlace(plan){
-  return plan.shelter?tr('dateMeetingCottage'):Lp.dates[plan.place].name;
+  return plan.shelter?tr('dateMeetingCottage'):plan.rainWalk?tr(dateMeetingFor(plan).name):Lp.dates[plan.place].name;
 }
 function describeDatePlan(plan){
   const {start,end}=DATE_MEETINGS[plan.place];
   return {name:nm(npcs.find(n=>n.id===plan.resident)),place:datePlanPlace(plan),
-    day:tr('day',{d:plan.day}),start:fmt(start),end:fmt(end),minutes:(plan.shelter?DATE_SHELTER:DATES[plan.place]).minutes};
+    day:tr('day',{d:plan.day}),start:fmt(start),end:fmt(end),
+    minutes:(plan.shelter?DATE_SHELTER:plan.rainWalk?RAIN_DETOUR_DATE:DATES[plan.place]).minutes};
 }
 function setDatePlan(plan){
   const previous=state.datePlan;
@@ -537,6 +549,15 @@ function changeDateShelter(plan){
   if(!canChangeDateShelter(plan))return false;
   const {resident,place,day}=plan;
   return setDatePlan({resident,place,day,...(plan.shelter?{}:{shelter:true})});
+}
+function changeRainDateRoute(plan){
+  if(!canChangeDateShelter(plan)||plan.shelter)return false;
+  if(!plan.rainWalk){
+    const n=npcs.find(person=>person.id===plan.resident);
+    if(!n||!activeUmbrella()||!atPlannedDate(n,plannedDateMeeting(n)))return false;
+  }
+  const {resident,place,day}=plan;
+  return setDatePlan({resident,place,day,...(plan.rainWalk?{}:{rainWalk:true})});
 }
 function rainDateTomorrow(plan){
   if(!canChangeDateShelter(plan)||VillageRiverside.weather(state.day+1)==='rain')return null;
@@ -588,8 +609,8 @@ function dateBlock(d){
 function finishShortDate(n,plan,umbrella=false){
   const r=rel(n);
   if(busy||r.done.date||activeDatePlan()!==plan||!atPlannedDate(n,plannedDateMeeting(n)))return;
-  if(umbrella&&(plan.shelter||!activeUmbrella()))return;
-  const {minutes,mood,points}=umbrella?UMBRELLA_DATE:plan.shelter?DATE_SHELTER:SHORT_DATE;
+  if((umbrella||plan.rainWalk)&&(plan.shelter||!activeUmbrella()))return;
+  const {minutes,mood,points}=plan.rainWalk?RAIN_DETOUR_DATE:umbrella?UMBRELLA_DATE:plan.shelter?DATE_SHELTER:SHORT_DATE;
   r.done.date=true;
   state.datePlan=null;
   advanceTime(minutes);
@@ -597,7 +618,7 @@ function finishShortDate(n,plan,umbrella=false){
   addPts(n,points);
   updateHud();
   D.npc=n;
-  talk(nm(n),[tr(umbrella?'dateMeetingUmbrellaDone':plan.shelter?'dateMeetingTeaDone':'dateMeetingWalkDone')],null,()=>milestone(n));
+  talk(nm(n),[tr(plan.rainWalk?'dateRainWatchDone':umbrella?'dateMeetingUmbrellaDone':plan.shelter?'dateMeetingTeaDone':'dateMeetingWalkDone')],null,()=>milestone(n));
 }
 function dateWith(n,loc,plan=null){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];
@@ -605,7 +626,7 @@ function dateWith(n,loc,plan=null){
   const reserved=activeDatePlan();
   if(plan){
     const meeting=plannedDateMeeting(n);
-    if(plan!==reserved||plan.shelter||plan.place!==loc||!atPlannedDate(n,meeting))return;
+    if(plan!==reserved||plan.shelter||plan.rainWalk||plan.place!==loc||!atPlannedDate(n,meeting))return;
     r.done.date=true;
     if(!setDatePlan(null)){delete r.done.date;return;}
   }else if(reserved?.day===state.day&&reserved.resident===n.id)return;

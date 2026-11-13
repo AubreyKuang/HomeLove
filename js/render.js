@@ -197,6 +197,14 @@ function render(time){
   ctx.setTransform(S,0,0,S,-cx*S,-cy*S);ctx.imageSmoothingEnabled=false;
   const season=CottageActivities.seasonOf(state.day),art=SEASON_ART[season],winter=season==='winter';
   ctx.drawImage(art.ground,0,0);
+  const rainPlan=weather==='rain'&&activeDatePlan();
+  if(rainPlan?.rainWalk&&rainPlan.day===state.day){
+    const [tx,ty]=RAIN_DATE_MEETINGS[rainPlan.place].p;
+    const x=tx*TILE+8,y=ty*TILE+10;
+    ctx.fillStyle='#759da5';ctx.fillRect(x-6,y,12,3);ctx.fillRect(x-4,y-2,9,7);
+    const ripple=reducedMotion?2:1+Math.floor(time*5)%4;
+    ctx.fillStyle='#c7e0dd';ctx.fillRect(x-ripple,y-1,ripple*2,1);ctx.fillRect(x-ripple,y+3,ripple*2,1);
+  }
   if(blackout){
     for(const record of Object.values(state.blackout.visits))drawBlackoutGathering(ctx,record);
   }
