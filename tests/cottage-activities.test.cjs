@@ -320,18 +320,16 @@ test('capsule pools share the free draw, grant new items, and refund failed save
   assert.equal(state.o.bottom,'plaidPleats');
 });
 
-test('click route goes around an obstacle, walks to the nearest reachable tile for blocked targets, and stops on arrival', () => {
+test('click route goes around an obstacle, rejects blocked targets, and stops on arrival', () => {
   const width=5,height=5;
   const solid=new Uint8Array(width*height);
   for(let y=1;y<=3;y++)solid[y*width+2]=1;
   const P={x:24,y:44,dir:'right'};
   const runtime=game({MW:width,MH:height,solid,P,FLOOR:1,DOOR:2,map:new Uint8Array(width*height),
-    at:()=>0,walkRoute:[]});
+    at:()=>0,isSolid:(x,y)=>solid[y*width+x],walkRoute:[]});
   runSection(runtime,'function blocked(','function moveBy(');
   runSection(runtime,'function npcPassable(','function lifeOf(');
-  assert.equal(runtime.setWalkDestination(40,42),true);
-  assert.equal(runtime.walkRoute.at(-1)[0],56);
-  assert.equal(runtime.walkRoute.at(-1)[1],44);
+  assert.equal(runtime.setWalkDestination(40,42),false);
   assert.equal(runtime.setWalkDestination(-5,42),false);
   assert.equal(runtime.setWalkDestination(55,41),true);
   assert.ok(runtime.walkRoute.some(([,y])=>y===12||y===76));

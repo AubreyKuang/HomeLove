@@ -76,6 +76,16 @@ PANEL = r'''
       A.time(sunday?11:10);
       Object.assign(P,{x:9*16+8,y:24*16+12,dir:'left'});walkRoute=[];snapPets();save();
     },
+    previewRiver(kind){
+      if(!canPreview())return;
+      let day=Math.max(state.day,3);
+      while(!(kind==='glass'?VillageRiverside.exposed(day):VillageRiverside.weather(day)==='wind'))day++;
+      if(day!==state.day){state.day=day-1;newDay(8*60);}
+      A.time(kind==='glass'?8:16);
+      const [x,y]=VillageRiverside.landing;
+      Object.assign(P,{x:x*16+8,y:y*16+12,dir:kind==='glass'?'right':'down'});
+      walkRoute=[];snapPets();save();
+    },
     previewSnowFishing(){
       if(!canPreview())return;
       A.previewSeason('winter');
@@ -138,6 +148,8 @@ PANEL = r'''
   }
   btn('🛍 跳到周六集市',()=>A.previewWeekend());
   btn('🎶 跳到周日活动',()=>A.previewWeekend(true));
+  btn('🍃 跳到渡口有风的傍晚',()=>A.previewRiver('apron'));
+  btn('💧 跳到渡口退水后',()=>A.previewRiver('glass'));
   btn('🎣 预览第一场雪冰钓',A.previewSnowFishing);
   btn('🎀 预览小满剧情',A.previewXiaoman);
   const stories=document.createElement('select');stories.setAttribute('aria-label','选择男主');

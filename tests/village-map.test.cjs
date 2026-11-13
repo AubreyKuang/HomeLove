@@ -5,8 +5,8 @@ const {join}=require('node:path');
 const vm=require('node:vm');
 const read=file=>readFileSync(join(__dirname,'..',file),'utf8');
 const html=read('index.html');
-const ctx=vm.createContext({Lp:{objects:{}},state:{picked:[]},pick:xs=>xs[0]});
-vm.runInContext(read('village-map.js'),ctx);
+const ctx=vm.createContext({Lp:{objects:{}},state:{picked:[],day:1},pick:xs=>xs[0]});
+vm.runInContext(read('village-map.js')+read('village-riverside.js')+'\nthis.river=VillageRiverside;',ctx);
 const mapStart=html.indexOf('const G=0,PATH=1');
 const mapEnd=html.indexOf('/* ---------------- sprites',mapStart);
 const pathStart=html.indexOf('function npcPassable(');
@@ -132,4 +132,33 @@ test('only the first successful online order earns a durable keepsake',()=>{
   assert.equal(travel.cards(restored).length,1);
   assert.equal(travel.cards(restored)[0].vehicle,'scooter');
   assert.equal(travel.cards(restored)[0].day,3);
+});
+
+test('both public landmarks have routes and the flooded step opens only after rain',()=>{
+  for(const id of ['post','ferry'])assert.ok(bfs(4,6,...V.places[id].anchor,true)?.length);
+  const tile=ctx.river.glassTile;
+  assert.equal(npcPassable(...tile,true),false);
+  ctx.state.day=4;
+  assert.equal(ctx.river.weather(3),'rain');
+  assert.equal(npcPassable(...tile,true),true);
+  assert.ok(bfs(...V.places.ferry.anchor,...tile,true)?.length);
+  ctx.state.day=5;
+  assert.equal(npcPassable(...tile,true),false);
+  ctx.state.day=1;
+});
+
+test('wind and water clues have distinct trigger rules and one durable keepsake each',()=>{
+  const river=ctx.river,state=river.load();
+  assert.equal(river.apronVisible(state,4,959),false);
+  assert.equal(river.apronVisible(state,4,960),true);
+  assert.equal(river.apronVisible(state,4,1200),false);
+  assert.equal(river.glassVisible(state,3),false);
+  assert.equal(river.glassVisible(state,4),true);
+  state.apron={day:4,status:'posted',heard:true};
+  state.glass={day:4,choice:'leave'};
+  const restored=river.load(JSON.parse(JSON.stringify(state)),5);
+  assert.equal(river.apronVisible(restored,4,960),false);
+  assert.equal(river.glassVisible(restored,4),false);
+  assert.equal(river.cards(restored).length,2);
+  assert.equal(restored.apron.heard,true);
 });
