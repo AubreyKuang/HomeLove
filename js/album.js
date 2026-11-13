@@ -280,24 +280,29 @@ function renderAlbum(){
       const visit=activeDedicationVisit();
       if(selected.dedicationVisited){
         page.append(el('p',null,tr('rainDedicationVisitMemory',{place,day:tr('day',{d:selected.dedicationVisited}),name:nm(n)})));
-        if(selected.dedicationCompared)page.append(el('p',null,dedicationComparison(selected.dedication)));
-      }else if(visit?.source===selected.place){
-        page.append(el('p',null,tr('rainDedicationVisitInDiary')));
+        if(selected.dedicationCompared)page.append(el('p',null,dedicationComparison(selected)));
       }else{
+        const booked=visit?.source===selected.place;
+        if(booked)page.append(el('p',null,tr('rainDedicationVisitBookedWeather',{
+          day:tr('day',{d:visit.day}),weather:tr('riverWeather_'+VillageRiverside.weather(visit.day))
+        })));
         const last=fmt(meeting.end-RAIN_DEDICATION_VISIT.minutes);
         let available=false;
         for(const day of [state.day,state.day+1]){
           if(!canBookDedicationVisit(selected.place,day))continue;
           available=true;
-          const book=el('button','pbtn',tr(day===state.day?'rainDedicationVisitToday':'rainDedicationVisitTomorrow',
-            {place,start:fmt(meeting.start),last}));
+          const schedule=tr(day===state.day?'rainDedicationVisitToday':'rainDedicationVisitTomorrow',
+            {place,start:fmt(meeting.start),last});
+          const book=el('button','pbtn',tr(booked?'rainDedicationRescheduleWeather':'rainDedicationBookWeather',{
+            schedule,weather:tr('riverWeather_'+VillageRiverside.weather(day))
+          }));
           book.type='button';
           book.onclick=()=>{
             if(bookDedicationVisit(selected.place,day))renderAlbum();
           };
           page.append(book);
         }
-        if(!available)page.append(el('p',null,tr(visit?'rainDedicationVisitOther':'rainDedicationVisitUnavailable')));
+        if(!available&&!booked)page.append(el('p',null,tr(visit?'rainDedicationVisitOther':'rainDedicationVisitUnavailable')));
       }
     }
     page.append(keep);

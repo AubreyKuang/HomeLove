@@ -844,8 +844,8 @@ function cancelDedicationVisit(visit){
   return false;
 }
 function canBookDedicationVisit(source,day){
-  const sketch=state.rainSketches[source];
-  if(!sketch?.dedication||sketch.dedicationVisited||activeDedicationVisit()||
+  const sketch=state.rainSketches[source],current=activeDedicationVisit();
+  if(!sketch?.dedication||sketch.dedicationVisited||(current&&(current.source!==source||current.day===day))||
     (day!==state.day&&day!==state.day+1)||VillageRiverside.weather(day)==='rain')return false;
   if(day===state.day&&state.time+RAIN_DEDICATION_VISIT.minutes>RAIN_DATE_MEETINGS[sketch.dedication].end)return false;
   const visit={resident:sketch.resident,place:sketch.dedication,day};
@@ -876,23 +876,32 @@ function finishDedicationVisit(n,compare=false){
   const before={time:state.time,need:{...state.need}};
   state.dedicationVisit=null;
   sketch.dedicationVisited=state.day;
-  if(compare)sketch.dedicationCompared=true;
+  if(compare){
+    sketch.dedicationCompared=true;
+    if(VillageRiverside.weather(visit.day)==='wind')sketch.dedicationWind=true;
+  }
   advanceTime(minutes);
   state.need.mood=clampN(state.need.mood+mood);
   trustNpc(n,gain);
   if(!save()){
     state.dedicationVisit=visit;
     delete sketch.dedicationVisited;
-    if(compare)delete sketch.dedicationCompared;
+    if(compare){
+      delete sketch.dedicationCompared;
+      delete sketch.dedicationWind;
+    }
     B().trust[n.id]=trust;
     Object.assign(state,before);
     return;
   }
   updateHud();
   D.npc=n;
-  talk(nm(n),[compare?dedicationComparison(visit.place):tr('rainDedicationVisitDone',{place:tr(meeting.name)})]);
+  talk(nm(n),[compare?dedicationComparison(sketch):tr('rainDedicationVisitDone',{place:tr(meeting.name)})]);
 }
-const dedicationComparison=place=>tr(place==='garden'?'rainDedicationCompareGarden':'rainDedicationComparePond');
+function dedicationComparison(sketch){
+  const place=sketch.dedication==='garden'?'Garden':'Pond';
+  return tr(`rainDedicationCompare${place}${sketch.dedicationWind?'Wind':''}`);
+}
 function activeDatePlan(){
   const plan=state.datePlan;
   if(plan&&(plan.day>state.day||(plan.day===state.day&&state.time<DATE_MEETINGS[plan.place].end))){
