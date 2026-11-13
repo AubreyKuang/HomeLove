@@ -35,6 +35,31 @@ function appendKeepsake(container,n,key,title,details){
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
+  const plan=activeDatePlan();
+  if(plan){
+    const section=el('section','dsec');
+    section.append(el('h3',null,tr('upcomingPlans')),el('p','rline',tr('dateMeetingBooked',describeDatePlan(plan))));
+    if(plan.day===state.day){
+      const route=el('button','pbtn',tr('dateMeetingRoute'));
+      route.type='button';
+      route.onclick=()=>{
+        const [x,y]=DATES[plan.place].p;
+        closeDiary();
+        if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
+      };
+      section.append(route);
+    }
+    const cancel=el('button','pbtn',tr('dateMeetingCancel'));
+    cancel.type='button';
+    cancel.onclick=()=>{
+      if(state.datePlan===plan&&setDatePlan(null)){
+        renderDiary();
+        $('#diaryClose').focus();
+      }
+    };
+    section.append(cancel);
+    b.append(section);
+  }
   const request=CottageActivities.openRequest(state.neighborRequest,state.day);
   if(request?.status==='accepted'){
     const section=el('section','dsec'),n=npcs.find(person=>person.id===request.resident);

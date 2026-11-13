@@ -270,7 +270,17 @@ function npcMenu(n,back){
     {label:tr('optSocial'),fn:()=>socialMenu(n)},
     {label:doneTag(r,'gift',tr('optGift')),fn:()=>giftMenu(n)}];
   opts.push(h>=2?{label:doneTag(r,'act',tr('optAct')),disabled:!!r.done.act,fn:()=>actMenu(n)}:{label:tr('optActLocked'),disabled:true});
-  if(!story&&(h>=6||r.m6))opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
+  if(!story&&(h>=6||r.m6)){
+    const reserved=activeDatePlan();
+    if(reserved?.day===state.day&&reserved.resident===n.id){
+      const meeting=DATE_MEETINGS[reserved.place];
+      const ready=atPlannedDate(n,meeting);
+      const label=ready?'dateMeetingStart':state.time<meeting.start?'dateMeetingWait':'dateMeetingGo';
+      opts.push({label:tr(label,{t:fmt(meeting.start),place:Lp.dates[reserved.place].name}),
+        disabled:!ready||!!r.done.date,fn:()=>dateWith(n,reserved.place,reserved)});
+    }else if(r.done.date&&!reserved)opts.push({label:tr('dateMeetingTomorrow'),fn:()=>planDateMenu(n)});
+    else opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
+  }
   if(!story&&h>=6&&!r.couple&&!anyCouple()){
     if(!hasSharedExperience(n))opts.push({label:tr('hintSharedExperience'),disabled:true});
     else if(h>=8)opts.push({label:r.done.confess?tr('optConfessTomorrow'):state.need.mood<40
@@ -471,11 +481,53 @@ function doAct(n,k){
     ()=>{note(n,'act_'+k,v);const lines=[fill(Lp.acts[k].line,{n:nm(n)}),v>=12?nt(n).actFav:v>=6?tr('actGood',{n:nm(n)}):tr('actMeh',{n:nm(n)})];if(got)lines.push(got);
       D.npc=n;talk(nm(n),lines,null,()=>{addPts(n,v);milestone(n);});});
 }
+function activeDatePlan(){
+  const plan=state.datePlan;
+  if(plan&&(plan.day>state.day||(plan.day===state.day&&state.time<DATE_MEETINGS[plan.place].end))){
+    if(plan.resident!=='xm'||state.rel.xm.couple||state.rel.xm.livesIn)return plan;
+  }
+}
+function plannedDateMeeting(n){
+  const plan=activeDatePlan();
+  if(plan?.day!==state.day||plan.resident!==n.id)return;
+  const meeting=DATE_MEETINGS[plan.place];
+  if(state.time>=meeting.start-20)return meeting;
+}
+function atPlannedDate(n,meeting){
+  return meeting&&state.time>=meeting.start&&n.state==='here'&&!n.leaving&&
+    Math.hypot(n.x-meeting.spot[0]*16-8,n.y-meeting.spot[1]*16-12)<32&&
+    Math.hypot(n.x-P.x,n.y-P.y)<45;
+}
+function describeDatePlan(plan){
+  const {start,end}=DATE_MEETINGS[plan.place];
+  return {name:nm(npcs.find(n=>n.id===plan.resident)), place:Lp.dates[plan.place].name,
+    day:tr('day',{d:plan.day}),start:fmt(start),end:fmt(end),minutes:DATES[plan.place].minutes};
+}
+function setDatePlan(plan){
+  const previous=state.datePlan;
+  state.datePlan=plan;
+  if(save())return true;
+  state.datePlan=previous;
+  return false;
+}
+function planDateMenu(n){
+  if(activeDatePlan()||xiaomanRoute(n)||(hearts(rel(n))<6&&!rel(n).m6))return;
+  const choices=Object.keys(DATE_MEETINGS).map(place=>{
+    const plan={resident:n.id,place,day:state.day+1};
+    const details=describeDatePlan(plan);
+    return {label:tr('dateMeetingChoice',details),fn:()=>{
+      if(plan.day!==state.day+1||activeDatePlan()||!setDatePlan(plan))return;
+      talk(nm(n),[tr('dateMeetingBooked',details)]);
+    }};
+  });
+  talk(nm(n),[tr('dateMeetingTomorrow')],choices.concat({label:tr('optBack'),back:true,fn:()=>dateMenu(n)}));
+}
 function dateMenu(n){
   const r=rel(n);D.npc=n;
   const o=Object.keys(DATES).map(k=>{const d=DATES[k],kn=r.notes['date_'+k];
     const block=dateBlock(d);
-    return {label:Lp.dates[k].name+(kn!=null?` ${faceOf(kn)}`:'')+(block?tr(block):tr('dateEnds',{m:d.minutes,t:fmt(state.time+d.minutes)})),disabled:!!block,fn:()=>dateWith(n,k)};});
+    return {label:Lp.dates[k].name+(kn!=null?` ${faceOf(kn)}`:'')+(block?tr(block):tr('dateEnds',{m:d.minutes,t:fmt(state.time+d.minutes)})),disabled:!!block||!!r.done.date,fn:()=>dateWith(n,k)};});
+  if(!activeDatePlan())o.push({label:tr('dateMeetingTomorrow'),fn:()=>planDateMenu(n)});
   o.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
   talk(nm(n),[tr('dateQ',{n:nm(n)})],o);
 }
@@ -483,9 +535,16 @@ function dateBlock(d){
   if(d.dark&&darkness()<=.5)return 'needDark';
   if(state.time+d.minutes>=26*60)return 'dateTooLate';
 }
-function dateWith(n,loc){
+function dateWith(n,loc,plan=null){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];
   if(r.done.date||dateBlock(L))return;
+  const reserved=activeDatePlan();
+  if(plan){
+    const meeting=plannedDateMeeting(n);
+    if(plan!==reserved||plan.place!==loc||!atPlannedDate(n,meeting))return;
+    r.done.date=true;
+    if(!setDatePlan(null)){delete r.done.date;return;}
+  }else if(reserved?.day===state.day&&reserved.resident===n.id)return;
   r.done.date=true;D.npc=n;
   busyFade(()=>{advanceTime(L.minutes);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
