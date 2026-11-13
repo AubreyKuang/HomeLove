@@ -507,6 +507,35 @@ test('an early draft saves time together and can still be completed alone', () =
   assert.deepEqual([state.time,state.rainReturn.done,state.rainSketches.garden.subject],[1555,true,'bank']);
 });
 
+test('an unfinished draft can be rebooked once after a missed meetup', () => {
+  const draft={resident:'gy',place:'garden',day:4,done:false,together:true,draft:true,subject:'bank',walk:'walking'};
+  const state={day:4,time:659,rainReturn:draft,rainSketches:{}};
+  let rainy=false,write=false,plan;
+  const runtime=game({state,RAIN_RETURN:{minutes:15},RAIN_DATE_MEETINGS:{garden:{start:600,end:660}},
+    activeDatePlan:()=>plan,VillageRiverside:{weather:day=>rainy&&day===5?'rain':'clear'},save:()=>write});
+  runSection(runtime,'function rainReturnReady(','function startRainCompanionWalk(');
+  assert.equal(runtime.rebookRainDraft(draft),false);
+  state.time=660;rainy=true;
+  assert.equal(runtime.canRebookRainDraft(draft),false);
+  rainy=false;plan={resident:'gy',place:'garden',day:5};
+  assert.equal(runtime.canRebookRainDraft(draft),false);
+  plan=null;
+  assert.equal(runtime.canRebookRainDraft(draft),true);
+  assert.equal(runtime.rebookRainDraft(draft),false);
+  assert.equal(state.rainReturn,draft);
+  write=true;
+  assert.equal(runtime.rebookRainDraft(draft),true);
+  const rebooked=state.rainReturn;
+  assert.deepEqual({...rebooked},{resident:'gy',place:'garden',day:5,done:false,together:true,draft:true,subject:'bank',rebooked:true});
+  assert.equal(runtime.rainReturnReady(),null);
+  assert.equal(runtime.setRainCompanionWalk(rebooked),false);
+  state.day=5;state.time=600;
+  assert.equal(runtime.rainReturnReady(),rebooked);
+  state.time=660;
+  assert.equal(runtime.rebookRainDraft(rebooked),false);
+  assert.equal(runtime.rainReturnReady(),rebooked);
+});
+
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
   const revisit={resident:'gy',place:'garden',day:4,done:false};
   const state={day:4,time:1530,rainReturn:revisit,rainSketches:{},need:{mood:40}};

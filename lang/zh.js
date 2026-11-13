@@ -463,6 +463,8 @@ window.HL_LANG.zh = {
     rainSketchBankDone: "草尖和湿石都画好了。你把这张速写夹进了相册。",
     rainSketchChangeSubject: "商量着改画{subject} · {minutes} 分钟 · 心情 +{mood} · 信任 +{trust} · 相册卡",
     rainSketchChangeDone: "谢谢你愿意换个角度。我们一起画的{subject}，就由你带回去吧。",
+    rainDraftRebook: "保留草稿，明天 {start}–{end} 在水洼补约 · 仅一次",
+    rainDraftRebookHint: "补约会把草稿和回访一起留到明天。想今天画完，可照常去水洼。",
     rainCompanionWalk: "先碰面，再一起走",
     rainCompanionDirect: "改为直接到水洼碰面",
     rainCompanionStartWalk: "一起走去水洼",

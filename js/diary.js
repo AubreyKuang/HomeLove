@@ -65,7 +65,7 @@ function renderDiary(){
         section.append(el('p','rline',tr('rainCompanionSketchHint')));
         if(!revisit.draft)section.append(el('p','rline',tr('rainSketchSubjectHint',{minutes:RAIN_SKETCH_DRAFT_MINUTES})));
       }
-      if(revisit.together&&(!revisit.walk||revisit.walk==='meet')&&(revisit.day>state.day||state.time<spot.start)){
+      if(revisit.together&&!revisit.rebooked&&(!revisit.walk||revisit.walk==='meet')&&(revisit.day>state.day||state.time<spot.start)){
         section.append(el('p','rline',tr('rainCompanionWalkHint',RAIN_COMPANION_WALK)));
         const walk=el('button','pbtn',tr(revisit.walk==='meet'?'rainCompanionDirect':'rainCompanionWalk'));
         walk.type='button';walk.dataset.rainCompanionWalk='';
@@ -77,7 +77,21 @@ function renderDiary(){
         };
         section.append(walk);
       }
-    }else if(revisit.together)section.append(el('p','rline',tr('rainCompanionMissed')));
+    }else if(revisit.together){
+      section.append(el('p','rline',tr('rainCompanionMissed')));
+      if(canRebookRainDraft(revisit)){
+        section.append(el('p','rline',tr('rainDraftRebookHint')));
+        const retry=el('button','pbtn',tr('rainDraftRebook',{start:fmt(spot.start),end:fmt(spot.end)}));
+        retry.type='button';
+        retry.onclick=()=>{
+          if(rebookRainDraft(revisit)){
+            renderDiary();
+            b.querySelector('[data-rain-companion]')?.focus();
+          }
+        };
+        section.append(retry);
+      }
+    }
     if(!state.rainSketches[revisit.place]&&(revisit.day>state.day||!rainSketchLimit(revisit))){
       section.append(el('p','rline',tr(revisit.draft?'rainSketchDraftDiary':'dateRainSketchHint',soloRainSketch(revisit))));
     }
