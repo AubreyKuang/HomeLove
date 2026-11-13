@@ -379,6 +379,39 @@ test('rain reflection can be viewed only on the next dry day at the original pud
   assert.deepEqual([revisit.done,state.time,state.need.mood,state.rel.gy.done],[true,615,48,{}]);
 });
 
+test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
+  const revisit={resident:'gy',place:'garden',day:4,done:false};
+  const state={day:4,time:1530,rainReturn:revisit,rainSketches:{},need:{mood:40}};
+  const P={x:200,y:204};
+  let writesSucceed=false,choices;
+  const runtime=game({state,P,RAIN_DATE_MEETINGS:{garden:{p:[12,12]},pond:{p:[23,8]}},
+    RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},
+    VillageRiverside:{weather:()=> 'clear'},save:()=>writesSucceed,clampN:n=>n,
+    advanceTime:m=>{state.time+=m;},updateHud(){},talk(_who,_lines,options){choices=options;},tr:k=>k});
+  runSection(runtime,'function rainReturnReady(','function hasSharedExperience(');
+  runtime.rainReturnMenu(revisit);
+  assert.equal(choices[1].disabled,true);
+  runtime.finishRainReturn(revisit,true);
+  assert.deepEqual([revisit.done,state.time,state.rainSketches],[false,1530,{}]);
+  state.time=600;
+  runtime.finishRainReturn(revisit,true);
+  assert.deepEqual([revisit.done,state.time,state.need.mood,state.rainSketches],[false,600,40,{}]);
+  writesSucceed=true;
+  runtime.finishRainReturn(revisit,true);
+  runtime.finishRainReturn(revisit);
+  assert.deepEqual([revisit.done,state.time,state.need.mood],[true,630,44]);
+  assert.deepEqual({...state.rainSketches.garden},{resident:'gy',day:4});
+  state.day=5;
+  state.rainReturn={...revisit,day:5,done:false};
+  runtime.finishRainReturn(state.rainReturn,true);
+  assert.equal(state.rainReturn.done,false);
+  state.rainReturn.place='pond';
+  Object.assign(P,{x:376,y:140});
+  runtime.finishRainReturn(state.rainReturn,true);
+  assert.deepEqual({...state.rainSketches.pond},{resident:'gy',day:5});
+  assert.equal(state.rainSketches.garden.day,4);
+});
+
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
   const plan={resident:'gy',place:'garden',day:3};
   const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};

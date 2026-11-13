@@ -4,7 +4,9 @@
 const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','garden'],jy:['garden','stars'],by:['stars','pond']};
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
-  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),ResidentMoments.cards(state.moments),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects),VillageBlackout.cards(state.blackout)).sort((a,b)=>b.day-a.day);
+  .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),ResidentMoments.cards(state.moments),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects),VillageBlackout.cards(state.blackout),
+    Object.entries(state.rainSketches).map(([place,record])=>({...record,place,key:'rain-sketch:'+place,kind:'world',event:'rainSketch'})))
+  .sort((a,b)=>b.day-a.day);
 const KEEPSAKE_FRAME={x:117,y:33,width:20,height:12};
 function setKeepsakeFrame(frame){
   const previous=state.album.framed;
@@ -40,6 +42,17 @@ function albumScene(card,n){
   if(card.event?.startsWith('moment_'))return momentArt(n,card.choice);
   const art=mk(96,60),g=art.getContext('2d');
   art.setAttribute('aria-hidden','true');
+  if(card.event==='rainSketch'){
+    MemoryAlbum.paint(g,card.place);
+    blitChar(g,state.o,'down',0,24,24);
+    g.fillStyle='#a28164';g.fillRect(49,23,35,29);
+    g.fillStyle='#fff0d7';g.fillRect(48,21,34,29);
+    g.fillStyle='#7fa9b9';g.fillRect(53,37,24,7);g.fillRect(56,35,18,11);
+    g.fillStyle='#67917d';g.fillRect(63,26,5,9);g.fillRect(60,29,11,4);
+    g.fillStyle='#608b93';g.fillRect(61,39,9,2);g.fillRect(63,41,5,3);
+    g.fillStyle='#e4ece1';g.fillRect(56,38,7,1);g.fillRect(68,43,6,1);
+    return art;
+  }
   if(card.kind==='cafeRequest'){
     MemoryAlbum.paint(g,'home');
     blitChar(g,state.o,'down',0,24,22);blitChar(g,n.outfit,'down',0,48,21);
@@ -159,6 +172,7 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
+  if(card.event==='rainSketch')return tr('rainSketchCard',{place:tr(RAIN_DATE_MEETINGS[card.place].name)});
   if(card.event?.startsWith('moment_'))return Lp.moments[n.id].endings[card.choice].join(' ');
   if(card.event==='blackout')return tr('blackoutResult_'+card.choice);
   if(card.event==='project_cafe'){
