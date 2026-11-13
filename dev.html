@@ -167,7 +167,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .album-card[data-kind="rareDate"]{border-color:#b48537}
 .album-card canvas,.album-page canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #ac8063}
 .album-card small,.album-page small{color:#75594a}
-.album-page>.pbtn{margin-top:8px}
+.album-page>.pbtn{margin:8px 8px 0 0}
 .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,128px),1fr));gap:10px;margin-top:8px}
 .badge{display:grid;justify-items:center;gap:4px;text-align:center;background:#fff5df;border:2px solid #b48667;color:#513b33;padding:8px;box-shadow:2px 3px #d7b595}
 .badge canvas{width:48px;height:48px;image-rendering:pixelated}
@@ -383,7 +383,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="cottage-activities.js?v=seasons-1"></script>
 <script src="cottage-events.js?v=snow-fishing-1"></script>
 <script src="cottage-bonds.js?v=bonds-1"></script>
-<script src="memory-album.js?v=snow-fishing-1"></script>
+<script src="memory-album.js?v=keepsake-frame-1"></script>
 <script src="resident-stories.js"></script>
 <script src="village-map.js?v=outlined-1"></script>
 <script src="cottage-travel.js?v=umbrella-1"></script>
@@ -391,9 +391,9 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js?v=rare-nights"></script>
-<script src="lang/zh.js?v=umbrella-1" charset="utf-8"></script>
-<script src="lang/en.js?v=umbrella-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=umbrella-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=keepsake-frame-1" charset="utf-8"></script>
+<script src="lang/en.js?v=keepsake-frame-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=keepsake-frame-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -2029,6 +2029,8 @@ function shelfMenu(){
   talk(objName('shelf'),[tr('shelfQ')],[
     {label:tr('readOpt'),fn:readBook},
     {label:N.mood>=40?tr('letterOpt'):tr('letterOptNo'),disabled:N.mood<40,fn:writeLetter},
+    {label:tr('frameChoose'),fn:()=>openAlbum('events')},
+    ...(state.album.framed?[{label:tr('frameRemove'),fn:()=>setKeepsakeFrame(null)}]:[]),
     {label:tr('walkAway'),fn:null}]);
 }
 function readBook(){
@@ -2844,6 +2846,8 @@ function npcMenu(n,back){
   opts.push({label:tr('optBye'),fn:null});
   const lines=[greet];
   if(!back&&alreadyMet&&!n.working){
+    const frameLine=keepsakeFrameLine(n);
+    if(frameLine)lines.push(frameLine);
     const life=lifeOf(n);
     const outfit=JSON.stringify(state.o);
     if(life.lastOutfit!==undefined&&life.lastOutfit!==outfit){
@@ -4245,6 +4249,31 @@ const POSTCARD_SCENES={gy:['home','garden'],xm:['garden','home'],xy:['pond','gar
 let albumTab='events',albumSelected=null;
 const albumCards=()=>MemoryAlbum.collect(ALBUM_RESIDENTS,state.life,state.album)
   .concat(CottageEvents.cards(state.events,state.day),XiaomanStory.cards(state.xiaoman,state.day),ResidentStories.cards(state.stories),SnowFishing.cards(state.snowFishing),VillageWeekend.cards(state.weekend),CottageTravel.cards(state.travel),VillageRiverside.cards(state.riverside),VillageProjects.cards(state.projects),VillageBlackout.cards(state.blackout)).sort((a,b)=>b.day-a.day);
+const KEEPSAKE_FRAME={x:117,y:33,width:20,height:12};
+function setKeepsakeFrame(frame){
+  const previous=state.album.framed;
+  state.album.framed=frame;
+  if(!save()){
+    state.album.framed=previous;
+    notify(tr('frameSaveFailed'));
+    return false;
+  }
+  sfx('click');
+  return true;
+}
+function keepsakeFrameLine(n){
+  const frame=state.album.framed;
+  if(!frame||frame.noticed||frame.resident!==n.id)return '';
+  const inLivingRoom=p=>{
+    const x=Math.floor(p.x/16);
+    return x<11&&at(x,Math.floor((p.y-2)/16))===FLOOR;
+  };
+  if(!inLivingRoom(n)||!inLivingRoom(P)||Math.hypot(n.x-127,n.y-52)>76||
+    hash2(state.day,frame.day+n.id.charCodeAt(0))>=.5)return '';
+  frame.noticed=true;
+  if(!save())frame.noticed=false;
+  return tr(frame.postcard?'frameRecognizePostcard':'frameRecognize_'+n.id);
+}
 function updateAlbumBadge(){
   const count=albumCards().filter(card=>!state.album.seen.includes(card.key)).length;
   const button=$('#btnAlbum');
@@ -4409,9 +4438,28 @@ function renderAlbum(){
       body.querySelector('[data-key="'+selected.key+'"]')?.focus();
     };
     const n=resident(selected),page=el('article','album-page');
+    const art=albumScene(selected,n);
     const keep=el('button','pbtn',tr('albumSave'));keep.type='button';
     keep.onclick=()=>downloadCanvas(keepsakeCard(title(selected),stamp(selected,n),albumDetails(selected,n),albumScene(selected,n)),'HomeLove-'+selected.key+'.png');
-    page.append(albumScene(selected,n),el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)),keep);
+    const framed=state.album.framed?.key===selected.key&&state.album.framed.day===selected.day;
+    const display=el('button','pbtn',tr(framed?'frameRemove':'frameHang'));
+    display.type='button';
+    display.onclick=()=>{
+      let frame=null;
+      if(!framed){
+        const thumbnail=mk(KEEPSAKE_FRAME.width,KEEPSAKE_FRAME.height);
+        const g=thumbnail.getContext('2d');
+        g.imageSmoothingEnabled=false;g.drawImage(art,0,0,thumbnail.width,thumbnail.height);
+        frame={key:selected.key,day:selected.day,resident:selected.resident??null,
+          postcard:selected.kind==='postcard',image:thumbnail.toDataURL('image/png'),noticed:false};
+      }
+      if(setKeepsakeFrame(frame)){
+        renderAlbum();
+        $('#albumBody').querySelector('[data-frame-action]')?.focus();
+      }
+    };
+    display.dataset.frameAction='';
+    page.append(art,el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)),keep,display);
     if(selected.event==='project_stage'){
       const play=el('button','pbtn',tr('projectMusicPlay'));
       play.type='button';play.onclick=()=>sfx('villageMix',state.projects.music);page.append(play);
@@ -4502,6 +4550,21 @@ function drawWindows(g,night,blackout){
       else{F(1,1,4,1,'#eaf8fd');F(1,2,2,1,'#eaf8fd');F(7,6,3,1,'#ffffff');}
     }
     F(5,0,2,10,'#7d4b2d');F(0,4,12,1,'#7d4b2d');F(-3,-1,3,11,'#f29ac0');F(12,-1,3,11,'#f29ac0');F(-3,-1,3,1,'#d9709a');F(12,-1,3,1,'#d9709a');});
+}
+let frameImage=null,frameImageSource=null;
+function drawKeepsakeFrame(g){
+  const {x,y,width,height}=KEEPSAKE_FRAME;
+  const source=state.album.framed?.image??null;
+  if(frameImageSource!==source){
+    frameImageSource=source;
+    frameImage=source?new Image():null;
+    if(frameImage)frameImage.src=source;
+  }
+  if(!frameImage)return;
+  g.fillStyle='#5f3d35';g.fillRect(x-2,y-2,width+4,height+4);
+  g.fillStyle='#c99868';g.fillRect(x-1,y-1,width+2,height+2);
+  g.fillStyle='#f3d6a3';g.fillRect(x,y,width,height);
+  if(frameImage.complete&&frameImage.naturalWidth===width&&frameImage.naturalHeight===height)g.drawImage(frameImage,x,y);
 }
 function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);}
 function drawPerson(g,o,dir,fr,px,py){const x=Math.round(px),y=Math.round(py);g.fillStyle='rgba(40,30,30,.22)';g.fillRect(x-5,y-1,10,2);g.fillRect(x-4,y+1,8,1);blitChar(g,o,dir,fr,x-10,y-25);}
@@ -4670,6 +4733,7 @@ function render(time){
     drawRiverClue(ctx,kind,x*16+8,y*16+10,reducedMotion?0:time);
   }
   drawWindows(ctx,dark>0.5,blackout);
+  drawKeepsakeFrame(ctx);
   state.garden.forEach((plot,i)=>{
     if(!plot)return;
     const x=(17+i%6)*16,y=(13+Math.floor(i/6))*16;
