@@ -7,6 +7,7 @@ const GIFT_KEYS=ITEM_KEYS.filter(k=>k!=='gold');
 const FISHING_INVITE={resident:'by',gift:'moonfish',delay:2,opens:19*60,closes:23.5*60};
 const ACT_E={walk:5,fish:5,read:2,sport:15,stars:3},ACT_DARK={stars:true};
 const DATES={pond:{minutes:45,p:[19,7],n:[20,7]},garden:{minutes:60,p:[19,12],n:[20,12]},stars:{minutes:90,dark:true,p:[4,13],n:[5,13]},home:{minutes:105,p:[13,6],n:[14,6]}};
+const BREAKFAST_BOX={prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6};
 const DATE_MEETINGS={garden:{start:600,end:660,spot:DATES.garden.n},pond:{start:960,end:1020,spot:DATES.pond.n}};
 
 /* ---------------- residents ---------------- */
@@ -50,7 +51,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,firstGreetingDismissed:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  moments:ResidentMoments.load(),offlineProgress:false,datePlan:null,
+  moments:ResidentMoments.load(),offlineProgress:false,datePlan:null,breakfastBoxDay:null,
   villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),blackout:VillageBlackout.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS=document.body.dataset.mode==='test'?'homelove-save-dev':'homelove-save-v1';
@@ -111,6 +112,9 @@ function applySave(s){
   state.tunnels=CottageActivities.loadTunnels(s.tunnels);
   state.fishLog=CottageActivities.loadFishLog(s.fishLog);
   state.neighborRequest=CottageActivities.loadRequest(s.neighborRequest);
+  const boxDay=s.breakfastBoxDay;
+  state.breakfastBoxDay=boxDay===state.day+1||(boxDay===state.day&&state.time+BREAKFAST_BOX.eatMinutes<=BREAKFAST_BOX.until)
+    ? boxDay:null;
   const plan=s.datePlan;
   state.datePlan=plan&&ALBUM_RESIDENTS.includes(plan.resident)&&Object.hasOwn(DATE_MEETINGS,plan.place)&&
     Number.isInteger(plan.day)&&plan.day>=state.day&&plan.day<=state.day+1
