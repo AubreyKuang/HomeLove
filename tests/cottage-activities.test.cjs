@@ -469,6 +469,7 @@ test('an early draft saves time together and can still be completed alone', () =
   const runtime=game({state,P,npcs:[n],RAIN_DATE_MEETINGS:{garden:{start:600,end:660,p:[12,12],spot:[13,12],name:'garden'}},
     RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,RAIN_DRAFT_BANK_BONUS:5,
     RAIN_COMPANION:{minutes:25,mood:11,trust:4},RAIN_DRAFT_CHANGE:{minutes:10,trust:2},RAIN_DRAFT_RELOCATION_MINUTES:5,
+    RAIN_LOCAL_SKETCH:{minutes:30,mood:7},RAIN_LOCAL_CHANGE_MINUTES:5,RAIN_LOCAL_SUBJECT:{garden:'reflection',pond:'bank'},
     VillageRiverside:{weather:()=> 'clear'},save:()=>write,
     advanceTime:m=>{state.time+=m;},clampN:n=>n,B:()=>bonds,trustNpc:(_,delta)=>{bonds.trust.gy+=delta;},
     updateHud(){},D:{},talk(_who,_lines,options){choices=options;},tr:k=>k,nm:n=>n.id});
@@ -507,6 +508,20 @@ test('an early draft saves time together and can still be completed alone', () =
   state.rainSketches={};state.rainReturn={...bank,done:false,together:false};state.time=1540;
   runtime.finishRainReturn(state.rainReturn,true);
   assert.deepEqual([state.time,state.rainReturn.done,state.rainSketches.garden.subject],[1555,true,'bank']);
+  state.rainSketches={};state.rainReturn={...bank,done:false,relocated:true};state.time=1530;
+  assert.equal(runtime.rainCompanionActivity(state.rainReturn,true,true).minutes,35);
+  runtime.rainReturnMenu(state.rainReturn);
+  assert.equal(choices.find(choice=>choice.label==='rainSketchLocalAction').disabled,true);
+  runtime.finishRainReturn(state.rainReturn,true,true);
+  assert.equal(state.rainReturn.done,false);
+  state.time=1529;
+  const mood=state.need.mood;
+  write=false;
+  runtime.finishRainReturn(state.rainReturn,true,true);
+  assert.deepEqual([state.time,state.need.mood,state.rainReturn.done,state.rainSketches.garden],[1529,mood,false,undefined]);
+  write=true;
+  runtime.finishRainReturn(state.rainReturn,true,true);
+  assert.deepEqual([state.time,state.need.mood,state.rainReturn.done,state.rainSketches.garden.subject],[1559,mood+7,true,'reflection']);
 });
 
 test('an unfinished draft can be rebooked once after a missed meetup', () => {

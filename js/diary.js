@@ -86,6 +86,9 @@ function renderDiary(){
           const retry=el('button','pbtn',tr(place===revisit.place?'rainDraftRebook':'rainDraftRebookElsewhere',{
             place:tr(meeting.name),start:fmt(meeting.start),end:fmt(meeting.end),minutes:RAIN_DRAFT_RELOCATION_MINUTES
           }));
+          if(place!==revisit.place&&canSketchLocalScene({...revisit,place,relocated:true})){
+            retry.textContent+=' · '+tr('rainSketchLocalView',{subject:rainSketchSubjectLabel(RAIN_LOCAL_SUBJECT[place])});
+          }
           retry.type='button';
           retry.onclick=()=>{
             if(rebookRainDraft(revisit,place)){
