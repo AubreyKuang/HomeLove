@@ -247,6 +247,52 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .keepsake-caption small{font-size:10px}
 .capsule-reveal{display:grid;place-items:center;margin:4px auto 8px;width:88px;height:104px;border:2px solid #b87983;background:#fce1d4;box-shadow:3px 3px 0 #d1a18a;border-radius:8px}
 .capsule-reveal canvas{width:60px;height:78px;image-rendering:pixelated}
+/* Controls sit over the village, with utility actions in a compact menu. */
+#hudStats{gap:4px}
+#hud .chip,#miniMap,#hudR .pbtn,#cottageMenu>summary{
+  border:1px solid #ffe1af66;background:#302633ed;color:#fff0d8;box-shadow:0 3px 10px #21162455;
+  border-radius:5px
+}
+#hudR{max-width:none;gap:5px;align-items:start}
+#hudR .pbtn,#cottageMenu>summary{min-height:40px;font-size:13px}
+#hudR .pbtn:hover,#cottageMenu>summary:hover,#cottageMenu[open]>summary{background:#654654}
+#hudR #btnWardrobe{background:#ffe0a5;color:#432d3b}
+#cottageMenu{position:relative}
+#cottageMenu>summary{
+  cursor:pointer;list-style:none;display:grid;place-items:center;width:42px;font-weight:700
+}
+#cottageMenu>summary::-webkit-details-marker{display:none}
+#cottageMenu>summary:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+.cottage-menu-items{
+  position:absolute;right:0;top:calc(100% + 6px);display:grid;gap:4px;min-width:132px;
+  padding:6px;background:#302633;border:1px solid #ffe1af66;border-radius:6px
+}
+.cottage-menu-items .pbtn{text-align:start;white-space:nowrap}
+#start{
+  justify-content:flex-start;align-items:center;
+  background:linear-gradient(90deg,#251b2af5,#291e2ad9 32%,#291e2a22 80%),linear-gradient(0deg,#251b2a99,transparent 45%);
+  padding-inline:clamp(18px,7vw,96px)
+}
+#start .card{margin:0;gap:14px;background:transparent;border:0;box-shadow:none;color:#fff0db;padding:2px;width:min(460px,100%)}
+#start h1{font-size:clamp(42px,7vw,84px);line-height:1.08;text-shadow:0 4px 20px #251824}
+#start .card>p{font-size:14px;line-height:1.6;color:#fff0db;margin:0;max-width:40ch}
+#start .langpick{order:-1}
+#start .langpick button{border:1px solid #ffe4bd75;background:#362634;color:#fff0db;box-shadow:none}
+#start .langpick button[aria-pressed="true"],#btnStart{background:#ffe0a5;color:#432d3b;border-color:#ffe0a5;box-shadow:none}
+#btnStart{align-self:flex-start;min-height:44px;padding-inline:22px}
+#start .keys,#start:not(.show-controls) .start-detail,#start.show-controls .start-lead{display:none}
+#start.show-controls .keys{display:grid}
+body:has(#start:not(.hidden)) :is(#hud,#hudR,#pad,#abtn){visibility:hidden}
+@media(max-width:700px){
+  #hud{max-width:54vw}
+  #hudR{width:min(42vw,220px)}
+  #hudR .pbtn,#cottageMenu>summary{font-size:12px;min-height:44px}
+  #miniMap{width:88px}
+  #start{align-items:flex-end;background:linear-gradient(0deg,#251b2afc 4%,#251b2ae8 38%,#251b2a10 84%)}
+  #start.show-controls{align-items:center;background:#251b2ae8}
+  #start .card{margin-bottom:clamp(14px,7vh,58px)}
+  #start.show-controls .card{margin-bottom:0}
+}
 </style>
 </head>
 <body>
@@ -270,15 +316,20 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
   </button>
 </div>
 <div id="hudR">
-  <button class="pbtn" id="btnTravel" type="button" data-i18n="travelShop"></button>
   <button class="pbtn hidden" id="btnUmbrella" type="button" aria-keyshortcuts="U" title="U"></button>
-  <button class="pbtn" id="btnMap" type="button" data-i18n="villageMap"></button>
   <button class="pbtn primary" id="btnWardrobe" type="button" data-i18n="btnWardrobe"></button>
   <button class="pbtn" id="btnAlbum" type="button" data-i18n="btnAlbum"></button>
   <button class="pbtn" id="btnDiary" type="button" data-i18n="btnDiary"></button>
-  <button class="pbtn" id="btnLang" type="button" data-i18n-aria="language"></button>
-  <button class="pbtn" id="btnSound" type="button" data-i18n-aria="sound">🔊</button>
-  <button class="pbtn" id="btnHelp" type="button" data-i18n-aria="help">?</button>
+  <details id="cottageMenu">
+    <summary data-i18n-aria="moreActions">···</summary>
+    <div class="cottage-menu-items">
+      <button class="pbtn" id="btnMap" type="button" data-i18n="villageMap"></button>
+      <button class="pbtn" id="btnTravel" type="button" data-i18n="travelShop"></button>
+      <button class="pbtn" id="btnLang" type="button" data-i18n-aria="language"></button>
+      <button class="pbtn" id="btnSound" type="button" data-i18n-aria="sound">🔊</button>
+      <button class="pbtn" id="btnHelp" type="button" data-i18n="help"></button>
+    </div>
+  </details>
 </div>
 
 <div id="prompt" class="px hidden"></div>
@@ -365,8 +416,9 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
   <div class="card px">
     <div class="langpick" id="langPick" role="group" data-i18n-aria="language"></div>
     <h1 data-i18n="title"></h1>
-    <p data-i18n="intro1"></p>
-    <p data-i18n="intro2"></p>
+    <p class="start-lead" data-i18n="startLead"></p>
+    <p class="start-detail" data-i18n="intro1"></p>
+    <p class="start-detail" data-i18n="intro2"></p>
     <div class="keys">
       <span class="k"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd></span><span id="moveHelp"></span>
       <span class="k"><kbd>E</kbd><kbd data-i18n="space"></kbd></span><span data-i18n="kAct"></span>
@@ -381,7 +433,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <div id="fade"></div>
 
 <script src="npc-memory.js"></script>
-<script src="save-manager.js?v=portable-saves-1"></script>
+<script src="save-manager.js?v=save-recovery-1"></script>
 <script src="cottage-activities.js?v=seasons-1"></script>
 <script src="cottage-events.js?v=snow-fishing-1"></script>
 <script src="cottage-bonds.js?v=bonds-1"></script>
@@ -393,9 +445,9 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js?v=rare-nights"></script>
-<script src="lang/zh.js?v=quiet-moments-1" charset="utf-8"></script>
-<script src="lang/en.js?v=quiet-moments-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=quiet-moments-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=scene-hud-1" charset="utf-8"></script>
+<script src="lang/en.js?v=scene-hud-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=scene-hud-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1106,13 +1158,20 @@ const state={
 };
 const LS='homelove-save-dev';
 function snapshot(){return JSON.parse(JSON.stringify(state));}
-let playerReady=false,replacingSave=false;
+let playerReady=false,replacingSave=false,lastSaveIssue='';
+function reportSaveFailure(){
+  const issue=SaveManager.status(SaveManager.getStorage(),LS);
+  const message=issue==='conflict'?'saveConflict':issue==='newer'?'saveNewer':'weekSaveFailed';
+  if(lastSaveIssue!==message){lastSaveIssue=message;notify(tr(message));}
+}
 const validSave=s=>Number.isFinite(s.day)&&Number.isFinite(s.time)&&!!s.o&&!!s.rel&&!!s.inv;
-function save(){
+function save(touch=false){
   if(replacingSave)return false;
   if(playerReady)state.position={x:P.x,y:P.y,dir:P.dir};
-  state.savedAt=Date.now();
-  return SaveManager.save(localStorage,LS,state,validSave);
+  const ok=SaveManager.save(SaveManager.getStorage(),LS,{...state,savedAt:Date.now()},validSave,{touch:touch===true});
+  if(ok)lastSaveIssue='';
+  else reportSaveFailure();
+  return ok;
 }
 // v1 saves have no trust/jealousy block; CottageBonds.load fills it in when the save is applied.
 function migrateSave(s,from){return s&&typeof s==='object'?s:null;}
@@ -1161,7 +1220,7 @@ function applySave(s){
     entry.type==='gift'&&entry.interpretation?.object===FISHING_INVITE.gift);
   if(Number.isFinite(priorGift?.time))queueFishingInvitation(fisher,Math.floor(priorGift.time/1440)+1);
 }
-applySave(SaveManager.load(localStorage,LS,validSave,migrateSave));
+applySave(SaveManager.load(SaveManager.getStorage(),LS,validSave,migrateSave));
 state.life ||= {};
 const hot=window.claude&&window.claude.hot;
 if(hot&&hot.data&&hot.data.o)applySave(hot.data);
@@ -1484,7 +1543,8 @@ playerReady=true;
 if(state.position&&Number.isFinite(state.position.x)&&Number.isFinite(state.position.y)){
   if(!blocked(state.position.x,state.position.y))Object.assign(P,state.position);
 }
-window.addEventListener('pagehide',save);
+let savedOnHide=false;
+window.addEventListener('pagehide',()=>{if(!savedOnHide)save(true);});
 
 const WALK=[1,0,2,0];
 const DV={down:[0,1],up:[0,-1],left:[-1,0],right:[1,0]};
@@ -2691,7 +2751,7 @@ function bondsNewDay(){
 function planToday(){
   CottageBonds.planDropIn(B(),state.day,NPCS.filter(n=>rel(n).met&&!(xiaomanRoute(n)&&state.xiaoman?.answer)).map(n=>({id:n.id,hearts:hearts(rel(n)),livesIn:rel(n).livesIn})),Math.random);
 }
-function snapshotMorning(){try{SaveManager.snapshot(localStorage,LS,state,validSave,{label:'d-'+state.day,day:state.day});}catch(e){}}
+function snapshotMorning(){try{SaveManager.snapshot(SaveManager.getStorage(),LS,state,validSave,{label:'d-'+state.day,day:state.day});}catch(e){}}
 function bondsTick(){
   const missed=CottageBonds.missDropIn(B(),state.day,state.time);
   if(missed){const n=npcs.find(m=>m.id===missed.id);if(n){rememberPlayer(n,'dropIn','missed',-.2,50,missed.reason);notify(tr('dropInNote',{n:nm(n)}));}}
@@ -2783,7 +2843,7 @@ function renderRecap(container){
   container.append(sec);
 }
 function renderRewind(container){
-  const snaps=SaveManager.snapshots(localStorage,LS).sort((a,b)=>b.day-a.day);
+  const snaps=SaveManager.snapshots(SaveManager.getStorage(),LS).sort((a,b)=>b.day-a.day);
   if(!snaps.length)return;
   const sec=el('section','dsec');sec.append(el('h3',null,tr('rewindTitle')),el('p','rline',tr('rewindHint')));
   const row=el('div','rewind-row');
@@ -2791,12 +2851,12 @@ function renderRewind(container){
     const b=el('button','pbtn',tr('rewindBtn',{d:snap.day}));b.type='button';
     b.onclick=()=>{
       if(!confirm(tr('rewindConfirm',{d:snap.day})))return;
-      const s=SaveManager.restore(localStorage,LS,snap.index,validSave,migrateSave);
-      if(!s)return;
+      const s=SaveManager.restore(SaveManager.getStorage(),LS,snap.index,validSave,migrateSave,snap);
+      if(!s){notify(tr('saveInvalid'));return;}
       s.savedAt=Date.now();
-      SaveManager.save(localStorage,LS,s,validSave);
+      if(!SaveManager.save(SaveManager.getStorage(),LS,s,validSave,{touch:true})){reportSaveFailure();return;}
+      replacingSave=true;
       try{sessionStorage.setItem('homelove-rewound',String(snap.day));}catch(e){}
-      window.removeEventListener('pagehide',save);window.removeEventListener('beforeunload',save);
       location.reload();
     };
     row.append(b);
@@ -4042,6 +4102,8 @@ function cycleLang(){const i=LANG_ORDER.indexOf(LANG);setLang(LANG_ORDER[(i+1)%L
 const keys=new Set(),touchKeys=new Set();
 const has=(...ks)=>ks.some(k=>keys.has(k)||touchKeys.has(k));
 addEventListener('keydown',e=>{
+  if(e.code==='Escape'&&cottageMenu.open){e.preventDefault();cottageMenu.open=false;cottageMenu.querySelector('summary').focus();return;}
+  if(['Enter','Space'].includes(e.code)&&e.target instanceof Element&&e.target.closest('#hud button,#hudR button,#cottageMenu>summary'))return;
   if(startOpen){if(e.code==='Enter'&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('.langpick'))){e.preventDefault();begin();}return;}
   if(mapOpen){if(e.code==='Escape'||e.code==='KeyG'){e.preventDefault();closeVillageMap();}return;}
   if(dressOpen){if(e.code==='Escape'||e.code==='KeyC'){e.preventDefault();closeDress();}else if(e.code==='KeyQ')rot(-1);else if(e.code==='KeyR')rot(1);return;}
@@ -4087,8 +4149,11 @@ $('#btnDiary').addEventListener('click',()=>openDiary());
 $('#btnLang').addEventListener('click',()=>{cycleLang();cv.focus({preventScroll:true});});
 $('#btnSound').addEventListener('click',()=>{setSound(!sndOn);cv.focus({preventScroll:true});});
 $('#btnSound').textContent=sndOn?'🔊':'🔇';
+const cottageMenu=$('#cottageMenu');
+cottageMenu.addEventListener('click',e=>{if(e.target.closest('button'))cottageMenu.open=false;});
+document.addEventListener('pointerdown',e=>{if(cottageMenu.open&&!cottageMenu.contains(e.target))cottageMenu.open=false;});
 let startLabel=state.seen?'resume':'start';
-$('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOpen||albumOpen||mapOpen||FISH.on)return;startOpen=true;startLabel='continue';$('#btnStart').textContent=tr(startLabel);$('#start').classList.remove('hidden');$('#btnStart').focus();});
+$('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOpen||albumOpen||mapOpen||FISH.on)return;startOpen=true;startLabel='continue';$('#btnStart').textContent=tr(startLabel);$('#start').classList.remove('hidden');$('#start').classList.add('show-controls');$('#btnStart').focus();});
 {const box=$('#langPick');LANG_ORDER.forEach(c=>{const b=el('button','pbtn',PACKS[c].meta.label);b.type='button';b.dataset.lang=c;b.lang=PACKS[c].meta.htmlLang;b.onclick=()=>setLang(c);box.append(b);});}
 let helloShown=false;
 function begin(){audioInit();if(AC&&sndOn)AC.resume().then(()=>sfx('start')).catch(()=>{});startOpen=false;state.seen=true;save();$('#start').classList.add('hidden');cv.focus({preventScroll:true});
@@ -4323,7 +4388,7 @@ function renderQuietSettings(body){
   clock.type='button';clock.setAttribute('aria-pressed',String(state.offlineProgress));
   clock.onclick=()=>{
     state.offlineProgress=!state.offlineProgress;
-    if(!save()){state.offlineProgress=!state.offlineProgress;notify(tr('weekSaveFailed'));}
+    if(!save())state.offlineProgress=!state.offlineProgress;
     renderDiary();
   };
   const backup=el('button','pbtn',tr('saveExport'));backup.type='button';
@@ -4351,7 +4416,7 @@ function renderQuietSettings(body){
     talk(tr('saveImport'),[tr('saveImportConfirm',{day:data.day})],[
       {label:tr('saveImportAccept'),fn:()=>{
         data.savedAt=Date.now();
-        if(!SaveManager.save(localStorage,LS,data,validSave)){notify(tr('weekSaveFailed'));return;}
+        if(!SaveManager.save(SaveManager.getStorage(),LS,data,validSave,{touch:true})){reportSaveFailure();return;}
         replacingSave=true;location.reload();
       }},
       {label:tr('never'),back:true,fn:null}
@@ -5014,14 +5079,14 @@ function update(dt){
 let last=performance.now();
 document.addEventListener('visibilitychange',()=>{
   last=performance.now();keys.clear();touchKeys.clear();
-  if(document.hidden)save();
+  savedOnHide=document.hidden&&save(true);
 });
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);render(t/1000);requestAnimationFrame(loop);}
 // Start of session: yesterday's baseline, today's possible visitor, and the hours that passed while the page was closed.
 if(!B().dayStart)CottageBonds.startDay(B(),state.day,ptsMap());
 planToday();
 offlineMinutes=catchUpOffline();
-if(!SaveManager.snapshots(localStorage,LS).some(s=>s.label==='d-'+state.day))snapshotMorning();
+if(!SaveManager.snapshots(SaveManager.getStorage(),LS).some(s=>s.label==='d-'+state.day))snapshotMorning();
 applyLang();
 snapPets();
 

@@ -110,7 +110,30 @@ test('save manager v2 migrates a v1 save and keeps four morning snapshots', () =
   assert.equal(SaveManager.load(storage, 'home', valid, (s, from) => ({...s, from})).from, 1);
   map.set('home', json({day: 3, time: 500, o: {}, rel: {}, inv: {}, saveVersion: 7}));
   assert.equal(SaveManager.load(storage, 'home', valid, s => s), null);
+  assert.equal(SaveManager.save(storage, 'home', {day: 1, time: 420, o: {}, rel: {}, inv: {}}, valid), false);
+  assert.equal(SaveManager.snapshot(storage, 'home', {day: 1, time: 420, o: {}, rel: {}, inv: {}}, valid), false);
+  assert.equal(JSON.parse(map.get('home')).saveVersion, 7);
+  map.set('home', json({day: 3, time: 500, o: {}, rel: {}, inv: {}, saveVersion: 2}));
+  SaveManager.load(storage, 'home', valid, undefined, true);
   for (let day = 1; day <= 5; day++) SaveManager.snapshot(storage, 'home', {day, time: 420, o: {}, rel: {}, inv: {}}, valid, {label: 'd-' + day, day});
   assert.equal(json(SaveManager.snapshots(storage, 'home').map(s => s.day)), '[2,3,4,5]');
   assert.equal(SaveManager.restore(storage, 'home', 1, valid).day, 3);
+});
+
+
+test('unchanged autosaves and stale tabs do not replace stored progress', () => {
+  const createManager = () => vm.runInNewContext(read('save-manager.js') + '\nSaveManager');
+  const first = createManager(), second = createManager();
+  const map = new Map();
+  let writes = 0;
+  const storage = {getItem: k => map.get(k) ?? null, setItem(k, v) { writes++; map.set(k, v); }};
+  const valid = s => Number.isInteger(s.day);
+  assert.equal(first.save(storage, 'home', {day: 1, savedAt: 10}, valid), true);
+  second.load(storage, 'home', valid);
+  assert.equal(first.save(storage, 'home', {day: 1, savedAt: 20}, valid), true);
+  assert.equal(writes, 1);
+  assert.equal(first.save(storage, 'home', {day: 2, savedAt: 30}, valid), true);
+  assert.equal(second.status(storage, 'home'), 'conflict');
+  assert.equal(second.save(storage, 'home', {day: 1, savedAt: 40}, valid), false);
+  assert.equal(JSON.parse(map.get('home')).day, 2);
 });
