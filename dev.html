@@ -44,6 +44,8 @@ html,body{height:100%;margin:0;overflow:hidden}
 body{background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 canvas{image-rendering:pixelated;image-rendering:crisp-edges}
 #game{position:fixed;inset:0;display:block;touch-action:none;outline:none}
+#lanternReaction{position:fixed;left:0;top:0;z-index:4;max-width:min(240px,70vw);padding:5px 9px;font-size:13px;line-height:1.4;background:#fff0cf;border-width:2px;pointer-events:none;transform:translate(-50%,-100%)}
+#lanternReaction::after{content:"";position:absolute;left:50%;bottom:-5px;width:6px;height:6px;background:#fff0cf;border-right:2px solid var(--line);border-bottom:2px solid var(--line);transform:rotate(45deg)}
 .hidden{display:none!important}
 button{font:inherit;color:inherit;cursor:pointer}
 button:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
@@ -248,6 +250,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <body>
 
 <canvas id="game" tabindex="0" data-i18n-aria="title"></canvas>
+<div id="lanternReaction" class="px hidden" role="status" aria-live="polite"></div>
 
 <div id="hud">
   <div id="hudStats">
@@ -381,15 +384,15 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="cottage-bonds.js?v=bonds-1"></script>
 <script src="memory-album.js?v=snow-fishing-1"></script>
 <script src="resident-stories.js"></script>
-<script src="village-map.js?v=riverside-1"></script>
+<script src="village-map.js?v=outlined-1"></script>
 <script src="cottage-travel.js?v=first-order-1"></script>
 <script src="village-weekend.js"></script>
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js"></script>
-<script src="lang/zh.js?v=lantern-1" charset="utf-8"></script>
-<script src="lang/en.js?v=lantern-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=lantern-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=lantern-reactions-1" charset="utf-8"></script>
+<script src="lang/en.js?v=lantern-reactions-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=lantern-reactions-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -1625,7 +1628,9 @@ function updNpc(n,dt){
     }
     return;
   }
-  if((D.modal||busy)&&D.npc===n){n.moving=false;n.anim=0;return;}
+  if(((D.modal||busy)&&D.npc===n)||(lanternReaction?.n===n&&lanternReaction.time>3.8)){
+    n.moving=false;n.anim=0;return;
+  }
   if(duty!==n.lastVillageDuty&&present(n)){
     n.lastVillageDuty=duty;n.leaving=false;n.path=null;n.idle=0;
     if(duty)npcGo(n,...duty.spot);
@@ -3646,6 +3651,41 @@ function updateBlackout(){
   notify(tr(active?'blackoutArrives':'blackoutEnds'));
 }
 
+const lanternBubble=$('#lanternReaction');
+let lanternReaction=null,lanternReactionDay=0;
+const lanternSeen=new Set();
+function updateLanternReaction(dt,paused){
+  if(!blackoutActive()||paused||D.modal||FISH.on){lanternReaction=null;return;}
+  if(lanternReactionDay!==state.day){
+    lanternReactionDay=state.day;lanternSeen.clear();
+  }
+  if(lanternReaction){
+    lanternReaction.time-=dt;
+    const {n,time}=lanternReaction;
+    if(time>0&&n.state==='here'&&Math.hypot(n.x-P.x,n.y-P.y)<86){
+      const dx=P.x-n.x,dy=P.y-n.y;
+      n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
+      return;
+    }
+    lanternReaction=null;
+  }
+  const n=npcs.find(n=>n.state==='here'&&!n.leaving&&!lanternSeen.has(n.id)&&Math.hypot(n.x-P.x,n.y-P.y)<58);
+  if(!n)return;
+  lanternSeen.add(n.id);
+  lanternReaction={n,time:4.6};
+  n.dir=Math.abs(P.x-n.x)>Math.abs(P.y-n.y)?(P.x<n.x?'left':'right'):(P.y<n.y?'up':'down');
+  lanternBubble.textContent=nm(n)+' · '+tr('lanternNotice_'+n.id);
+}
+function renderLanternReaction(cx,cy){
+  const n=lanternReaction?.n;
+  lanternBubble.classList.toggle('hidden',!n);
+  if(!n)return;
+  const ratio=scale*innerWidth/cv.width;
+  const margin=Math.min(124,innerWidth*.37);
+  const x=Math.min(innerWidth-margin,Math.max(margin,(n.x-cx)*ratio));
+  lanternBubble.style.left=x+'px';
+  lanternBubble.style.top=Math.max(125,(n.y-cy-31)*ratio)+'px';
+}
 function villageInteraction(id){
   if(blackoutOption(id).length){openBlackoutScene(id);return;}
   if(id==='ferry'){ferryMenu();return;}
@@ -4511,12 +4551,12 @@ function drawBlackoutLight(g,cx,cy,w,h,time){
 }
 function drawLanternLighting(g,x,y,radius,cx,cy,w,h){
   const mask=g.createRadialGradient(x,y,0,x,y,radius);
-  mask.addColorStop(0,'rgba(34,44,72,.06)');
-  mask.addColorStop(.35,'rgba(35,46,73,.15)');
-  mask.addColorStop(.72,'rgba(38,51,79,.40)');
-  mask.addColorStop(1,'rgba(39,53,82,.57)');
+  mask.addColorStop(0,'rgba(36,49,91,.02)');
+  mask.addColorStop(.32,'rgba(36,49,91,.12)');
+  mask.addColorStop(.70,'rgba(36,49,91,.54)');
+  mask.addColorStop(1,'rgba(36,49,91,.70)');
   g.fillStyle=mask;g.fillRect(cx,cy,w,h);
-  glow(g,x,y,radius*.82,'rgba(255,193,103,.29)');
+  glow(g,x,y,radius*.87,'rgba(255,192,96,.38)');
   drawLantern(g,x,y);
 }
 function drawBlackoutGathering(g,record){
@@ -4539,6 +4579,22 @@ function drawBlackoutGathering(g,record){
 }
 function drawBlackoutLightForCard(g){
   drawLanternLighting(g,53,37,47,0,0,96,60);
+}
+const villageSprites=new Map();
+function drawOutlinedVillageProp(g,prop,winter,night,time){
+  const rate=prop.id==='cafe'?2:prop.id==='fountain'?3:1;
+  const frame=rate===1?0:Math.floor(time*rate)%3;
+  const key=[prop.id,prop.w,winter,night,frame].join(':');
+  let sprite=villageSprites.get(key);
+  if(!sprite){
+    sprite=mk(prop.w*16+4,54);
+    const art=sprite.getContext('2d');
+    art.translate(2,52-16);
+    VillageMap.paintProp(art,{id:prop.id,x:0,y:0,w:prop.w,h:1},winter,night,(frame+.5)/rate);
+    // Same pixel contour as the cottage trees, with a one-pixel margin.
+    outline(sprite,'#392a32');villageSprites.set(key,sprite);
+  }
+  g.drawImage(sprite,prop.x*16-2,(prop.y+prop.h)*16-52);
 }
 function render(time){
   updateMiniMap();
@@ -4601,7 +4657,7 @@ function render(time){
     const x=prop.x*16,y=(prop.y+prop.h)*16;
     if(x+prop.w*16>cx&&x<cx+vw&&y>cy&&y-52<cy+vh)
       ents.push({key:y-1,draw:g=>{
-        VillageMap.paintProp(g,prop,winter,!blackout&&dark>.5,time);drawProjectDisplay(g,prop);
+        drawOutlinedVillageProp(g,prop,winter,!blackout&&dark>.5,time);drawProjectDisplay(g,prop);
       }});
   }
   for(const s of statics)if(s.x+s.w>cx&&s.x<cx+vw&&s.y+s.h>cy&&s.y<cy+vh)ents.push(s);
@@ -4618,6 +4674,12 @@ function render(time){
     }
   }});
   for(const n of npcs){if(n.state==='away')continue;ents.push({key:n.y,draw:g=>{drawPerson(g,n.outfit,n.dir,n.moving?WALK[Math.floor(n.anim*6)%4]:0,n.x,personY(n,time));drawChoreProps(g,n,time);drawVillageWork(g,n,time);
+    if(lanternReaction?.n===n&&n.id==='xy'){
+      const x=Math.round(n.x)+(n.dir==='left'?-1:1)*8,y=Math.round(n.y);
+      const wave=reducedMotion?0:Math.floor(time*5)%2;
+      g.fillStyle='#392a32';g.fillRect(x,y-21-wave,3,6+wave);
+      g.fillStyle='#f4c8a4';g.fillRect(x+1,y-22-wave,2,3);
+    }
     const r=rel(n);if(r.couple)drawHeart(g,n.x,n.y-33+(Math.sin(time*3)>0?-1:0),0.95);else if(!r.met)drawBang(g,n.x,n.y-36+(Math.sin(time*4)>0?-1:0));}});}
   for(const p of state.pets)ents.push({key:p.y,draw:g=>drawPet(g,p,time)});
   if(!state.goldFound){const gx=GOLD_TILE[0]*16+8,gy=GOLD_TILE[1]*16+12;ents.push({key:gy,draw:g=>{const b=Math.sin(time*3)>0?-1:0;g.fillStyle='rgba(40,30,30,.18)';g.fillRect(gx-4,gy-1,8,2);g.drawImage(SPR.gold,gx-6,gy-15+b);
@@ -4664,6 +4726,7 @@ function render(time){
   if(winter||season==='autumn')drawSeasonParticles(ctx,time,winter);
   drawRiverWeather(ctx,time,VillageRiverside.weather(state.day));
   if(blackout)drawBlackoutLight(ctx,cx,cy,vw,vh,time);
+  renderLanternReaction(cx,cy);
 }
 
 /* ---------------- loop ---------------- */
@@ -4705,6 +4768,7 @@ function update(dt){
   if(!paused)checkChores();
   updPuffs(paused?0:dt);
   if(!startOpen)for(const n of npcs)updNpc(n,paused&&!busy?0:dt);
+  updateLanternReaction(dt,paused);
   for(let i=parts.length-1;i>=0;i--){parts[i].t+=dt;if(parts[i].t>1.2)parts.splice(i,1);}
   target=findTarget();updatePrompt();
   hudT+=dt;if(hudT>.25){hudT=0;updateHud();}
