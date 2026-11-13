@@ -7,10 +7,16 @@ const VillageMap = (() => {
     cafe:{id:'cafe',tile:[14,21],anchor:[14,24],spot:[14,22],color:'#df9a89',resident:'gy',hours:[12*60+30,17*60]},
     court:{id:'court',tile:[31,21],anchor:[31,24],spot:[32,24],color:'#92bd9a',resident:'xy',hours:[8*60,10*60]},
     stage:{id:'stage',tile:[23,31],anchor:[23,29],spot:[22,30],color:'#bda1d1',resident:'jy',hours:[11*60,14*60]},
+    ferry:{tile:[37,29],anchor:[36,28],color:'#7aadb6'},
+    post:{tile:[4,23],anchor:[4,25],color:'#e5b384'},
     lookout:{id:'lookout',tile:[44,12],anchor:[44,15],spot:[45,14],color:'#9abdda',resident:'by',hours:[16*60+30,19*60]}
   };
   const props=[
     {id:'guide',x:7,y:21,w:1,h:1},
+    {id:'postHouse',x:2,y:23,w:4,h:1},
+    {id:'post',x:4,y:24,w:1,h:1},
+    {id:'washline',x:34,y:29,w:2,h:1},
+    {id:'ferry',x:36,y:29,w:1,h:1},
     {id:'weekendBoard',x:8,y:24,w:1,h:1},
     {id:'weekendStall',x:12,y:27,w:3,h:1},
     {id:'cafeHouse',x:11,y:20,w:7,h:2},
@@ -32,7 +38,7 @@ const VillageMap = (() => {
     {id:'lamp',x:9,y:23,w:1,h:1},{id:'lamp',x:24,y:27,w:1,h:1},
     {id:'lamp',x:37,y:14,w:1,h:1},{id:'lamp',x:42,y:16,w:1,h:1}
   ];
-  const plantings=[[3,22],[2,27],[5,30],[8,31],[9,20],[11,30],[17,31],[19,32],[27,32],[30,31],[35,30],[37,29],[37,22],[37,8],[34,4],[30,4],[32,8],[30,12],[35,11],[43,5],[45,8],[43,20],[46,23],[43,30],[46,31]];
+  const plantings=[[3,22],[2,27],[5,30],[8,31],[9,20],[11,30],[17,31],[19,32],[27,32],[30,31],[35,31],[37,22],[37,8],[34,4],[30,4],[32,8],[30,12],[35,11],[43,5],[45,8],[43,20],[46,23],[43,30],[46,31]];
   const exchanges={
     produce:[{take:'carrot',count:2,give:'shell',amount:1},{take:'pumpkin',count:1,give:'shell',amount:2}],
     fishStall:[{take:'fish',count:2,give:'shell',amount:1},{take:'shell',count:2,give:'fish',amount:1}],
@@ -59,6 +65,8 @@ const VillageMap = (() => {
     fill(22,27,2,4,PATH);fill(20,29,7,4,DECK);
     fill(27,15,11,2,PATH);fill(30,16,2,5,PATH);fill(28,21,8,7,COURT);
     fill(34,27,12,1,PATH);fill(42,15,4,12,PATH);fill(42,10,5,6,STONE);fill(42,14,5,2,DECK);
+    fill(3,24,3,2,DECK);fill(4,25,3,1,PATH);
+    fill(36,28,2,4,STONE);fill(37,29,1,3,DECK);
     fill(38,1,3,32,WATER);fill(38,15,3,2,BRIDGE);fill(38,27,3,1,BRIDGE);
   }
   function tile(g,x,y,kind,winter){
@@ -91,7 +99,28 @@ const VillageMap = (() => {
     const w=p.w*16,h=p.h*16,x=p.x*16,y=p.y*16+h;
     const R=(a,b,ww,hh,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,ww,hh);};
     const wood='#785441',warm='#d6a274',cream='#f8e6bb',snow='#ecf3ef',edge='#5b403b';
-    if(p.id==='cafeHouse'||p.id==='clubhouse'||p.id==='studio'){
+    if(p.id==='postHouse'){
+      R(1,-30,w-2,30,edge);R(4,-28,w-8,26,'#dcb78d');
+      R(7,-39,w-14,5,edge);R(2,-35,w-4,6,edge);R(9,-38,w-18,4,'#9f6161');
+      R(4,-34,w-8,3,winter?snow:'#bb7972');R(1,-30,w-2,2,'#a56b5d');
+      R(6,-23,15,15,edge);R(8,-21,11,11,night?'#d8aa68':'#91b3af');
+      R(13,-21,1,11,wood);R(8,-16,11,1,wood);
+      R(w-30,-21,21,21,edge);R(w-28,-19,17,19,'#866453');
+      R(w-27,-17,15,15,'#9cbbba');R(w-19,-17,1,15,edge);
+      R(23,-27,15,10,edge);R(25,-25,11,6,cream);R(26,-24,9,1,'#b47470');R(29,-23,3,1,'#b47470');
+    }else if(p.id==='post'){
+      R(6,-11,4,11,edge);R(1,-19,14,11,edge);R(2,-18,12,8,'#b76c72');
+      R(3,-17,10,2,'#d99490');R(4,-14,8,2,edge);R(6,-15,4,1,cream);
+    }else if(p.id==='ferry'||p.id==='washline'){
+      R(1,-13,3,13,edge);R(w-4,-13,3,13,edge);
+      R(4,-11,w-8,2,wood);R(4,-10,w-8,1,warm);
+      if(p.id==='washline'){
+        R(7,-9,10,8,edge);R(8,-9,8,7,'#d7bba6');R(9,-8,6,1,cream);
+        R(20,-9,7,6,edge);R(21,-9,5,5,'#9eb9b3');
+      }else{
+        R(4,-18,8,7,edge);R(5,-17,6,5,warm);R(6,-15,4,1,edge);
+      }
+    }else if(p.id==='cafeHouse'||p.id==='clubhouse'||p.id==='studio'){
       const [roof,light,wall,glass]={
         cafeHouse:['#94596a','#bd7a80','#eac6a0','#92bbb7'],
         clubhouse:['#507569','#779583','#d4c394','#8fb8b3'],
@@ -109,7 +138,28 @@ const VillageMap = (() => {
         R(left+ww/2-1,-23,2,13,wood);R(left+2,-18,ww-4,1,wood);
         R(left+3,-22,3,2,'#e7e4c7');R(left-2,-7,ww+4,2,wood);
       }
-      if(p.id==='cafeHouse'){
+      if(p.id==='postHouse'){
+      R(1,-30,w-2,30,edge);R(4,-28,w-8,26,'#dcb78d');
+      R(7,-39,w-14,5,edge);R(2,-35,w-4,6,edge);R(9,-38,w-18,4,'#9f6161');
+      R(4,-34,w-8,3,winter?snow:'#bb7972');R(1,-30,w-2,2,'#a56b5d');
+      R(6,-23,15,15,edge);R(8,-21,11,11,night?'#d8aa68':'#91b3af');
+      R(13,-21,1,11,wood);R(8,-16,11,1,wood);
+      R(w-30,-21,21,21,edge);R(w-28,-19,17,19,'#866453');
+      R(w-27,-17,15,15,'#9cbbba');R(w-19,-17,1,15,edge);
+      R(23,-27,15,10,edge);R(25,-25,11,6,cream);R(26,-24,9,1,'#b47470');R(29,-23,3,1,'#b47470');
+    }else if(p.id==='post'){
+      R(6,-11,4,11,edge);R(1,-19,14,11,edge);R(2,-18,12,8,'#b76c72');
+      R(3,-17,10,2,'#d99490');R(4,-14,8,2,edge);R(6,-15,4,1,cream);
+    }else if(p.id==='ferry'||p.id==='washline'){
+      R(1,-13,3,13,edge);R(w-4,-13,3,13,edge);
+      R(4,-11,w-8,2,wood);R(4,-10,w-8,1,warm);
+      if(p.id==='washline'){
+        R(7,-9,10,8,edge);R(8,-9,8,7,'#d7bba6');R(9,-8,6,1,cream);
+        R(20,-9,7,6,edge);R(21,-9,5,5,'#9eb9b3');
+      }else{
+        R(4,-18,8,7,edge);R(5,-17,6,5,warm);R(6,-15,4,1,edge);
+      }
+    }else if(p.id==='cafeHouse'){
         R(c-12,-29,24,10,edge);R(c-11,-28,22,8,cream);
         R(c-4,-26,7,4,roof);R(c+3,-26,2,2,roof);R(c-5,-22,10,1,roof);
         R(c-23,-19,46,7,edge);R(c-22,-18,44,5,roof);

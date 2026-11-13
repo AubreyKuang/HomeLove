@@ -1167,3 +1167,36 @@ Object.assign(window.HL_LANG.zh.ui, {
   "weekDay6": "周六",
   "weekDay7": "周日"
 });
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "village_ferry": "河岸旧渡口",
+  "village_post": "村邮局",
+  "riverWeather_clear": "晴",
+  "riverWeather_wind": "有风",
+  "riverWeather_rain": "雨",
+  "riverNormal": "旧渡口旁还留着木栏杆和公用晾衣架。北边水深，可以试着抛一竿。",
+  "riverLow": "雨水退了，渡口东边露出一级湿漉漉的石阶。",
+  "riverRest": "坐一会儿，听河水",
+  "riverRested": "你坐到河面起了细纹，才想起自己原本要往哪儿走。",
+  "riverPostIntro": "长廊下有一只红色邮筒和一个失物架。寄给熟人的信，可以在这里投递。",
+  "riverSend": "寄出背包里的一封信",
+  "riverSendTo": "想把这封信寄给谁？",
+  "riverLetterSent": "你写上{name}的名字，把信投进红邮筒。",
+  "riverLetterRecall": "你从邮局寄的信，我留着呢。",
+  "riverFind_apron": "查看挂在栏杆上的围裙",
+  "riverFind_glass": "看看石阶上的亮光",
+  "riverApronFound": "栏杆上挂着一条围裙，口袋绣着风铃。风把它从咖啡馆的露台吹到了这里。你把它叠好，可以拿给顾言，也可以送到邮局的失物架。",
+  "riverPostApron": "把围裙放到失物架",
+  "riverReturnApron": "归还渡口捡到的围裙",
+  "riverApron_returned": "顾言看了一眼口袋上的风铃，接过围裙笑了。「这是我开店那天缝的。还好你认出来了。」",
+  "riverApron_posted": "你把围裙叠在失物架上，留了一张写着「风铃咖啡馆」的小纸条。",
+  "riverApronLater": "「我的围裙在邮局找回来了。有人还给我留了张纸条。」",
+  "riverApronRecall": "上次那阵风把围裙吹到渡口，多亏你帮我拿了回来。",
+  "worldTitle_riverApron": "风带走的围裙",
+  "riverGlassFound": "石阶的缝里躺着一枚浅蓝色的玻璃珠。河水从它旁边绕过去，映出一点光。",
+  "riverGlassKeep": "捡起玻璃珠留作纪念",
+  "riverGlassLeave": "留在原地，把景色画下来",
+  "riverGlass_keep": "你把玻璃珠捧在手心。湿漉漉的一点蓝，像从渡口带回了半滴河水。",
+  "riverGlass_leave": "你把珠子留在石阶上，画下它映出的那一点蓝。等水再涨起来，这页画也还在。",
+  "worldTitle_riverGlass": "水退以后"
+});

@@ -1167,3 +1167,36 @@ Object.assign(window.HL_LANG.en.ui, {
   "weekDay6": "Sat",
   "weekDay7": "Sun"
 });
+
+Object.assign(window.HL_LANG.en.ui, {
+  "village_ferry": "Old ferry landing",
+  "village_post": "Village post office",
+  "riverWeather_clear": "Clear",
+  "riverWeather_wind": "Windy",
+  "riverWeather_rain": "Rain",
+  "riverNormal": "The old railing and communal clothesline are still here. The water is deep enough to fish just north of the landing.",
+  "riverLow": "The water has receded, revealing a wet stone step east of the landing.",
+  "riverRest": "Sit and listen to the river",
+  "riverRested": "You sit until ripples wrinkle the water, then remember where you were headed.",
+  "riverPostIntro": "There’s a red mailbox and a lost-and-found shelf under the covered walkway. You can post letters to residents you know.",
+  "riverSend": "Post a letter from your bag",
+  "riverSendTo": "Who is this letter for?",
+  "riverLetterSent": "You write {name} on the envelope and slip it into the red mailbox.",
+  "riverLetterRecall": "I kept the letter you sent from the post office.",
+  "riverFind_apron": "Check the apron on the railing",
+  "riverFind_glass": "Check the glint on the stone step",
+  "riverApronFound": "An apron with a wind chime stitched onto its pocket is caught on the railing. It must have blown off the café deck. Take it to Gu Yan or leave it at the post office.",
+  "riverPostApron": "Leave the apron at lost and found",
+  "riverReturnApron": "Return the apron from the landing",
+  "riverApron_returned": "Gu Yan spots the stitched wind chime and smiles. “I sewed that the day I opened the café. I’m glad you recognized it.”",
+  "riverApron_posted": "You fold the apron on the lost-and-found shelf and leave a note that reads “Wind Chime Café.”",
+  "riverApronLater": "“My apron turned up at the post office. Someone even left me a note.”",
+  "riverApronRecall": "Thanks again for finding my apron down at the landing.",
+  "worldTitle_riverApron": "The windblown apron",
+  "riverGlassFound": "A pale blue glass bead lies between the stones. Water curls past it and catches the light.",
+  "riverGlassKeep": "Keep the glass bead as a memento",
+  "riverGlassLeave": "Leave it there and sketch the scene",
+  "riverGlass_keep": "In your palm, the wet blue bead looks like half a drop of river water brought home.",
+  "riverGlass_leave": "You leave the bead on the step and sketch its little glint of blue. The river will rise again, and the page will still be there.",
+  "worldTitle_riverGlass": "When the river receded"
+});
