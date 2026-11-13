@@ -148,7 +148,8 @@ function applySave(s){
           ?{dedication:sketch.dedication,
             ...(Number.isInteger(sketch.dedicationVisited)&&sketch.dedicationVisited>=sketch.day&&sketch.dedicationVisited<=state.day
               ?{dedicationVisited:sketch.dedicationVisited,...(sketch.dedicationCompared===true
-                ?{dedicationCompared:true,...(sketch.dedicationWind===true?{dedicationWind:true}:{})}:{})}:{})}:{}),
+                ?{dedicationCompared:true,...(sketch.dedicationWind===true?{dedicationWind:true}:{})}
+                :sketch.dedicationStory===true?{dedicationStory:true}:{})}:{})}:{}),
         ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
     }
   }

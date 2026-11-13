@@ -691,7 +691,8 @@ test('a dedication revisit respects the weather and schedule, and saves its memo
   assert.equal(runtime.dedicationMeeting(n),undefined);
   state.day=6;state.time=640;
   assert.equal(runtime.dedicationMeeting(n),meeting);
-  runtime.finishDedicationVisit(n,true);
+  runtime.finishDedicationVisit(n,'compare');
+  runtime.finishDedicationVisit(n,'story');
   assert.deepEqual([state.time,state.dedicationVisit,sketch.dedicationCompared],[640,visit,undefined]);
   write=false;runtime.finishDedicationVisit(n);
   assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited],[640,40,10,visit,undefined]);
@@ -703,15 +704,29 @@ test('a dedication revisit respects the weather and schedule, and saves its memo
   wind=true;
   assert.equal(runtime.bookDedicationVisit('pond',6),true);
   const compareVisit=state.dedicationVisit;
-  write=false;runtime.finishDedicationVisit(n,true);
+  write=false;runtime.finishDedicationVisit(n,'compare');
   assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited,sketch.dedicationCompared],
     [625,48,14,compareVisit,undefined,undefined]);
   assert.equal(sketch.dedicationWind,undefined);
-  write=true;runtime.finishDedicationVisit(n,true);runtime.finishDedicationVisit(n,true);
+  write=true;runtime.finishDedicationVisit(n,'compare');runtime.finishDedicationVisit(n,'story');
   assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited,sketch.dedicationCompared],
     [660,60,18,null,6,true]);
   assert.equal(sketch.dedicationWind,true);
   assert.equal(runtime.dedicationComparison(sketch),'rainDedicationCompareGardenWind');
+  assert.equal(sketch.dedicationStory,undefined);
+  delete sketch.dedicationVisited;
+  delete sketch.dedicationCompared;
+  delete sketch.dedicationWind;
+  state.time=625;
+  assert.equal(runtime.bookDedicationVisit('pond',6),true);
+  const storyVisit=state.dedicationVisit;
+  write=false;runtime.finishDedicationVisit(n,'story');
+  assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited,sketch.dedicationStory],
+    [625,60,18,storyVisit,undefined,undefined]);
+  write=true;runtime.finishDedicationVisit(n,'story');runtime.finishDedicationVisit(n,'compare');
+  assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited,sketch.dedicationStory,sketch.dedicationCompared],
+    [660,68,25,null,6,true,undefined]);
+  assert.equal(runtime.dedicationStory(sketch),'rainDedicationStory_gy');
 });
 
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {

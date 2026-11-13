@@ -281,6 +281,9 @@ function renderAlbum(){
       if(selected.dedicationVisited){
         page.append(el('p',null,tr('rainDedicationVisitMemory',{place,day:tr('day',{d:selected.dedicationVisited}),name:nm(n)})));
         if(selected.dedicationCompared)page.append(el('p',null,dedicationComparison(selected)));
+        if(selected.dedicationStory)page.append(el('p',null,tr('rainDedicationStoryMemory',{
+          name:nm(n),story:dedicationStory(selected)
+        })));
       }else{
         const booked=visit?.source===selected.place;
         if(booked)page.append(el('p',null,tr('rainDedicationVisitBookedWeather',{

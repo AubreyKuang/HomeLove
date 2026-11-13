@@ -45,6 +45,8 @@ function renderDiary(){
     })),el('p','rline',tr('rainDedicationForecast',{weather:tr('riverWeather_'+VillageRiverside.weather(dedication.day))})),
     el('p','rline',tr('rainDedicationComparePlan',{
       last:fmt(spot.end-RAIN_DEDICATION_COMPARE.minutes),...RAIN_DEDICATION_COMPARE
+    })),el('p','rline',tr('rainDedicationStoryPlan',{
+      last:fmt(spot.end-RAIN_DEDICATION_STORY.minutes),...RAIN_DEDICATION_STORY
     })));
     if(dedication.day===state.day){
       const route=el('button','pbtn',tr('rainDedicationVisitRoute'));
