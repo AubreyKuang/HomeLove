@@ -60,7 +60,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,firstGreetingDismissed:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  moments:ResidentMoments.load(),offlineProgress:false,datePlan:null,rainReturn:null,breakfastBoxDay:null,
+  moments:ResidentMoments.load(),offlineProgress:false,datePlan:null,rainReturn:null,rainSketches:{},breakfastBoxDay:null,
   villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),blackout:VillageBlackout.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS=document.body.dataset.mode==='test'?'homelove-save-dev':'homelove-save-v1';
@@ -133,6 +133,13 @@ function applySave(s){
   state.rainReturn=revisit&&ALBUM_RESIDENTS.includes(revisit.resident)&&Object.hasOwn(RAIN_DATE_MEETINGS,revisit.place)&&
     Number.isInteger(revisit.day)&&revisit.day>=state.day&&revisit.day<=state.day+1
     ? {resident:revisit.resident,place:revisit.place,day:revisit.day,done:revisit.done===true}:null;
+  state.rainSketches={};
+  for(const place of Object.keys(RAIN_DATE_MEETINGS)){
+    const sketch=s.rainSketches?.[place];
+    if(ALBUM_RESIDENTS.includes(sketch?.resident)&&Number.isInteger(sketch.day)&&sketch.day>0&&sketch.day<=state.day){
+      state.rainSketches[place]={resident:sketch.resident,day:sketch.day};
+    }
+  }
   for(const pool of Object.values(CAPSULE_POOLS)){
     const saved=s[pool.owned];
     state[pool.owned]=Array.isArray(saved)?pool.items.filter(item=>saved.includes(item.id)).map(item=>item.id):[];

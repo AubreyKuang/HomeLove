@@ -43,6 +43,9 @@ function renderDiary(){
       ...RAIN_RETURN,place:tr(spot.name),day:tr('day',{d:revisit.day}),
       name:nm(npcs.find(n=>n.id===revisit.resident))
     })));
+    if(!state.rainSketches[revisit.place]&&(revisit.day>state.day||!rainSketchLimit(revisit))){
+      section.append(el('p','rline',tr('dateRainSketchHint',RAIN_SKETCH)));
+    }
     if(rainReturnReady()){
       const route=el('button','pbtn',tr('dateRainReturnRoute'));
       route.type='button';

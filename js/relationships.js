@@ -249,6 +249,7 @@ const SHORT_DATE={minutes:20,points:5,mood:6};
 const UMBRELLA_DATE={minutes:25,points:6,mood:10};
 const RAIN_DETOUR_DATE={minutes:35,points:8,mood:13};
 const RAIN_RETURN={minutes:15,mood:8};
+const RAIN_SKETCH={minutes:30,mood:4};
 function rainReturnReady(){
   const revisit=state.rainReturn;
   return revisit?.day===state.day&&!revisit.done&&VillageRiverside.weather(state.day)!=='rain'&&
@@ -258,19 +259,36 @@ function atRainReturn(revisit){
   const [x,y]=RAIN_DATE_MEETINGS[revisit.place].p;
   return Math.hypot(P.x-x*16-8,P.y-y*16-12)<16;
 }
-function finishRainReturn(revisit){
+function rainSketchLimit(revisit){
+  if(state.rainSketches[revisit.place])return 'dateRainSketchCollected';
+  if(state.time+RAIN_SKETCH.minutes>=26*60)return 'dateRainSketchLate';
+  return '';
+}
+function rainReturnMenu(revisit){
+  const limit=rainSketchLimit(revisit);
+  talk(tr('you'),[tr(limit||'dateRainReturnPrompt')],[
+    {label:tr('dateRainReturnLook',RAIN_RETURN),fn:()=>finishRainReturn(revisit)},
+    {label:tr('dateRainSketch',RAIN_SKETCH),disabled:!!limit,fn:()=>finishRainReturn(revisit,true)},
+    {label:tr('never')}
+  ]);
+}
+function finishRainReturn(revisit,sketch=false){
   if(!revisit||rainReturnReady()!==revisit||!atRainReturn(revisit))return;
+  if(sketch&&rainSketchLimit(revisit))return;
+  const activity=sketch?RAIN_SKETCH:RAIN_RETURN;
   const before={time:state.time,need:{...state.need}};
   revisit.done=true;
-  advanceTime(RAIN_RETURN.minutes);
-  state.need.mood=clampN(state.need.mood+RAIN_RETURN.mood);
+  if(sketch)state.rainSketches[revisit.place]={resident:revisit.resident,day:state.day};
+  advanceTime(activity.minutes);
+  state.need.mood=clampN(state.need.mood+activity.mood);
   if(!save()){
+    if(sketch)delete state.rainSketches[revisit.place];
     revisit.done=false;
     Object.assign(state,before);
     return;
   }
   updateHud();
-  talk(tr('you'),[tr('dateRainReturnDone')]);
+  talk(tr('you'),[tr(sketch?'dateRainSketchDone':'dateRainReturnDone')]);
 }
 function hasSharedExperience(n){
   const life=state.life[n.id];
