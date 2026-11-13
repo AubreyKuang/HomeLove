@@ -330,6 +330,32 @@ test('a rainy date can move to a dry tomorrow without creating a second reservat
   assert.deepEqual(done,{});
 });
 
+test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
+  const plan={resident:'gy',place:'garden',day:3};
+  const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};
+  const state={day:3,time:600,datePlan:plan,need:{mood:40}};
+  const relation={done:{}};
+  let open=false, points=0;
+  const meeting={start:600,end:660,spot:[20,12]};
+  const runtime=game({state,P,busy:false,rel:()=>relation,DATE_MEETINGS:{garden:meeting},
+    SHELTERED_DATE_MEETINGS:{garden:meeting},UMBRELLA_DATE:{minutes:25,mood:10,points:6},
+    activeUmbrella:()=>open,clampN:n=>n,advanceTime:m=>{state.time+=m;},addPts(_,p){points+=p;},
+    updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  runSection(runtime,'function finishShortDate(','function dateWith(');
+  runtime.finishShortDate(n,plan,true);
+  assert.equal(state.datePlan,plan);
+  open=true;
+  const indoor={...plan,shelter:true};
+  state.datePlan=indoor;
+  runtime.finishShortDate(n,indoor,true);
+  assert.equal(state.datePlan,indoor);
+  state.datePlan=plan;
+  runtime.finishShortDate(n,plan,true);
+  runtime.finishShortDate(n,plan,true);
+  assert.deepEqual([state.datePlan,relation.done.date,state.time,state.need.mood,points],[null,true,625,50,6]);
+});
+
 test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
   const state={day:1,time:1200,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
   const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40},

@@ -246,6 +246,7 @@ function renderRewind(container){
 }
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
 const SHORT_DATE={minutes:20,points:5,mood:6};
+const UMBRELLA_DATE={minutes:25,points:6,mood:10};
 function hasSharedExperience(n){
   const life=state.life[n.id];
   return !!(life?.firstDate||state.moments.records[n.id]||life?.fishingInvitation?.catch);
@@ -283,7 +284,10 @@ function npcMenu(n,back){
         opts.push({label:tr('dateMeetingTea',DATE_SHELTER),disabled:!!r.done.date,fn:()=>finishShortDate(n,reserved)});
       }else{
         opts.push({label:tr('dateMeetingStart'),disabled:!!r.done.date,fn:()=>dateWith(n,reserved.place,reserved)});
-        if(!r.done.date)opts.push({label:tr('dateMeetingWalk',SHORT_DATE),fn:()=>finishShortDate(n,reserved)});
+        if(!r.done.date){
+          opts.push({label:tr('dateMeetingWalk',SHORT_DATE),fn:()=>finishShortDate(n,reserved)});
+          if(activeUmbrella())opts.push({label:tr('dateMeetingUmbrella',UMBRELLA_DATE),fn:()=>finishShortDate(n,reserved,true)});
+        }
       }
     }else if(r.done.date&&!reserved)opts.push({label:tr('dateMeetingTomorrow'),fn:()=>planDateMenu(n)});
     else opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
@@ -581,10 +585,11 @@ function dateBlock(d){
   if(d.dark&&darkness()<=.5)return 'needDark';
   if(state.time+d.minutes>=26*60)return 'dateTooLate';
 }
-function finishShortDate(n,plan){
+function finishShortDate(n,plan,umbrella=false){
   const r=rel(n);
   if(busy||r.done.date||activeDatePlan()!==plan||!atPlannedDate(n,plannedDateMeeting(n)))return;
-  const {minutes,mood,points}=plan.shelter?DATE_SHELTER:SHORT_DATE;
+  if(umbrella&&(plan.shelter||!activeUmbrella()))return;
+  const {minutes,mood,points}=umbrella?UMBRELLA_DATE:plan.shelter?DATE_SHELTER:SHORT_DATE;
   r.done.date=true;
   state.datePlan=null;
   advanceTime(minutes);
@@ -592,7 +597,7 @@ function finishShortDate(n,plan){
   addPts(n,points);
   updateHud();
   D.npc=n;
-  talk(nm(n),[tr(plan.shelter?'dateMeetingTeaDone':'dateMeetingWalkDone')],null,()=>milestone(n));
+  talk(nm(n),[tr(umbrella?'dateMeetingUmbrellaDone':plan.shelter?'dateMeetingTeaDone':'dateMeetingWalkDone')],null,()=>milestone(n));
 }
 function dateWith(n,loc,plan=null){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];
