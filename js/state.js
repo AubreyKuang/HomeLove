@@ -132,7 +132,8 @@ function applySave(s){
   const revisit=s.rainReturn;
   state.rainReturn=revisit&&ALBUM_RESIDENTS.includes(revisit.resident)&&Object.hasOwn(RAIN_DATE_MEETINGS,revisit.place)&&
     Number.isInteger(revisit.day)&&revisit.day>=state.day&&revisit.day<=state.day+1
-    ? {resident:revisit.resident,place:revisit.place,day:revisit.day,done:revisit.done===true}:null;
+    ? {resident:revisit.resident,place:revisit.place,day:revisit.day,done:revisit.done===true,
+      ...(revisit.together===true?{together:true}:{})}:null;
   state.rainSketches={};
   for(const place of Object.keys(RAIN_DATE_MEETINGS)){
     const sketch=s.rainSketches?.[place];

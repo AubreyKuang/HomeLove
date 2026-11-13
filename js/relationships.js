@@ -250,6 +250,7 @@ const UMBRELLA_DATE={minutes:25,points:6,mood:10};
 const RAIN_DETOUR_DATE={minutes:35,points:8,mood:13};
 const RAIN_RETURN={minutes:15,mood:8};
 const RAIN_SKETCH={minutes:30,mood:4};
+const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 function rainReturnReady(){
   const revisit=state.rainReturn;
   return revisit?.day===state.day&&!revisit.done&&VillageRiverside.weather(state.day)!=='rain'&&
@@ -259,6 +260,42 @@ function atRainReturn(revisit){
   const [x,y]=RAIN_DATE_MEETINGS[revisit.place].p;
   return Math.hypot(P.x-x*16-8,P.y-y*16-12)<16;
 }
+function rainCompanionMeeting(n){
+  const revisit=rainReturnReady();
+  if(!revisit?.together||revisit.resident!==n.id)return;
+  const meeting=RAIN_DATE_MEETINGS[revisit.place];
+  if(state.time>=meeting.start-20&&state.time<meeting.end)return meeting;
+}
+function rainCompanionConflict(revisit,plan=activeDatePlan()){
+  return !!(plan&&revisit&&plan.day===revisit.day&&plan.resident===revisit.resident&&plan.place===revisit.place);
+}
+function setRainCompanion(revisit){
+  const meeting=RAIN_DATE_MEETINGS[revisit.place];
+  if(state.rainReturn!==revisit||revisit.done||VillageRiverside.weather(revisit.day)==='rain'||
+    !(revisit.day===state.day+1||(revisit.day===state.day&&state.time<meeting.end)))return false;
+  if(!revisit.together&&rainCompanionConflict(revisit))return false;
+  const previous=revisit.together;
+  revisit.together=!previous;
+  if(save())return true;
+  if(previous===undefined)delete revisit.together;else revisit.together=previous;
+  return false;
+}
+function canFinishRainCompanion(revisit,n){
+  return !!(revisit?.together&&n&&rainReturnReady()===revisit&&atPlannedDate(n,rainCompanionMeeting(n)));
+}
+function finishRainCompanion(revisit,n){
+  if(!canFinishRainCompanion(revisit,n))return;
+  const before={time:state.time,need:{...state.need}},trust=B().trust[n.id];
+  revisit.done=true;
+  advanceTime(RAIN_COMPANION.minutes);
+  state.need.mood=clampN(state.need.mood+RAIN_COMPANION.mood);
+  trustNpc(n,RAIN_COMPANION.trust);
+  if(!save()){
+    revisit.done=false;B().trust[n.id]=trust;Object.assign(state,before);return;
+  }
+  updateHud();D.npc=n;
+  talk(nm(n),[tr('rainCompanionDone')]);
+}
 function rainSketchLimit(revisit){
   if(state.rainSketches[revisit.place])return 'dateRainSketchCollected';
   if(state.time+RAIN_SKETCH.minutes>=26*60)return 'dateRainSketchLate';
@@ -266,11 +303,14 @@ function rainSketchLimit(revisit){
 }
 function rainReturnMenu(revisit){
   const limit=rainSketchLimit(revisit);
-  talk(tr('you'),[tr(limit||'dateRainReturnPrompt')],[
+  const opts=[
     {label:tr('dateRainReturnLook',RAIN_RETURN),fn:()=>finishRainReturn(revisit)},
     {label:tr('dateRainSketch',RAIN_SKETCH),disabled:!!limit,fn:()=>finishRainReturn(revisit,true)},
     {label:tr('never')}
-  ]);
+  ];
+  const n=revisit.together&&npcs.find(n=>n.id===revisit.resident);
+  if(canFinishRainCompanion(revisit,n))opts.unshift({label:tr('rainCompanionAction',RAIN_COMPANION),fn:()=>finishRainCompanion(revisit,n)});
+  talk(tr('you'),[tr(limit||'dateRainReturnPrompt')],opts);
 }
 function finishRainReturn(revisit,sketch=false){
   if(!revisit||rainReturnReady()!==revisit||!atRainReturn(revisit))return;
@@ -376,6 +416,8 @@ function npcMenu(n,back){
   if(sickToday(n)&&!r.done.visitSick)opts.push({label:lifeText('探望生病的居民','Visit while sick','お見舞いする'),fn:()=>markLife(n,'visitSick')});
   opts.push({label:tr('optBye'),fn:null});
   if(momentAvailable(n))opts.unshift({label:tr('worldTitle_moment_'+n.id),fn:()=>openResidentMoment(n)});
+  const revisit=state.rainReturn;
+  if(canFinishRainCompanion(revisit,n))opts.unshift({label:tr('rainCompanionAction',RAIN_COMPANION),fn:()=>finishRainCompanion(revisit,n)});
   const lines=[greet];
   if(!back){
     const line=recallResidentMoment(n);
@@ -616,6 +658,10 @@ function describeDatePlan(plan){
     minutes:(plan.shelter?DATE_SHELTER:plan.rainWalk?RAIN_DETOUR_DATE:DATES[plan.place]).minutes};
 }
 function setDatePlan(plan){
+  if(plan&&state.rainReturn?.together&&!state.rainReturn.done&&rainCompanionConflict(state.rainReturn,plan)){
+    notify(tr('rainCompanionConflict'));
+    return false;
+  }
   const previous=state.datePlan;
   state.datePlan=plan;
   if(save())return true;

@@ -38,11 +38,29 @@ function renderDiary(){
   const revisit=state.rainReturn;
   if(revisit&&!revisit.done&&(revisit.day===state.day+1||rainReturnReady())){
     const spot=RAIN_DATE_MEETINGS[revisit.place];
+    const name=nm(npcs.find(n=>n.id===revisit.resident));
     const section=el('section','dsec');
     section.append(el('h3',null,tr('dateRainReturnTitle')),el('p','rline',tr('dateRainReturnPlan',{
       ...RAIN_RETURN,place:tr(spot.name),day:tr('day',{d:revisit.day}),
-      name:nm(npcs.find(n=>n.id===revisit.resident))
+      name
     })));
+    if(revisit.day>state.day||state.time<spot.end){
+      section.append(el('p','rline',tr(revisit.together?'rainCompanionBooked':'rainCompanionHint',{
+        name,start:fmt(spot.start),end:fmt(spot.end),...RAIN_COMPANION
+      })));
+      const conflict=!revisit.together&&rainCompanionConflict(revisit);
+      const invite=el('button','pbtn',tr(conflict?'rainCompanionConflict':revisit.together?'rainCompanionCancel':'rainCompanionInvite',{name}));
+      invite.type='button';
+      invite.disabled=conflict;
+      invite.onclick=()=>{
+        if(setRainCompanion(revisit)){
+          renderDiary();
+          b.querySelector('[data-rain-companion]')?.focus();
+        }
+      };
+      invite.dataset.rainCompanion='';
+      section.append(invite);
+    }else if(revisit.together)section.append(el('p','rline',tr('rainCompanionMissed')));
     if(!state.rainSketches[revisit.place]&&(revisit.day>state.day||!rainSketchLimit(revisit))){
       section.append(el('p','rline',tr('dateRainSketchHint',RAIN_SKETCH)));
     }
