@@ -790,6 +790,8 @@ function findTarget(){
   if(visitor)return visitor;
   const d=DV[P.dir],fx=P.x+d[0]*12,fy=P.y-3+d[1]*12;
   for(const n of npcs){if(n.state!=='away'&&Math.hypot(n.x-fx,n.y-4-fy)<13)return {kind:'npc',n,verb:tr('talkTo',{n:nm(n)}),x:n.x,y:n.y-31};}
+  const revisit=rainReturnReady();
+  if(revisit&&atRainReturn(revisit))return {kind:'rainReturn',revisit,verb:tr('dateRainReturnAction',RAIN_RETURN),x:P.x,y:P.y-30};
   const pt=petAt(fx,fy);if(pt)return {kind:'pet',p:pt,verb:tr('petVerb',{p:pt.name}),x:pt.x,y:pt.y-20};
   if(Math.hypot(cat.x-fx,cat.y-4-fy)<13)return {kind:'cat',verb:tr('petCat'),x:cat.x,y:cat.y-20};
   const tx=Math.floor(fx/16),ty=Math.floor(fy/16),mx=Math.floor(P.x/16),my=Math.floor((P.y-2)/16);
@@ -818,6 +820,7 @@ function interact(){
   walkRoute=[];
   D.npc=null;
   if(t.kind==='visitor')visitAlien();
+  else if(t.kind==='rainReturn')finishRainReturn(t.revisit);
   else if(t.kind==='npc')npcMenu(t.n);
   else if(t.kind==='cat')petCat();
   else if(t.kind==='pet')petMenu(t.p);

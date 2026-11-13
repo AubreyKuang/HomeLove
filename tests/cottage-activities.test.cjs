@@ -338,7 +338,7 @@ test('a rain detour can be reversed and requires both people to reach the new sp
   let points=0;
   const runtime=game({state,P,busy:false,npcs:[n],rel:()=>relation,DATE_MEETINGS:{garden:meeting},
     RAIN_DATE_MEETINGS:{garden:detour},RAIN_DETOUR_DATE:{minutes:35,mood:13,points:8},
-    VillageRiverside:{weather:()=>'rain'},save:()=>true,activeUmbrella:()=>true,clampN:n=>n,
+    VillageRiverside:{weather:day=>day===3?'rain':'clear'},save:()=>true,activeUmbrella:()=>true,clampN:n=>n,
     advanceTime:m=>{state.time+=m;},addPts(_,p){points+=p;},updateHud(){},D:{},talk(){},tr:k=>k,nm:()=>''});
   runSection(runtime,'function activeDatePlan(','function planDateMenu(');
   runSection(runtime,'function finishShortDate(','function dateWith(');
@@ -354,6 +354,29 @@ test('a rain detour can be reversed and requires both people to reach the new sp
   runtime.finishShortDate(n,revised,true);
   runtime.finishShortDate(n,revised,true);
   assert.deepEqual([state.datePlan,relation.done.date,state.time,state.need.mood,points],[null,true,635,53,8]);
+  assert.deepEqual({...state.rainReturn},{resident:'gy',place:'garden',day:4,done:false});
+});
+
+test('rain reflection can be viewed only on the next dry day at the original puddle', () => {
+  const revisit={resident:'gy',place:'garden',day:4,done:false};
+  const state={day:3,time:600,rainReturn:revisit,need:{mood:40},rel:{gy:{done:{}}}};
+  const P={x:0,y:0};
+  let writesSucceed=false,rain=false;
+  const runtime=game({state,P,RAIN_DATE_MEETINGS:{garden:{p:[12,12]}},RAIN_RETURN:{minutes:15,mood:8},
+    VillageRiverside:{weather:()=>rain?'rain':'clear'},save:()=>writesSucceed,clampN:n=>n,
+    advanceTime:m=>{state.time+=m;},updateHud(){},talk(){},tr:k=>k});
+  runSection(runtime,'function rainReturnReady(','function hasSharedExperience(');
+  assert.equal(runtime.rainReturnReady(),null);
+  state.day=4;rain=true;
+  assert.equal(runtime.rainReturnReady(),null);
+  rain=false;runtime.finishRainReturn(revisit);
+  assert.equal(state.time,600);
+  Object.assign(P,{x:200,y:204});
+  runtime.finishRainReturn(revisit);
+  assert.deepEqual([revisit.done,state.time,state.need.mood],[false,600,40]);
+  writesSucceed=true;
+  runtime.finishRainReturn(revisit);runtime.finishRainReturn(revisit);
+  assert.deepEqual([revisit.done,state.time,state.need.mood,state.rel.gy.done],[true,615,48,{}]);
 });
 
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
