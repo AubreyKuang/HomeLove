@@ -1167,3 +1167,36 @@ Object.assign(window.HL_LANG.ja.ui, {
   "weekDay6": "土曜",
   "weekDay7": "日曜"
 });
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "village_ferry": "川辺の旧渡し場",
+  "village_post": "村の郵便局",
+  "riverWeather_clear": "晴れ",
+  "riverWeather_wind": "風",
+  "riverWeather_rain": "雨",
+  "riverNormal": "古い手すりと共同の物干しが残っている。北側の水深があるところでは釣りができる。",
+  "riverLow": "水が引いて、渡し場の東に濡れた石段が一段現れた。",
+  "riverRest": "座って川の音を聞く",
+  "riverRested": "水面に細かな波が立つころ、行き先を思い出した。",
+  "riverPostIntro": "軒下には赤いポストと忘れ物の棚がある。知り合いへの手紙をここから出せる。",
+  "riverSend": "持ち物の手紙を出す",
+  "riverSendTo": "誰に手紙を出す？",
+  "riverLetterSent": "封筒に{name}の名前を書いて、赤いポストに入れた。",
+  "riverLetterRecall": "郵便局から送ってくれた手紙、取ってあるよ。",
+  "riverFind_apron": "手すりに引っかかったエプロンを見る",
+  "riverFind_glass": "石段の光を調べる",
+  "riverApronFound": "手すりに風鈴の刺繍が入ったエプロンが引っかかっている。カフェのテラスから飛んできたらしい。顧言に渡すか、郵便局の忘れ物棚へ届けられる。",
+  "riverPostApron": "エプロンを忘れ物棚に届ける",
+  "riverReturnApron": "渡し場で拾ったエプロンを返す",
+  "riverApron_returned": "顧言は風鈴の刺繍を見て笑った。「開店した日に縫ったんだ。気づいてくれてよかった」",
+  "riverApron_posted": "エプロンを忘れ物棚に置き、「風鈴カフェ」と書いた紙を添えた。",
+  "riverApronLater": "「エプロンが郵便局で見つかったんだ。誰かがメモまで添えてくれてたよ」",
+  "riverApronRecall": "風で渡し場に飛んだエプロン、拾ってくれて助かったよ。",
+  "worldTitle_riverApron": "風に飛ばされたエプロン",
+  "riverGlassFound": "石段の隙間に淡い青のガラス玉がある。水がそばを流れ、ひとすじ光が反射した。",
+  "riverGlassKeep": "ガラス玉を記念に拾う",
+  "riverGlassLeave": "そのままにして景色を描く",
+  "riverGlass_keep": "手のひらの濡れた青は、渡し場から持ち帰った半滴の川の水のようだった。",
+  "riverGlass_leave": "玉は石段に残し、その小さな青を描いた。水がまた増えても、このページは残る。",
+  "worldTitle_riverGlass": "水が引いたあと"
+});
