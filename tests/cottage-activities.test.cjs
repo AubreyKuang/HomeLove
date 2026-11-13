@@ -470,6 +470,7 @@ test('an early draft saves time together and can still be completed alone', () =
     RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,RAIN_DRAFT_BANK_BONUS:5,
     RAIN_COMPANION:{minutes:25,mood:11,trust:4},RAIN_DRAFT_CHANGE:{minutes:10,trust:2},RAIN_DRAFT_RELOCATION_MINUTES:5,
     RAIN_LOCAL_SKETCH:{minutes:30,mood:7},RAIN_LOCAL_CHANGE_MINUTES:5,RAIN_LOCAL_SUBJECT:{garden:'reflection',pond:'bank'},
+    RAIN_PAIRED_SKETCH:{minutes:15,mood:5},
     VillageRiverside:{weather:()=> 'clear'},save:()=>write,
     advanceTime:m=>{state.time+=m;},clampN:n=>n,B:()=>bonds,trustNpc:(_,delta)=>{bonds.trust.gy+=delta;},
     updateHud(){},D:{},talk(_who,_lines,options){choices=options;},tr:k=>k,nm:n=>n.id});
@@ -522,6 +523,17 @@ test('an early draft saves time together and can still be completed alone', () =
   write=true;
   runtime.finishRainReturn(state.rainReturn,true,true);
   assert.deepEqual([state.time,state.need.mood,state.rainReturn.done,state.rainSketches.garden.subject],[1559,mood+7,true,'reflection']);
+  state.rainSketches={};state.rainReturn={...bank,done:false,relocated:true};state.time=600;
+  const pair=runtime.rainCompanionOptions(state.rainReturn,n).find(choice=>choice.label==='rainSketchPairedAction');
+  assert.ok(pair);
+  const before=[state.time,state.need.mood,bonds.trust.gy];
+  write=false;pair.fn();
+  assert.deepEqual([state.time,state.need.mood,bonds.trust.gy],before);
+  assert.equal(state.rainReturn.done,false);
+  assert.equal(state.rainSketches.garden,undefined);
+  write=true;pair.fn();pair.fn();
+  assert.deepEqual([state.time,state.need.mood,bonds.trust.gy],[645,before[1]+12,before[2]+2]);
+  assert.deepEqual({...state.rainSketches.garden},{resident:'gy',day:4,shared:true,subject:'paired'});
 });
 
 test('an unfinished draft can be rebooked once after a missed meetup', () => {

@@ -38,6 +38,19 @@ function updateAlbumBadge(){
   if(count)button.dataset.new=count;else delete button.dataset.new;
   button.setAttribute('aria-label',count?tr('albumUnread',{count}):tr('btnAlbum'));
 }
+function paintRainSketch(g,subject){
+  if(subject==='bank'){
+    g.fillStyle='#9ab38a';g.fillRect(52,31,26,12);g.fillRect(54,27,16,8);
+    g.fillStyle='#7fa9b9';g.fillRect(52,41,26,5);g.fillRect(69,38,9,4);
+    g.fillStyle='#597d6b';g.fillRect(57,29,2,10);g.fillRect(60,26,2,12);g.fillRect(63,31,2,9);
+    g.fillStyle='#d6a589';g.fillRect(55,36,2,2);g.fillRect(62,34,2,2);
+    return;
+  }
+  g.fillStyle='#7fa9b9';g.fillRect(53,37,24,7);g.fillRect(56,35,18,11);
+  g.fillStyle='#67917d';g.fillRect(63,26,5,9);g.fillRect(60,29,11,4);
+  g.fillStyle='#608b93';g.fillRect(61,39,9,2);g.fillRect(63,41,5,3);
+  g.fillStyle='#e4ece1';g.fillRect(56,38,7,1);g.fillRect(68,43,6,1);
+}
 function albumScene(card,n){
   if(card.event?.startsWith('moment_'))return momentArt(n,card.choice);
   const art=mk(96,60),g=art.getContext('2d');
@@ -48,17 +61,18 @@ function albumScene(card,n){
     if(card.shared)blitChar(g,n.outfit,'down',0,9,22);
     g.fillStyle='#a28164';g.fillRect(49,23,35,29);
     g.fillStyle='#fff0d7';g.fillRect(48,21,34,29);
-    if(card.subject==='bank'){
-      g.fillStyle='#9ab38a';g.fillRect(52,31,26,12);g.fillRect(54,27,16,8);
-      g.fillStyle='#7fa9b9';g.fillRect(52,41,26,5);g.fillRect(69,38,9,4);
-      g.fillStyle='#597d6b';g.fillRect(57,29,2,10);g.fillRect(60,26,2,12);g.fillRect(63,31,2,9);
-      g.fillStyle='#d6a589';g.fillRect(55,36,2,2);g.fillRect(62,34,2,2);
-      return art;
+    if(card.subject==='paired'){
+      g.fillStyle='#d6b69d';g.fillRect(65,24,1,23);
+      for(const [i,subject] of [otherRainSketchSubject(RAIN_LOCAL_SUBJECT[card.place]),RAIN_LOCAL_SUBJECT[card.place]].entries()){
+        g.save();
+        g.translate(24+i*16,0);
+        g.scale(.5,1);
+        paintRainSketch(g,subject);
+        g.restore();
+      }
+    }else{
+      paintRainSketch(g,card.subject);
     }
-    g.fillStyle='#7fa9b9';g.fillRect(53,37,24,7);g.fillRect(56,35,18,11);
-    g.fillStyle='#67917d';g.fillRect(63,26,5,9);g.fillRect(60,29,11,4);
-    g.fillStyle='#608b93';g.fillRect(61,39,9,2);g.fillRect(63,41,5,3);
-    g.fillStyle='#e4ece1';g.fillRect(56,38,7,1);g.fillRect(68,43,6,1);
     return art;
   }
   if(card.kind==='cafeRequest'){
@@ -182,6 +196,10 @@ function albumScene(card,n){
 function albumDetails(card,n){
   if(card.event==='rainSketch'){
     const place=tr(RAIN_DATE_MEETINGS[card.place].name),name=nm(n);
+    if(card.subject==='paired'){
+      const origin=card.place==='pond'?'garden':'pond';
+      return tr('rainSketchPairedCard',{name,place,origin:tr(RAIN_DATE_MEETINGS[origin].name)});
+    }
     return tr(card.subject==='bank'?(card.shared?'rainSketchBankSharedCard':'rainSketchBankCard')
       :card.shared?'rainCompanionSketchCard':'rainSketchCard',{place,name});
   }
@@ -219,7 +237,8 @@ function renderAlbum(){
   body.scrollTop=0;
   const selected=cards.find(card=>card.key===albumSelected);
   const title=card=>card.kind==='story'?residentChapter(card.resident,card.index)[0]:
-    tr(card.event==='rainSketch'&&card.subject==='bank'?'rainSketchBankTitle':card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
+    tr(card.event==='rainSketch'&&card.subject==='paired'?'rainSketchPairedTitle':
+      card.event==='rainSketch'&&card.subject==='bank'?'rainSketchBankTitle':card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
   const resident=card=>npcs.find(n=>n.id===card.resident);
   const stamp=(card,n)=>(n?nm(n)+' · ':'')+tr('day',{d:card.day});
   if(selected){

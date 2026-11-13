@@ -257,6 +257,7 @@ const RAIN_DRAFT_CHANGE={minutes:10,trust:2};
 const RAIN_LOCAL_SKETCH={minutes:30,mood:7};
 const RAIN_LOCAL_CHANGE_MINUTES=5;
 const RAIN_LOCAL_SUBJECT={garden:'reflection',pond:'bank'};
+const RAIN_PAIRED_SKETCH={minutes:15,mood:5};
 const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 const RAIN_COMPANION_WALK={minutes:30,mood:13,trust:6};
 const RAIN_WALK_PAUSE={minutes:10,mood:4};
@@ -362,13 +363,16 @@ function rainCompanionActivity(revisit,sketch=false,changeSubject=false){
   const {minutes,mood,trust}=revisit.walk==='walking'?RAIN_COMPANION_WALK:RAIN_COMPANION;
   const saving=revisit.draft?RAIN_SHARED_DRAFT_SAVING-(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
   if(!sketch)return {minutes,mood,trust};
+  const baseMinutes=minutes+10-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0);
+  if(changeSubject==='paired')return {minutes:baseMinutes+RAIN_PAIRED_SKETCH.minutes,
+    mood:mood-4+RAIN_PAIRED_SKETCH.mood,trust:trust-2};
   const changeMinutes=changeSubject?(canSketchLocalScene(revisit)?RAIN_LOCAL_CHANGE_MINUTES:RAIN_DRAFT_CHANGE.minutes):0;
-  return {minutes:minutes+10-saving+(revisit.relocated?RAIN_DRAFT_RELOCATION_MINUTES:0)+changeMinutes,
+  return {minutes:baseMinutes+changeMinutes,
     mood:mood-4,trust:trust-2+(changeSubject?RAIN_DRAFT_CHANGE.trust:0)};
 }
-const otherRainSketchSubject=revisit=>revisit.subject==='bank'?'reflection':'bank';
+const otherRainSketchSubject=subject=>subject==='bank'?'reflection':'bank';
 function canSketchLocalScene(revisit){
-  return revisit.relocated&&revisit.draft&&otherRainSketchSubject(revisit)===RAIN_LOCAL_SUBJECT[revisit.place];
+  return revisit.relocated&&revisit.draft&&otherRainSketchSubject(revisit.subject)===RAIN_LOCAL_SUBJECT[revisit.place];
 }
 const rainSketchSubjectLabel=subject=>tr(subject==='bank'?'rainSketchBank':'rainSketchReflection');
 function rainCompanionOptions(revisit,n){
@@ -380,15 +384,21 @@ function rainCompanionOptions(revisit,n){
   });
   if(revisit.draft)choices.push({
     label:tr('rainSketchChangeSubject',{...rainCompanionActivity(revisit,true,true),
-      subject:rainSketchSubjectLabel(otherRainSketchSubject(revisit))}),
+      subject:rainSketchSubjectLabel(otherRainSketchSubject(revisit.subject))}),
     fn:()=>finishRainCompanion(revisit,n,true,true)
+  });
+  if(canSketchLocalScene(revisit))choices.push({
+    label:tr('rainSketchPairedAction',rainCompanionActivity(revisit,true,'paired')),
+    fn:()=>finishRainCompanion(revisit,n,true,'paired')
   });
   return choices;
 }
 function finishRainCompanion(revisit,n,sketch=false,changeSubject=false){
   if(!canFinishRainCompanion(revisit,n)||(sketch&&state.rainSketches[revisit.place]))return;
   if(changeSubject&&(!sketch||!revisit.draft))return;
-  const subject=changeSubject?otherRainSketchSubject(revisit):revisit.subject;
+  const paired=changeSubject==='paired';
+  if(paired&&!canSketchLocalScene(revisit))return;
+  const subject=paired?'paired':changeSubject?otherRainSketchSubject(revisit.subject):revisit.subject;
   const activity=rainCompanionActivity(revisit,sketch,changeSubject);
   const before={time:state.time,need:{...state.need}},trust=B().trust[n.id];
   revisit.done=true;
@@ -402,8 +412,8 @@ function finishRainCompanion(revisit,n,sketch=false,changeSubject=false){
     revisit.done=false;B().trust[n.id]=trust;Object.assign(state,before);return;
   }
   updateHud();D.npc=n;
-  const line=changeSubject?'rainSketchChangeDone':sketch?(subject==='bank'?'rainSketchBankTogetherDone':'rainCompanionSketchDone'):'rainCompanionDone';
-  talk(nm(n),[tr(line,changeSubject?{subject:rainSketchSubjectLabel(subject)}:undefined)]);
+  const line=paired?'rainSketchPairedDone':changeSubject?'rainSketchChangeDone':sketch?(subject==='bank'?'rainSketchBankTogetherDone':'rainCompanionSketchDone'):'rainCompanionDone';
+  talk(nm(n),[tr(line,changeSubject&&!paired?{subject:rainSketchSubjectLabel(subject)}:undefined)]);
 }
 function soloRainSketch(revisit){
   const saving=revisit.draft?RAIN_SKETCH_DRAFT_MINUTES+(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
