@@ -467,15 +467,22 @@ function doAct(n,k){
       D.npc=n;talk(nm(n),lines,null,()=>{addPts(n,v);milestone(n);});});
 }
 function dateMenu(n){
-  const dark=darkness()>0.5,r=rel(n);D.npc=n;
+  const r=rel(n);D.npc=n;
   const o=Object.keys(DATES).map(k=>{const d=DATES[k],kn=r.notes['date_'+k];
-    return {label:Lp.dates[k].name+(d.dark&&!dark?tr('needDark'):'')+(kn!=null?` ${faceOf(kn)}`:''),disabled:d.dark&&!dark,fn:()=>dateWith(n,k)};});
+    const block=dateBlock(d);
+    return {label:Lp.dates[k].name+(kn!=null?` ${faceOf(kn)}`:'')+(block?tr(block):tr('dateEnds',{m:d.minutes,t:fmt(state.time+d.minutes)})),disabled:!!block,fn:()=>dateWith(n,k)};});
   o.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
   talk(nm(n),[tr('dateQ',{n:nm(n)})],o);
 }
+function dateBlock(d){
+  if(d.dark&&darkness()<=.5)return 'needDark';
+  if(state.time+d.minutes>=26*60)return 'dateTooLate';
+}
 function dateWith(n,loc){
-  const r=rel(n),L=DATES[loc],v=n.dates[loc];r.done.date=true;D.npc=n;
-  busyFade(()=>{advanceTime(90);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
+  const r=rel(n),L=DATES[loc],v=n.dates[loc];
+  if(r.done.date||dateBlock(L))return;
+  r.done.date=true;D.npc=n;
+  busyFade(()=>{advanceTime(L.minutes);P.x=L.p[0]*16+8;P.y=L.p[1]*16+12;P.dir=L.n[0]>L.p[0]?'right':'left';n.x=L.n[0]*16+8;n.y=L.n[1]*16+12;n.dir=L.n[0]>L.p[0]?'left':'right';n.path=null;n.idle=30;snapPets();},
     ()=>{note(n,'date_'+loc,v);const q=nt(n).dateQ,react=v>=12?tr('dateFav',{n:nm(n)}):v>=7?tr('dateOk',{n:nm(n)}):tr('dateMeh',{n:nm(n)});
       D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);courtNpc(n,'date');trustNpc(n,3);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }

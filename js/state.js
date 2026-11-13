@@ -6,7 +6,7 @@ const ITEM_KEYS=Object.keys(ITEM_ICONS);
 const GIFT_KEYS=ITEM_KEYS.filter(k=>k!=='gold');
 const FISHING_INVITE={resident:'by',gift:'moonfish',delay:2,opens:19*60,closes:23.5*60};
 const ACT_E={walk:5,fish:5,read:2,sport:15,stars:3},ACT_DARK={stars:true};
-const DATES={pond:{p:[19,7],n:[20,7]},garden:{p:[19,12],n:[20,12]},stars:{dark:true,p:[4,13],n:[5,13]},home:{p:[13,6],n:[14,6]}};
+const DATES={pond:{minutes:45,p:[19,7],n:[20,7]},garden:{minutes:60,p:[19,12],n:[20,12]},stars:{minutes:90,dark:true,p:[4,13],n:[5,13]},home:{minutes:105,p:[13,6],n:[14,6]}};
 
 /* ---------------- residents ---------------- */
 /* Numbers only; every line of text lives in lang/<code>.js under npcs.<id>. */
