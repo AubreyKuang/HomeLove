@@ -814,6 +814,11 @@ window.HL_LANG.ja.objects.capsule = {"name": "ガチャ", "verb": "ガチャを�
 Object.assign(window.HL_LANG.ja.ui, {
   "requestMailPrompt": "郵便受けの手紙を読む",
   "requestAccept": "お願いを引き受ける",
+  "requestCompareIntro": "依頼の手紙が2通届いた。両方読んで、どちらか1つを選べる。期限は{day}。",
+  "requestCompareItem": "{item} ×{count}（所持 {owned}）",
+  "requestCompareLetter": "{name}の手紙を読む · {items}",
+  "requestCompareBack": "もう一方の手紙を見る",
+  "requestCompareSkip": "今回は両方見送る",
   "requestDecline": "今回は見送る",
   "requestAdded": "{name}の手紙を日記に記録した。",
   "requestTerms": "{items}のどちらかを{day}までに届けてね。お礼は{reward}。",

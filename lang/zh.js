@@ -814,6 +814,11 @@ window.HL_LANG.zh.objects.capsule = {"name": "扭蛋机", "verb": "查看扭蛋�
 Object.assign(window.HL_LANG.zh.ui, {
   "requestMailPrompt": "信箱里有邻里来信",
   "requestAccept": "接下委托",
+  "requestCompareIntro": "有两封委托来信，可以先读再选一封。交付截止 {day}。",
+  "requestCompareItem": "{item} ×{count}（有 {owned}）",
+  "requestCompareLetter": "读{name}的信 · {items}",
+  "requestCompareBack": "看看另一封信",
+  "requestCompareSkip": "这两封都先不接",
   "requestDecline": "这次先不接",
   "requestAdded": "已记进日记：{name}的来信。",
   "requestTerms": "带来 {items}，任选一样。最晚 {day} 交给我。我给你留了 {reward}。",

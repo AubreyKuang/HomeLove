@@ -76,6 +76,36 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   assert.equal(runtime.hasNeighborMail(),false);
 });
 
+test('two letters survive reload and only the chosen alternate becomes an active request', () => {
+  const state={day:1,neighborRequest:null,rel:{gy:{met:true},xy:{met:true}},inv:{berry:0,cookie:0,fish:2,carp:0}};
+  const npcs=[{id:'gy'},{id:'xy'}];
+  let choices,saved;
+  const runtime=game({state,npcs,VillageMap:{places:{cafe:{hours:[750,1020]}}},fmt:String,
+    ITEM_ICONS:{flower:'🌼',shell:'🐚'},tr:(key,vars)=>key+JSON.stringify(vars??{}),
+    itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,say(){},
+    talk(_who,_lines,options){choices=options;},save(){saved=JSON.parse(JSON.stringify(state.neighborRequest));}});
+  runSection(runtime,'function unreadAlbumPostcard(','function petCat(');
+  runtime.checkNeighborMail();
+  assert.equal(saved.alternate,'xy');
+  assert.match(choices[1].label,/owned\\"\s*:\s*2/);
+  choices[0].fn();
+  const acceptFirst=choices[0].fn;
+  choices[1].fn();
+  assert.equal(state.neighborRequest.status,'offered');
+  state.neighborRequest=runtime.activities.loadRequest(saved);
+  runtime.checkNeighborMail();
+  choices[1].fn();
+  choices[0].fn();
+  acceptFirst();
+  assert.equal(saved.resident,'xy');
+  assert.equal(saved.alternate,undefined);
+  assert.equal(saved.status,'accepted');
+  assert.equal(runtime.acceptedNeighborRequest(npcs[0]),null);
+  assert.equal(runtime.acceptedNeighborRequest(npcs[1]).day,1);
+  assert.equal(runtime.hasNeighborMail(),false);
+  assert.equal(state.inv.fish,2);
+});
+
 test('mailbox delivery holds the reward overnight and survives the deadline and reload', () => {
   const n={id:'gy'};
   const state={day:3,inv:{cookie:1,berry:0,flower:0},rel:{gy:{met:true}},
