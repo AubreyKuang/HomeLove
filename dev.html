@@ -70,6 +70,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 @keyframes blink{50%{border-color:var(--accent);background:var(--accent)}}
 #hudR{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));display:flex;gap:8px;z-index:5;flex-wrap:wrap;justify-content:flex-end;max-width:280px}
 @media(max-width:560px){#hud{max-width:46vw;gap:6px}#hudStats{gap:5px}#hudR{max-width:48vw}#hudR .pbtn{padding:4px 6px;font-size:12px}}
+@media(max-width:560px){#chipTime{max-width:100%;white-space:normal;font-size:12px;line-height:1.5}#hudStats{flex-wrap:wrap}}
 
 #prompt{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:7;padding:6px 12px;font-size:14px;font-weight:700;white-space:nowrap}
 #toast{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:9;padding:5px 12px;font-size:13px;font-weight:700;white-space:nowrap;pointer-events:none;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
@@ -168,7 +169,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 .album-card canvas,.album-page canvas{display:block;width:100%;height:auto;image-rendering:pixelated;border:1px solid #ac8063}
 .album-card small,.album-page small{color:#75594a}
 .album-page>.pbtn{margin:8px 8px 0 0}
-.moment-art{display:block;width:192px;max-width:100%;height:auto;image-rendering:pixelated;border:2px solid #735047;margin:8px auto}
+.moment-art{display:block;grid-column:1/-1;width:192px;max-width:100%;height:auto;image-rendering:pixelated;border:2px solid #735047;margin:8px auto}
 .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,128px),1fr));gap:10px;margin-top:8px}
 .badge{display:grid;justify-items:center;gap:4px;text-align:center;background:#fff5df;border:2px solid #b48667;color:#513b33;padding:8px;box-shadow:2px 3px #d7b595}
 .badge canvas{width:48px;height:48px;image-rendering:pixelated}
