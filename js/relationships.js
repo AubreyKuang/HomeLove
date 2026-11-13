@@ -511,11 +511,50 @@ function intimate(n,k){
   heart(n.x,n.y-22);if(k!=='hand')heart(P.x,P.y-24);
   talk(nm(n),[nt(n)[k]],null,()=>{addPts(n,cfg[0]);state.need.mood=clampN(state.need.mood+cfg[1]);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});
 }
+const RAIN_SKETCH_GIFT={minutes:5,trust:8};
+function rainSketchGifts(n){
+  return Object.entries(state.rainSketches).filter(([,sketch])=>sketch.resident===n.id&&!sketch.given);
+}
+function canGiveRainSketch(n){
+  return !rel(n).done.gift&&state.time+RAIN_SKETCH_GIFT.minutes<26*60&&findTarget()?.n===n;
+}
+function offerRainSketchGift(n,place){
+  D.npc=n;
+  talk(tr('giftWho'),[tr('rainSketchGiftConfirm',{name:nm(n),...RAIN_SKETCH_GIFT})],[
+    {label:tr('optBack'),fn:()=>giftMenu(n)},
+    {label:tr('rainSketchGiftSend'),fn:()=>giveRainSketch(n,place)}
+  ]);
+}
+function giveRainSketch(n,place){
+  const sketch=state.rainSketches[place];
+  if(sketch?.resident!==n.id||sketch.given||!canGiveRainSketch(n))return;
+  const r=rel(n),frame=state.album.framed,trust=B().trust[n.id];
+  const before={time:state.time,need:{...state.need}};
+  const previousGift=r.done.gift;
+  r.done.gift=true;
+  sketch.given=true;
+  if(frame?.key==='rain-sketch:'+place)state.album.framed=null;
+  advanceTime(RAIN_SKETCH_GIFT.minutes);
+  trustNpc(n,RAIN_SKETCH_GIFT.trust);
+  if(!save()){
+    if(previousGift===undefined)delete r.done.gift;else r.done.gift=previousGift;
+    delete sketch.given;
+    state.album.framed=frame;
+    B().trust[n.id]=trust;
+    Object.assign(state,before);
+    return;
+  }
+  updateHud();
+  D.npc=n;
+  talk(nm(n),[tr('rainSketchGiftReply',{place:tr(RAIN_DATE_MEETINGS[place].name)})]);
+}
 function giftMenu(n){
   const r=rel(n);D.npc=n;
   if(r.done.gift){talk(nm(n),[tr('giftDone')],null,()=>npcMenu(n,true));return;}
-  if(GIFT_KEYS.every(k=>state.inv[k]<=0)){talk(tr('giftWho'),[tr('giftEmpty')],null,()=>npcMenu(n,true));return;}
-  const opts=GIFT_KEYS.filter(k=>state.inv[k]>0).map(k=>{const kn=r.notes['gift_'+k];return {label:`${ITEM_ICONS[k]} ${itemLabel(k)} ×${state.inv[k]}`+(kn!=null?` ${faceOf(kn)}`:''),fn:()=>give(n,k)};});
+  const opts=rainSketchGifts(n).map(([place])=>({label:tr('rainSketchGiftOption',{place:tr(RAIN_DATE_MEETINGS[place].name)}),
+    disabled:!canGiveRainSketch(n),fn:()=>offerRainSketchGift(n,place)}));
+  opts.push(...GIFT_KEYS.filter(k=>state.inv[k]>0).map(k=>{const kn=r.notes['gift_'+k];return {label:`${ITEM_ICONS[k]} ${itemLabel(k)} ×${state.inv[k]}`+(kn!=null?` ${faceOf(kn)}`:''),fn:()=>give(n,k)};}));
+  if(!opts.length){talk(tr('giftWho'),[tr('giftEmpty')],null,()=>npcMenu(n,true));return;}
   opts.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
   const inviteGift=n.id===FISHING_INVITE.resident&&state.inv[FISHING_INVITE.gift]>0&&!state.life[n.id]?.fishingInvitation;
   talk(tr('giftWho'),[tr('giftQ',{n:nm(n)})+(inviteGift?' '+tr('moonfishGiftHint'):'')],opts);
