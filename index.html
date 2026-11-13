@@ -269,6 +269,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 </div>
 <div id="hudR">
   <button class="pbtn" id="btnTravel" type="button" data-i18n="travelShop"></button>
+  <button class="pbtn hidden" id="btnUmbrella" type="button" aria-keyshortcuts="U" title="U"></button>
   <button class="pbtn" id="btnMap" type="button" data-i18n="villageMap"></button>
   <button class="pbtn primary" id="btnWardrobe" type="button" data-i18n="btnWardrobe"></button>
   <button class="pbtn" id="btnAlbum" type="button" data-i18n="btnAlbum"></button>
@@ -385,14 +386,14 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="memory-album.js?v=snow-fishing-1"></script>
 <script src="resident-stories.js"></script>
 <script src="village-map.js?v=outlined-1"></script>
-<script src="cottage-travel.js?v=first-order-1"></script>
+<script src="cottage-travel.js?v=umbrella-1"></script>
 <script src="village-weekend.js"></script>
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js?v=rare-nights"></script>
-<script src="lang/zh.js?v=home-computer-1" charset="utf-8"></script>
-<script src="lang/en.js?v=home-computer-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=home-computer-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=umbrella-1" charset="utf-8"></script>
+<script src="lang/en.js?v=umbrella-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=umbrella-1" charset="utf-8"></script>
 
 <script>
 (() => {
@@ -3175,10 +3176,12 @@ function openTravelShop(){
   D.npc=null;walkRoute=[];
   const opts=Object.entries(CottageTravel.catalog).map(([id,{cost,speed}])=>{
     const name=tr('vehicle_'+id),owned=state.travel.owned.includes(id),due=state.travel.orders[id];
+    if(owned&&id==='umbrella')return {label:tr(state.travel.umbrellaOpen?'umbrellaClose':'umbrellaOpen'),fn:toggleUmbrella};
     if(owned)return {label:tr(state.travel.selected===id?'vehicleSelected':'vehicleEquip',{name}),
       disabled:state.travel.selected===id,fn:()=>equipVehicle(id)};
     if(due)return {label:tr(due<=state.day?'vehicleAtMailbox':'vehicleInTransit',{name,day:due}),disabled:true,fn:null};
-    return {label:tr('vehicleOrder',{name,cost,speed:Math.round((speed-1)*100)}),disabled:state.inv.shell<cost,fn:()=>orderVehicle(id)};
+    const label=id==='umbrella'?tr('umbrellaOrder',{cost}):tr('vehicleOrder',{name,cost,speed:Math.round((speed-1)*100)});
+    return {label,disabled:state.inv.shell<cost,fn:()=>orderVehicle(id)};
   });
   if(state.travel.selected)opts.push({label:tr('vehicleWalk'),fn:()=>equipVehicle(null)});
   opts.push({label:tr('walkAway'),back:true,fn:null});
@@ -3199,7 +3202,7 @@ function orderVehicle(id){
 }
 function equipVehicle(id){
   const previous=state.travel.selected;
-  if(id!==null&&!state.travel.owned.includes(id))return;
+  if(id!==null&&(!CottageTravel.isVehicle(id)||!state.travel.owned.includes(id)))return;
   state.travel.selected=id;
   if(!save()){state.travel.selected=previous;talk(tr('travelShop'),[tr('vehicleSaveFailed')]);return;}
   updateHud();say(tr('travelShop'),id?tr('vehicleEquipped',{name:tr('vehicle_'+id)}):tr('vehicleWalk'));
@@ -3207,13 +3210,14 @@ function equipVehicle(id){
 function collectVehicle(id){
   const due=state.travel.orders[id],previous=state.travel.selected;
   if(!CottageTravel.receive(state.travel,id,state.day))return;
-  state.travel.selected=id;
+  if(CottageTravel.isVehicle(id))state.travel.selected=id;
   if(!save()){
     state.travel.owned.pop();state.travel.orders[id]=due;state.travel.selected=previous;
     talk(objName('mailbox'),[tr('vehicleSaveFailed')]);return;
   }
   updateHud();sfx('pickup');
-  talk(objName('mailbox'),[tr('vehicleReceived',{name:tr('vehicle_'+id)})],[
+  updateUmbrellaButton();
+  talk(objName('mailbox'),[id==='umbrella'?tr('umbrellaReceived'):tr('vehicleReceived',{name:tr('vehicle_'+id)})],[
     {label:tr('albumOtherMail'),fn:checkMail},{label:tr('walkAway'),back:true,fn:null}
   ]);
 }
@@ -3222,6 +3226,29 @@ function activeRide(){
   const t=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));
   const surface=t===FLOOR||t===DOOR?'inside':[PATH,STONE,BRIDGE].includes(t)?'road':'outdoor';
   return CottageTravel.riding(state.travel,surface);
+}
+function activeUmbrella(weather=VillageRiverside.weather(state.day),ride=activeRide()){
+  const tile=at(Math.floor(P.x/16),Math.floor((P.y-2)/16));
+  const outside=tile!==FLOOR&&tile!==DOOR;
+  return CottageTravel.sheltered(state.travel,weather,outside,!ride&&!busy&&!FISH.on&&!blackoutActive());
+}
+function toggleUmbrella(){
+  if(startOpen||mapOpen||busy||dressOpen||diaryOpen||albumOpen||D.modal||FISH.on||
+    !state.travel.owned.includes('umbrella'))return;
+  const previous=state.travel.umbrellaOpen;
+  state.travel.umbrellaOpen=!previous;
+  if(!save()){
+    state.travel.umbrellaOpen=previous;
+    talk(tr('travelShop'),[tr('vehicleSaveFailed')]);return;
+  }
+  updateUmbrellaButton();
+  say(tr('vehicle_umbrella'),tr(previous?'umbrellaClosed':activeUmbrella()?'umbrellaOpened':'umbrellaReady'));
+}
+function updateUmbrellaButton(){
+  const btn=$('#btnUmbrella'),enabled=state.travel.umbrellaOpen;
+  btn.classList.toggle('hidden',!state.travel.owned.includes('umbrella'));
+  btn.textContent=tr(enabled?'umbrellaClose':'umbrellaOpen');
+  btn.setAttribute('aria-pressed',String(enabled));
 }
 
 function weekendSchedule(){
@@ -3838,6 +3865,7 @@ function openVillageMap(){
 $('#btnMap').addEventListener('click',openVillageMap);
 $('#miniMap').addEventListener('click',openVillageMap);
 $('#btnTravel').addEventListener('click',openTravelShop);
+$('#btnUmbrella').addEventListener('click',toggleUmbrella);
 $('#villageClose').addEventListener('click',closeVillageMap);
 $('#villageMap').addEventListener('click',e=>{if(e.target.id==='villageMap')closeVillageMap();});
 
@@ -3922,6 +3950,7 @@ function applyLang(){
   $('#moveHelp').textContent=tr('kMove')+' · '+lifeText('点击地面走过去','Click the ground to walk there','地面をクリックして移動');
   $('#btnStart').textContent=tr(startLabel);
   $('#btnLang').textContent='🌐 '+Lp.meta.label;
+  updateUmbrellaButton();
   document.querySelectorAll('.langpick button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===LANG));
   $('#btnWalk').textContent=tr(pWalk?'stop':'walk');
   promptText='\u0000';updatePrompt();updateHud();
@@ -3961,6 +3990,7 @@ addEventListener('keydown',e=>{
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
   if(e.code==='Escape'||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code))walkRoute=[];
   keys.add(e.code);
+  if(e.code==='KeyU'&&!e.repeat)toggleUmbrella();
   if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);if(e.code==='KeyG')openVillageMap();if(e.code==='KeyV')openTravelShop();}
 });
 addEventListener('keyup',e=>keys.delete(e.code));
@@ -4523,13 +4553,14 @@ function drawRiverClue(g,kind,x,y,time){
     if(Math.sin(time*2)>.4)R(3,-4,1,1,'#fff4cf');
   }
 }
-function drawRiverWeather(g,time,weather){
+function drawRiverWeather(g,time,weather,umbrella){
   if(weather==='clear'||reducedMotion)return;
   for(let i=0;i<96;i++){
     const x=(hash2(i,51)*MW*TILE+time*(weather==='rain'?27:43))%(MW*TILE)|0;
     const y=(hash2(i,83)*MH*TILE+time*(weather==='rain'?101:6))%(MH*TILE)|0;
     const tile=at(x>>4,y>>4);
     if(tile===FLOOR||tile===DOOR||tile===WALL||tile===WALLF)continue;
+    if(umbrella&&Math.abs(x-P.x)<14&&y+5>P.y-31&&y<P.y)continue;
     g.fillStyle=weather==='rain'?'rgba(196,223,224,.63)':'rgba(255,238,185,.58)';
     g.fillRect(x,y,weather==='rain'?1:2,weather==='rain'?5:1);
   }
@@ -4618,6 +4649,7 @@ function render(time){
   ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#2a2230';ctx.fillRect(0,0,cv.width,cv.height);
   const S=scale,vw=cv.width/S,vh=cv.height/S,dark=darkness();
   const [cx,cy]=cameraOrigin(),blackout=blackoutActive();
+  const weather=VillageRiverside.weather(state.day),ride=activeRide(),umbrella=activeUmbrella(weather,ride);
   ctx.setTransform(S,0,0,S,-cx*S,-cy*S);ctx.imageSmoothingEnabled=false;
   const season=CottageActivities.seasonOf(state.day),art=SEASON_ART[season],winter=season==='winter';
   ctx.drawImage(art.ground,0,0);
@@ -4679,10 +4711,10 @@ function render(time){
   }
   for(const s of statics)if(s.x+s.w>cx&&s.x<cx+vw&&s.y+s.h>cy&&s.y<cy+vh)ents.push(s);
   ents.push({key:P.y,draw:g=>{
-    const ride=activeRide();
     if(ride)CottageTravel.paint(g,ride,P.x,P.y,P.dir,false);
     if(ride!=='car')drawPerson(g,state.o,P.dir,!ride&&P.moving?WALK[Math.floor(P.anim*7)%4]:0,P.x,P.y-(ride?2:0));
     if(ride)CottageTravel.paint(g,ride,P.x,P.y,P.dir,true);
+    if(umbrella)CottageTravel.paintUmbrella(g,P.x,P.y,P.dir);
     if(FISH.on&&FISH.phase==='bite'){
       const x=Math.round(P.x)-9,y=Math.round(P.y)-29;
       drawBang(g,P.x,P.y-39,'#ff6b6b');
@@ -4741,7 +4773,7 @@ function render(time){
     drawNightVisitor(ctx,time);
   }
   if(winter||season==='autumn')drawSeasonParticles(ctx,time,winter);
-  drawRiverWeather(ctx,time,VillageRiverside.weather(state.day));
+  drawRiverWeather(ctx,time,weather,umbrella);
   if(blackout)drawBlackoutLight(ctx,cx,cy,vw,vh,time);
   renderLanternReaction(cx,cy);
 }

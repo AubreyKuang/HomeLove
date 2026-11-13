@@ -2,8 +2,10 @@ const CottageTravel = (() => {
   const catalog={
     scooter:{cost:6,speed:1.35},
     bicycle:{cost:14,speed:1.65},
-    car:{cost:32,speed:2.1}
+    car:{cost:32,speed:2.1},
+    umbrella:{cost:5}
   };
+  const isVehicle=id=>Object.hasOwn(catalog,id)&&Number.isFinite(catalog[id].speed);
 
   function load(saved,day=1){
     const owned=Object.keys(catalog).filter(id=>Array.isArray(saved?.owned)&&saved.owned.includes(id));
@@ -15,7 +17,9 @@ const CottageTravel = (() => {
     const first=saved?.firstOrder;
     const firstOrder=first&&Number.isInteger(first.day)&&first.day>=1&&first.day<=day&&
       (owned.includes(first.id)||Object.hasOwn(orders,first.id))?{id:first.id,day:first.day}:null;
-    return {owned,orders,selected:owned.includes(saved?.selected)?saved.selected:null,firstOrder};
+    const selected=isVehicle(saved?.selected)&&owned.includes(saved.selected)?saved.selected:null;
+    const umbrellaOpen=owned.includes('umbrella')&&saved?.umbrellaOpen===true;
+    return {owned,orders,selected,firstOrder,umbrellaOpen};
   }
   function order(travel,inventory,id,day){
     if(!Object.hasOwn(catalog,id)||travel.owned.includes(id)||travel.orders[id]||
@@ -36,11 +40,28 @@ const CottageTravel = (() => {
   }
   function riding(travel,surface){
     const id=travel.selected;
-    if(!travel.owned.includes(id)||surface==='inside'||(id==='car'&&surface!=='road'))return null;
+    if(!isVehicle(id)||!travel.owned.includes(id)||surface==='inside'||(id==='car'&&surface!=='road'))return null;
     return id;
   }
 
+  function sheltered(travel,weather,outside,handsFree){
+    return travel.umbrellaOpen&&travel.owned.includes('umbrella')&&weather==='rain'&&outside&&handsFree;
+  }
+  function paintUmbrella(g,x,y,dir){
+    x=Math.round(x);y=Math.round(y);
+    const R=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(x+a,y+b,w,h);};
+    const shaft=dir==='left'?-5:5,dark='#503545';
+    R(shaft,-26,1,16,dark);R(shaft,-11,3,2,dark);
+    R(-3,-34,7,2,dark);R(-8,-32,17,2,dark);R(-12,-30,25,3,dark);R(-14,-27,29,4,dark);
+    R(-3,-32,7,2,'#f4b1ae');R(-8,-30,17,3,'#e2969e');R(-12,-27,25,3,'#b7687f');
+    R(-5,-29,10,4,'#e2969e');R(-1,-34,3,1,'#f8ccc0');
+    R(-10,-24,1,2,dark);R(10,-24,1,2,dark);R(shaft,-14,1,3,'#d4ae7f');
+  }
   function paint(g,id,x,y,dir,front){
+    if(id==='umbrella'){
+      if(front)paintUmbrella(g,x,y+10,dir);
+      return;
+    }
     x=Math.round(x);y=Math.round(y);
     const side=dir==='left'||dir==='right';
     const R=(a,b,w,h,c)=>{
@@ -79,5 +100,5 @@ const CottageTravel = (() => {
     const first=travel.firstOrder;
     return first?[{key:'travel:firstOrder',kind:'world',event:'firstOrder',day:first.day,vehicle:first.id}]:[];
   }
-  return {catalog,load,order,ready,receive,riding,paint,cards};
+  return {catalog,isVehicle,load,order,ready,receive,riding,sheltered,paintUmbrella,paint,cards};
 })();
