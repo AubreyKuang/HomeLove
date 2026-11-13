@@ -1098,6 +1098,14 @@ Object.assign(window.HL_LANG.ja.ui, {
   "vehicleReceived": "ポストから{name}を受け取りました。外で使えます。",
   "vehicleParked": "{name}は駐車中",
   "vehicleCollect": "{name}を受け取る",
+  "vehicle_umbrella": "傘",
+  "umbrellaOrder": "傘を買う（貝がら {cost} 個）",
+  "umbrellaReceived": "ピンクの傘が届きました。雨の中を歩くときは U キーか「傘をさす」を押してください。",
+  "umbrellaOpen": "傘をさす",
+  "umbrellaClose": "傘を閉じる",
+  "umbrellaOpened": "傘をさしました。",
+  "umbrellaClosed": "傘をしまいました。",
+  "umbrellaReady": "雨の日に外を歩くと、自動で傘をさします。",
   "vehiclePackage": "通販の荷物が届きました。",
   "miniMapLabel": "ミニマップ、村の地図を開く"
 });

@@ -74,6 +74,7 @@ test('transport orders charge once, arrive next day and survive a save and reloa
 
 test('mounted travel respects indoor tiles and the car needs a road',()=>{
   for(const [id,{speed}] of Object.entries(travel.catalog)){
+    if(!travel.isVehicle(id))continue;
     const state=travel.load({owned:[id],selected:id});
     assert.ok(speed>1);
     assert.equal(travel.riding(state,'inside'),null);
@@ -81,6 +82,24 @@ test('mounted travel respects indoor tiles and the car needs a road',()=>{
     assert.equal(travel.riding(state,'outdoor'),id==='car'?null:id);
   }
   assert.equal(travel.load({owned:[],selected:'car'}).selected,null);
+});
+
+test('the umbrella arrives by mail and opens only when walking outdoors in rain',()=>{
+  const state=travel.load({owned:['car'],selected:'car'},2),inventory={shell:5};
+  assert.equal(travel.order(state,inventory,'umbrella',2),true);
+  assert.equal(inventory.shell,0);
+  assert.equal(travel.receive(state,'umbrella',2),false);
+  assert.equal(travel.cards(state)[0].vehicle,'umbrella');
+  assert.equal(travel.receive(state,'umbrella',3),true);
+  assert.equal(travel.riding(state,'road'),'car');
+  assert.equal(travel.sheltered(state,'rain',true,true),false);
+  state.umbrellaOpen=true;
+  const restored=travel.load(JSON.parse(JSON.stringify(state)),3);
+  assert.equal(travel.sheltered(restored,'rain',true,true),true);
+  assert.equal(travel.sheltered(restored,'clear',true,true),false);
+  assert.equal(travel.sheltered(restored,'rain',false,true),false);
+  assert.equal(travel.sheltered(restored,'rain',true,false),false);
+  assert.equal(travel.load({...restored,selected:'umbrella'},3).selected,null);
 });
 
 vm.runInContext(read('village-weekend.js')+'\nthis.weekendAPI=VillageWeekend;',ctx);

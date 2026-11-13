@@ -1098,6 +1098,14 @@ Object.assign(window.HL_LANG.zh.ui, {
   "vehicleReceived": "你从信箱收到了{name}，出门就能用。",
   "vehicleParked": "{name}已停放",
   "vehicleCollect": "领取{name}",
+  "vehicle_umbrella": "雨伞",
+  "umbrellaOrder": "购买雨伞（{cost} 枚贝壳）",
+  "umbrellaReceived": "你收到了一把粉色雨伞。雨天步行时，按 U 或点顶部「撑伞」。",
+  "umbrellaOpen": "撑伞",
+  "umbrellaClose": "收伞",
+  "umbrellaOpened": "你撑开了雨伞。",
+  "umbrellaClosed": "你把雨伞收好了。",
+  "umbrellaReady": "雨伞已备好，雨天在户外步行时会自动撑开。",
   "vehiclePackage": "有网购包裹送到了。",
   "miniMapLabel": "小地图，打开村镇地图"
 });
