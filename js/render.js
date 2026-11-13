@@ -192,12 +192,19 @@ function render(time){
   ctx.setTransform(1,0,0,1,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#2a2230';ctx.fillRect(0,0,cv.width,cv.height);
   const S=scale,vw=cv.width/S,vh=cv.height/S,dark=darkness();
   const [cx,cy]=cameraOrigin(),blackout=blackoutActive();
+  const greeting = villageGuideVisible() && !villageDestination ? firstGreetingTarget() : null;
   const weather=VillageRiverside.weather(state.day),ride=activeRide(),umbrella=activeUmbrella(weather,ride);
   ctx.setTransform(S,0,0,S,-cx*S,-cy*S);ctx.imageSmoothingEnabled=false;
   const season=CottageActivities.seasonOf(state.day),art=SEASON_ART[season],winter=season==='winter';
   ctx.drawImage(art.ground,0,0);
   if(blackout){
     for(const record of Object.values(state.blackout.visits))drawBlackoutGathering(ctx,record);
+  }
+  if(villageDestination && walkRoute.length){
+    ctx.fillStyle='#805148';
+    for(const [x,y] of walkRoute) ctx.fillRect(Math.round(x)-2,Math.round(y)-3,4,4);
+    ctx.fillStyle='#ffe1a2';
+    for(const [x,y] of walkRoute) ctx.fillRect(Math.round(x)-1,Math.round(y)-2,2,2);
   }
   if(walkRoute.length){
     const [x,y]=walkRoute.at(-1).map(Math.round);
@@ -273,7 +280,7 @@ function render(time){
       g.fillStyle='#392a32';g.fillRect(x,y-21-wave,3,6+wave);
       g.fillStyle='#f4c8a4';g.fillRect(x+1,y-22-wave,2,3);
     }
-    const r=rel(n);if(r.couple)drawHeart(g,n.x,n.y-33+(Math.sin(time*3)>0?-1:0),0.95);else if(!r.met)drawBang(g,n.x,n.y-36+(Math.sin(time*4)>0?-1:0));}});}
+    const r=rel(n);if(r.couple)drawHeart(g,n.x,n.y-33+(Math.sin(time*3)>0?-1:0),0.95);else if(!r.met && greeting?.resident!==n)drawBang(g,n.x,n.y-36+(Math.sin(time*4)>0?-1:0));}});}
   for(const p of state.pets)ents.push({key:p.y,draw:g=>drawPet(g,p,time)});
   if(!state.goldFound){const gx=GOLD_TILE[0]*16+8,gy=GOLD_TILE[1]*16+12;ents.push({key:gy,draw:g=>{const b=Math.sin(time*3)>0?-1:0;g.fillStyle='rgba(40,30,30,.18)';g.fillRect(gx-4,gy-1,8,2);g.drawImage(SPR.gold,gx-6,gy-15+b);
     const tw=(Math.sin(time*5)+1)/2;g.fillStyle=`rgba(255,250,200,${tw.toFixed(2)})`;g.fillRect(gx-8,gy-17,1,3);g.fillRect(gx-9,gy-16,3,1);g.fillRect(gx+7,gy-8,1,3);g.fillRect(gx+6,gy-7,3,1);}});}
@@ -320,5 +327,6 @@ function render(time){
   if(winter||season==='autumn')drawSeasonParticles(ctx,time,winter);
   drawRiverWeather(ctx,time,weather,umbrella);
   if(blackout)drawBlackoutLight(ctx,cx,cy,vw,vh,time);
+  if(greeting && (greeting.inside || target?.n!==greeting.resident)) drawBang(ctx,greeting.x,greeting.y,'#ffe0a5');
   renderLanternReaction(cx,cy);
 }

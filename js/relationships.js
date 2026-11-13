@@ -72,7 +72,7 @@ function milestone(n){
   const r=rel(n),h=hearts(r),T=nt(n);
   if(h>=3&&!r.m3){r.m3=true;D.npc=n;talk(nm(n),T.m3);return;}
   if(h>=6&&!r.m6){r.m6=true;D.npc=n;talk(nm(n),T.m6,null,()=>notify(tr('unlockDate',{n:nm(n)})));return;}
-  if(h>=8&&!r.m8){r.m8=true;D.npc=n;talk(nm(n),T.m8,null,()=>{if(!anyCouple())notify(tr('unlockConfess',{n:nm(n)}));});}
+  if(h>=8&&!r.m8){r.m8=true;D.npc=n;talk(nm(n),T.m8,null,()=>{if(!anyCouple())notify(tr(hasSharedExperience(n)?'unlockConfess':'hintSharedExperience',{n:nm(n)}));});}
 }
 function jealousCheck(n,next){
   const p=npcs.find(m=>m!==n&&rel(m).couple&&m.state!=='away'&&Math.hypot(m.x-P.x,m.y-P.y)<120);
@@ -242,6 +242,10 @@ function renderRewind(container){
   sec.append(row);container.append(sec);
 }
 const doneTag=(r,k,t)=>r.done[k]?tr('doneToday',{x:t}):t;
+function hasSharedExperience(n){
+  const life=state.life[n.id];
+  return !!(life?.firstDate||state.moments.records[n.id]||life?.fishingInvitation?.catch);
+}
 function npcMenu(n,back){
   const r=rel(n),h=hearts(r),T=nt(n);D.npc=n;
   if(!back&&r.met&&B().heard[n.id]){confront(n,()=>npcMenu(n,true));return;}
@@ -263,8 +267,11 @@ function npcMenu(n,back){
     {label:tr('optSocial'),fn:()=>socialMenu(n)},
     {label:doneTag(r,'gift',tr('optGift')),fn:()=>giftMenu(n)}];
   opts.push(h>=2?{label:doneTag(r,'act',tr('optAct')),disabled:!!r.done.act,fn:()=>actMenu(n)}:{label:tr('optActLocked'),disabled:true});
-  if(!story&&r.m6)opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
-  if(!story&&h>=8&&!r.couple&&!anyCouple())opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
+  if(!story&&(h>=6||r.m6))opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
+  if(!story&&h>=6&&!r.couple&&!anyCouple()){
+    if(!hasSharedExperience(n))opts.push({label:tr('hintSharedExperience'),disabled:true});
+    else if(h>=8)opts.push({label:r.done.confess?tr('optConfessTomorrow'):tr('optConfess'),disabled:!!r.done.confess,fn:()=>confess(n)});
+  }
   if(r.couple&&r.pts>=100&&!r.livesIn)opts.push({label:tr('optMoveIn',{n:nm(n)}),fn:()=>moveIn(n)});
   homeOptions(n).forEach(o=>opts.push(o));
   const duty=villageDuty(n);
@@ -430,7 +437,8 @@ function giftMenu(n){
   if(GIFT_KEYS.every(k=>state.inv[k]<=0)){talk(tr('giftWho'),[tr('giftEmpty')],null,()=>npcMenu(n,true));return;}
   const opts=GIFT_KEYS.filter(k=>state.inv[k]>0).map(k=>{const kn=r.notes['gift_'+k];return {label:`${ITEM_ICONS[k]} ${itemLabel(k)} ×${state.inv[k]}`+(kn!=null?` ${faceOf(kn)}`:''),fn:()=>give(n,k)};});
   opts.push({label:tr('optBack'),back:true,fn:()=>npcMenu(n,true)});
-  talk(tr('giftWho'),[tr('giftQ',{n:nm(n)})],opts);
+  const inviteGift=n.id===FISHING_INVITE.resident&&state.inv[FISHING_INVITE.gift]>0&&!state.life[n.id]?.fishingInvitation;
+  talk(tr('giftWho'),[tr('giftQ',{n:nm(n)})+(inviteGift?' '+tr('moonfishGiftHint'):'')],opts);
 }
 function give(n,k){
   const r=rel(n),d=n.gifts[k];
@@ -472,8 +480,10 @@ function dateWith(n,loc){
       D.npc=n;talk(nm(n),[Lp.dates[loc].line,react,q.q],q.opts.map(([label,reply],oi)=>({label,fn:()=>{D.npc=n;talk(nm(n),[reply],null,()=>{const life=lifeOf(n);life.firstDate ||= {place:loc,day:state.day};life.cards.firstDate ||= state.day;if(Math.random()<.05&&!life.cards.rareDate){life.cards.rareDate=state.day;life.rareDatePlace=loc;}rememberPlayer(n,'date','completed',Math.max(-1,Math.min(1,(v+n.dv[oi])/15)),80,loc);courtNpc(n,'date');trustNpc(n,3);addPts(n,6+v+n.dv[oi]);state.need.mood=clampN(state.need.mood+12);updateHud();milestone(n);if(!r.couple)jealousCheck(n);});}})));});
 }
 function confess(n){
-  if(xiaomanRoute(n))return;
-  const r=rel(n);D.npc=n;r.done.confess=true;
+  const r=rel(n);
+  if(xiaomanRoute(n)||hearts(r)<8||anyCouple()||r.done.confess)return;
+  if(!hasSharedExperience(n)){notify(tr('hintSharedExperience'));return;}
+  D.npc=n;r.done.confess=true;
   talk(tr('you'),[tr('confessStart')],null,()=>{
     D.npc=n;
     if(state.need.mood<40){talk(nm(n),[tr('confessFail1',{n:nm(n)}),tr('confessFail2')],null,()=>{rememberPlayer(n,'confession','rejected',-.5,85);addPts(n,-3);});return;}

@@ -47,7 +47,7 @@ const state={
   day:1,time:8*60,need:{energy:90,hunger:70,mood:70},
   inv:Object.fromEntries(ITEM_KEYS.map(k=>[k,0])),flowersTotal:0,picked:[],
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
-  lamp:true,looks:[],seen:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
+  lamp:true,looks:[],seen:false,firstGreetingDismissed:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
   moments:ResidentMoments.load(),offlineProgress:false,
   villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),blackout:VillageBlackout.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
@@ -101,6 +101,7 @@ function applySave(s){
   state.bonds=CottageBonds.load(s.bonds,NPCS.map(n=>n.id),state.day);
   savedAtLoad=Number.isFinite(s.savedAt)?s.savedAt:0;
   ['lamp','seen','changedToday','goldFound'].forEach(k=>{if(typeof s[k]==='boolean')state[k]=s[k];});
+  state.firstGreetingDismissed=s.firstGreetingDismissed===true;
   if(Array.isArray(s.pets))state.pets=s.pets.filter(p=>p&&['cat','dog','bird','rabbit'].includes(p.kind)&&typeof p.name==='string').slice(0,3).map(p=>({kind:p.kind,ci:p.ci|0,name:p.name,bond:+p.bond||0,mode:p.mode==='stay'?'stay':'follow',done:(p.done&&typeof p.done==='object')?p.done:{},hx:p.hx,hy:p.hy,x:0,y:0,dir:1,anim:0}));
   if(s.need)['energy','hunger','mood'].forEach(k=>{if(typeof s.need[k]==='number')state.need[k]=clampN(s.need[k]);});
   if(s.inv)Object.keys(state.inv).forEach(k=>{if(typeof s.inv[k]==='number')state.inv[k]=Math.max(0,s.inv[k]);});

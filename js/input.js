@@ -4,7 +4,7 @@ const keys=new Set(),touchKeys=new Set();
 const has=(...ks)=>ks.some(k=>keys.has(k)||touchKeys.has(k));
 addEventListener('keydown',e=>{
   if(e.code==='Escape'&&cottageMenu.open){e.preventDefault();cottageMenu.open=false;cottageMenu.querySelector('summary').focus();return;}
-  if(['Enter','Space'].includes(e.code)&&e.target instanceof Element&&e.target.closest('#hud button,#hudR button,#cottageMenu>summary'))return;
+  if(['Enter','Space'].includes(e.code)&&e.target instanceof Element&&e.target.closest('#hud button,#hudR button,#villageGuide button,#cottageMenu>summary'))return;
   if(startOpen){if(e.code==='Enter'&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('.langpick'))){e.preventDefault();begin();}return;}
   if(mapOpen){if(e.code==='Escape'||e.code==='KeyG'){e.preventDefault();closeVillageMap();}return;}
   if(dressOpen){if(e.code==='Escape'||e.code==='KeyC'){e.preventDefault();closeDress();}else if(e.code==='KeyQ')rot(-1);else if(e.code==='KeyR')rot(1);return;}
@@ -30,7 +30,7 @@ addEventListener('keydown',e=>{
     return;
   }
   if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();
-  if(e.code==='Escape'||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(e.code))walkRoute=[];
+  if(e.code==='Escape')cancelVillageRoute();
   keys.add(e.code);
   if(e.code==='KeyU'&&!e.repeat)toggleUmbrella();
   if(!e.repeat){if(e.code==='KeyE'||e.code==='Space'||e.code==='Enter')interact();if(e.code==='KeyC')openDress();if(e.code==='KeyJ')openDiary();if(e.code==='KeyB')openAlbum();if(e.code==='KeyL')cycleLang();if(e.code==='KeyM')setSound(!sndOn);if(e.code==='KeyG')openVillageMap();if(e.code==='KeyV')openTravelShop();}
@@ -58,7 +58,7 @@ $('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOp
 {const box=$('#langPick');LANG_ORDER.forEach(c=>{const b=el('button','pbtn',PACKS[c].meta.label);b.type='button';b.dataset.lang=c;b.lang=PACKS[c].meta.htmlLang;b.onclick=()=>setLang(c);box.append(b);});}
 let helloShown=false;
 function begin(){audioInit();if(AC&&sndOn)AC.resume().then(()=>sfx('start')).catch(()=>{});startOpen=false;state.seen=true;save();$('#start').classList.add('hidden');cv.focus({preventScroll:true});
-  if(!helloShown){helloShown=true;setTimeout(()=>say(tr('home'),state.day===1&&state.time<9*60?tr('welcomeFirst'):tr('welcomeBack')),300);
+  if(!helloShown){helloShown=true;if(state.day!==1||state.rel.gy.met)setTimeout(()=>say(tr('home'),tr('welcomeBack')),300);
     let rewound=null;try{rewound=sessionStorage.getItem('homelove-rewound');sessionStorage.removeItem('homelove-rewound');}catch(e){}
     if(rewound)setTimeout(()=>notify(tr('rewindDone',{d:rewound})),1600);
     else if(offlineMinutes>=60)setTimeout(()=>notify(tr('offlineBack',{h:Math.round(offlineMinutes/60)})),1600);}}
@@ -72,6 +72,10 @@ function bindWorldPointer(){
     const [cx,cy]=cameraOrigin();
     const x=cx+(e.clientX-bounds.left)*cv.width/(bounds.width*scale);
     const y=cy+(e.clientY-bounds.top)*cv.height/(bounds.height*scale);
-    if(setWalkDestination(x,y))cv.focus({preventScroll:true});
+    if(setWalkDestination(x,y)){
+      villageDestination = null;
+      updateVillageGuide();
+      cv.focus({preventScroll:true});
+    }
   });
 }

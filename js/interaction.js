@@ -629,8 +629,50 @@ function doVillageActivity(id,n){
   updateHud();sfx(id==='stage'?'villageSong':'ding');
   talk(n?nm(n):tr('village_'+id),[tr((n?'villageTogether_':'villageResult_')+id)]);
 }
+let villageDestination = null;
+
+function firstGreetingTarget(){
+  if(state.day!==1 || state.firstGreetingDismissed || state.rel.gy.met) return null;
+  const resident = npcs.find(n=>n.id==='gy');
+  const tx = Math.floor(P.x/16), ty = Math.floor((P.y-2)/16);
+  const tile = at(tx,ty);
+  if(!inCottageWindow(resident)) return null;
+  if(tile===FLOOR || tile===DOOR) return {x:6*16+8,y:9*16,inside:true};
+  if(resident.state!=='here' || resident.leaving || Math.hypot(P.x-resident.x,P.y-resident.y)>160) return null;
+  return {x:resident.x,y:resident.y-35,resident};
+}
+$('#firstGreetingDismiss').onclick = ()=>{
+  state.firstGreetingDismissed = true;
+  save();
+  cv.focus({preventScroll:true});
+  updateVillageGuide();
+};
+
+function cancelVillageRoute(){
+  villageDestination = null;
+  walkRoute = [];
+  updateVillageGuide();
+}
+
+function walkToVillagePlace(id, place){
+  closeVillageMap();
+  if(!setWalkDestination(place.anchor[0]*16+8,place.anchor[1]*16+10)){
+    notify(tr('villageNoRoute'));
+    return;
+  }
+  villageDestination = id;
+  updateVillageGuide();
+}
+$('#villageRouteCancel').onclick = ()=>{
+  cancelVillageRoute();
+  cv.focus({preventScroll:true});
+};
+
+const villageMapDialog = $('#villageMap');
 function closeVillageMap(){
-  mapOpen=false;$('#villageMap').classList.add('hidden');cv.focus({preventScroll:true});
+  villageMapDialog.close();
+  mapOpen=false;
+  cv.focus({preventScroll:true});
 }
 function overviewBackdrop(season){
   const art=SEASON_ART[season];
@@ -660,6 +702,13 @@ function drawOverview(canvas,season,viewport){
     g.strokeStyle='rgba(255,251,229,.72)';
     g.strokeRect(Math.floor(x/4)+.5,Math.floor(y/4)+.5,Math.floor(cv.width/scale/4),Math.floor(cv.height/scale/4));
   }
+  if(villageDestination && walkRoute.length){
+    g.fillStyle='#fff0bb';
+    for(const [x,y] of walkRoute)g.fillRect(Math.round(x/4),Math.round(y/4),2,2);
+    const [x,y]=walkRoute.at(-1);
+    g.fillStyle='#ac5b47';g.fillRect(Math.round(x/4)-2,Math.round(y/4)-2,5,5);
+    g.fillStyle='#fff0bb';g.fillRect(Math.round(x/4)-1,Math.round(y/4)-1,3,3);
+  }
   const px=Math.floor(P.x/4),py=Math.floor((P.y-2)/4);
   g.fillStyle='#fff4db';g.fillRect(px-2,py-2,5,5);
   g.fillStyle='#ae4f68';g.fillRect(px-1,py-1,3,3);
@@ -667,22 +716,16 @@ function drawOverview(canvas,season,viewport){
 let miniOverviewKey='';
 function updateMiniMap(){
   const season=CottageActivities.seasonOf(state.day),[x,y]=cameraOrigin();
-  const key=[season,VillageRiverside.exposed(state.day),P.x>>2,P.y>>2,x>>2,y>>2,cv.width,cv.height,scale].join(':');
+  const key=[season,VillageRiverside.exposed(state.day),P.x>>2,P.y>>2,x>>2,y>>2,cv.width,cv.height,scale,villageDestination,walkRoute.length].join(':');
   if(key!==miniOverviewKey){
     miniOverviewKey=key;
     drawOverview($('#miniOverview'),season,true);
   }
-  const ride=state.travel.selected,badge=$('#miniRide');
-  badge.classList.toggle('hidden',!ride);
-  if(ride){
-    const label=activeRide()?tr('vehicle_'+ride):tr('vehicleParked',{name:tr('vehicle_'+ride)});
-    if(badge.textContent!==label)badge.textContent=label;
-  }
 }
 function openVillageMap(){
   if(mapOpen||startOpen||D.modal||busy||dressOpen||diaryOpen||albumOpen||FISH.on)return;
-  mapOpen=true;walkRoute=[];keys.clear();touchKeys.clear();
-  const mapEl=$('#villageMap'),box=$('#villageStops');
+  mapOpen=true;cancelVillageRoute();keys.clear();touchKeys.clear();
+  const box=$('#villageStops');
   drawOverview($('#villageOverview'),CottageActivities.seasonOf(state.day),false);
   box.replaceChildren();
   for(const [id,place] of Object.entries(VillageMap.places)){
@@ -691,25 +734,27 @@ function openVillageMap(){
     const words=el('span',null,tr('village_'+id));
     const n=place.resident&&npcs.find(person=>person.id===place.resident);
     if(n)words.append(el('small',null,nm(n)+' · '+fmt(place.hours[0])+'–'+fmt(place.hours[1])));
+    if(id==='home')for(const resident of npcs){
+      const {start,end}=visitWindow(resident);
+      words.append(el('small',null,nm(resident)+' · '+fmt(start)+'–'+fmt(end)));
+    }
     if(id==='cafe')words.append(el('small',null,tr('projectCafeMapHours')));
     if(id==='lookout')words.append(el('small',null,tr('projectArtMapHours')));
     if(blackoutOption(id).length)words.append(el('small',null,tr('blackoutMap')));
     if(id==='market')words.append(el('small',null,'09:00–18:00'));
     button.append(dot,words);
-    button.onclick=()=>{
-      closeVillageMap();
-      if(!setWalkDestination(place.anchor[0]*16+8,place.anchor[1]*16+10))notify(tr('villageNoRoute'));
-    };
+    button.onclick=()=>walkToVillagePlace(id,place);
     box.append(button);
   }
-  mapEl.classList.remove('hidden');$('#villageClose').focus();
+  villageMapDialog.showModal();
 }
 $('#btnMap').addEventListener('click',openVillageMap);
 $('#miniMap').addEventListener('click',openVillageMap);
 $('#btnTravel').addEventListener('click',openTravelShop);
 $('#btnUmbrella').addEventListener('click',toggleUmbrella);
 $('#villageClose').addEventListener('click',closeVillageMap);
-$('#villageMap').addEventListener('click',e=>{if(e.target.id==='villageMap')closeVillageMap();});
+villageMapDialog.addEventListener('click',e=>{if(e.target===villageMapDialog)closeVillageMap();});
+villageMapDialog.addEventListener('cancel',e=>{e.preventDefault();closeVillageMap();});
 
 function findTarget(){
   if(blackoutActive()&&state.blackout.last?.day!==state.day){

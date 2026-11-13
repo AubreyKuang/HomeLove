@@ -16,6 +16,7 @@ function nextHint(n){
   if(h<2)return tr('hint2');
   if(h<4)return tr('hint4');
   if(h<6)return tr('hint6');
+  if(!anyCouple()&&!hasSharedExperience(n))return tr('hintSharedExperience');
   if(h<7)return tr('hint7');
   if(h<8)return tr('hint8');
   return anyCouple()?tr('hintTaken'):tr('hintConfess');

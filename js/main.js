@@ -14,11 +14,20 @@ function update(dt){
   const sp=64*(state.need.energy<15?0.6:1)*speed*dt;
   let moving=false;
   if(dx||dy){
-    walkRoute=[];
+    if(walkRoute.length || villageDestination) cancelVillageRoute();
     if(dx&&dy){const hd=dx<0?'left':'right',vd=dy<0?'up':'down';if(P.dir!==hd&&P.dir!==vd)P.dir=hd;}
     else P.dir=dx<0?'left':dx>0?'right':dy<0?'up':'down';
     const len=Math.hypot(dx,dy);movePlayerBy(dx/len*sp,dy/len*sp);moving=true;
-  }else if(walkRoute.length)moving=followWalkRoute(sp);
+  }else if(walkRoute.length){
+    const destination = villageDestination && walkRoute.at(-1);
+    moving=followWalkRoute(sp);
+    if(destination && !walkRoute.length){
+      if(P.x===destination[0] && P.y===destination[1]){
+        notify(tr('villageRouteArrived',{place:tr('village_'+villageDestination)}));
+      }else notify(tr('villageNoRoute'));
+    }
+  }
+  if(!walkRoute.length && villageDestination) cancelVillageRoute();
   P.moving=moving;
   if(moving){
     P.anim+=dt;

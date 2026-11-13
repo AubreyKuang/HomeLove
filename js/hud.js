@@ -11,14 +11,43 @@ function updateHud(){
   [['bE','barE',N.energy,'energy'],['bH','barH',N.hunger,'hunger'],['bM','barM',N.mood,'mood']].forEach(([b,w,v,t])=>{$('#'+b).style.width=v.toFixed(0)+'%';$('#'+w).classList.toggle('low',v<20);$('#'+w).title=tr(t)+' '+Math.round(v);});
   $('#cBag').textContent=bagCount();
   updateAlbumBadge();
+  const ride=state.travel.selected,badge=$('#miniRide');
+  badge.classList.toggle('hidden',!ride);
+  if(ride){
+    const label=activeRide()?tr('vehicle_'+ride):tr('vehicleParked',{name:tr('vehicle_'+ride)});
+    if(badge.textContent!==label)badge.textContent=label;
+  }
+  updateVillageGuide();
 }
 const promptEl=$('#prompt');let promptText='';
 function updatePrompt(){
   const txt=(!target||busy||dressOpen||diaryOpen||albumOpen||mapOpen||startOpen||D.modal||FISH.on)?'':target.verb;
   if(txt===promptText)return;promptText=txt;
+  updateVillageGuide();
   if(!txt){promptEl.classList.add('hidden');return;}
   promptEl.innerHTML='';const k=document.createElement('kbd');k.textContent=actKey();promptEl.append(k,document.createTextNode(txt));promptEl.classList.remove('hidden');
 }
+function villageGuideVisible(){
+  return !startOpen && !busy && !D.modal && !dressOpen && !diaryOpen && !albumOpen && !mapOpen && !FISH.on;
+}
+
+function updateVillageGuide(){
+  const guide = $('#villageGuide');
+  const label = $('#villageGuideText');
+  const cancel = $('#villageRouteCancel');
+  const dismiss = $('#firstGreetingDismiss');
+  const following = villageDestination && walkRoute.length>0;
+  const greeting = !following && firstGreetingTarget();
+  const visible = villageGuideVisible() && (following || greeting);
+  guide.classList.toggle('hidden', !visible);
+  cancel.classList.toggle('hidden', !following);
+  dismiss.classList.toggle('hidden', !greeting);
+  if(!visible) return;
+  const text = following ? tr('villageRouteTo',{place:tr('village_'+villageDestination)})
+    : greeting.inside ? tr('firstGreetingDoor') : tr('firstGreetingResident',{name:nm(greeting.resident)});
+  if(label.textContent!==text) label.textContent = text;
+}
+
 function applyLang(){
   Lp=PACKS[LANG];
   const root=document.documentElement;root.lang=Lp.meta.htmlLang;

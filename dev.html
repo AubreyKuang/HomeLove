@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Silkscreen&family=DotGothic16&family=Pixelify+Sans:wght@400;600&display=swap">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=first-day-1">
 </head>
 <body data-mode="test">
 
@@ -47,6 +47,11 @@
 </div>
 
 <div id="prompt" class="px hidden"></div>
+<div id="villageGuide" class="hidden">
+  <span id="villageGuideText" role="status"></span>
+  <button id="firstGreetingDismiss" type="button" class="hidden" data-i18n="firstGreetingDismiss"></button>
+  <button id="villageRouteCancel" type="button" class="hidden" data-i18n-aria="villageRouteCancel" data-i18n-title="villageRouteCancel">×</button>
+</div>
 <div id="toast" class="px hidden" role="status" aria-live="polite"></div>
 <div id="dialog" class="px hidden" aria-live="polite"><div class="who"></div><div class="txt"></div><div class="choices"></div><div class="more">▼</div></div>
 
@@ -96,15 +101,18 @@
   </div>
 </div>
 
-<div id="villageMap" class="overlay hidden" role="dialog" aria-modal="true" data-i18n-aria="villageMap">
+<dialog id="villageMap" class="overlay" aria-labelledby="villageMapTitle">
   <div class="dpanel px village-panel">
-    <div class="dhead"><h2 data-i18n="villageMap"></h2><button class="pbtn" id="villageClose" type="button" data-i18n="close"></button></div>
+    <div class="dhead"><h2 id="villageMapTitle" data-i18n="villageMap"></h2><button class="pbtn" id="villageClose" type="button" data-i18n="close" autofocus></button></div>
     <div class="village-body">
-      <canvas id="villageOverview" width="192" height="136" aria-hidden="true"></canvas>
+      <div class="village-preview">
+        <canvas id="villageOverview" width="192" height="136" aria-hidden="true"></canvas>
+        <p data-i18n="villageChooseRoute"></p>
+      </div>
       <div id="villageStops"></div>
     </div>
   </div>
-</div>
+</dialog>
 
 <div id="diary" class="overlay hidden" role="dialog" aria-modal="true" data-i18n-aria="diary">
   <div class="dpanel px diarypanel">
@@ -159,14 +167,14 @@
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
 <script src="village-blackout.js?v=rare-nights"></script>
-<script src="lang/zh.js?v=scene-hud-1" charset="utf-8"></script>
-<script src="lang/en.js?v=scene-hud-1" charset="utf-8"></script>
-<script src="lang/ja.js?v=scene-hud-1" charset="utf-8"></script>
+<script src="lang/zh.js?v=first-day-1" charset="utf-8"></script>
+<script src="lang/en.js?v=first-day-1" charset="utf-8"></script>
+<script src="lang/ja.js?v=first-day-1" charset="utf-8"></script>
 
 <script src="js/core.js"></script>
 <script src="js/wardrobe-art.js"></script>
 <script src="js/audio.js"></script>
-<script src="js/state.js"></script>
+<script src="js/state.js?v=first-day-1"></script>
 <script src="js/world-map.js"></script>
 <script src="js/world-art.js"></script>
 <script src="js/residents.js"></script>
@@ -174,14 +182,14 @@
 <script src="js/daily-life.js"></script>
 <script src="js/fishing.js"></script>
 <script src="js/relationships.js"></script>
-<script src="js/interaction.js"></script>
-<script src="js/hud.js"></script>
-<script src="js/input.js"></script>
+<script src="js/interaction.js?v=first-day-1"></script>
+<script src="js/hud.js?v=first-day-1"></script>
+<script src="js/input.js?v=village-route-1"></script>
 <script src="js/wardrobe.js"></script>
 <script src="js/diary.js"></script>
 <script src="js/album.js"></script>
-<script src="js/render.js"></script>
-<script src="js/main.js"></script>
+<script src="js/render.js?v=village-route-1"></script>
+<script src="js/main.js?v=village-route-1"></script>
 <script src="dev/panel.js"></script>
 </body>
 </html>

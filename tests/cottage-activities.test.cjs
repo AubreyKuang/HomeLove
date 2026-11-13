@@ -171,6 +171,33 @@ test('normal fishing menu consumes one bait, records a successful catch and allo
   assert.equal(state.need.energy, 85);
 });
 
+test('confession requires the right resident’s completed outing as well as eight hearts', () => {
+  const resident={id:'by'};
+  const relation={pts:80,done:{}};
+  const state={life:{gy:{firstDate:{day:2}},by:{fishingInvitation:{dueDay:3}}},
+    moments:{records:{}},need:{mood:50}};
+  let message;
+  const runtime=game({
+    state,D:{},rel:()=>relation,hearts:r=>Math.floor(r.pts/10),anyCouple:()=>false,
+    xiaomanRoute:()=>false,notify:key=>{message=key;},tr:key=>key,talk(){},
+  });
+  runSection(runtime,'function hasSharedExperience(','function npcMenu(');
+  runSection(runtime,'function confess(','function moveIn(');
+  runtime.confess(resident);
+  assert.equal(message,'hintSharedExperience');
+  assert.equal(relation.done.confess,undefined);
+  state.life.by.fishingInvitation.catch={day:3};
+  assert.equal(runtime.hasSharedExperience(resident),true);
+  runtime.confess(resident);
+  assert.equal(relation.done.confess,true);
+  delete state.life.by.fishingInvitation;
+  state.moments.records.by={day:4};
+  assert.equal(runtime.hasSharedExperience(resident),true);
+  delete state.moments.records.by;
+  state.life.by.firstDate={day:5};
+  assert.equal(runtime.hasSharedExperience(resident),true);
+});
+
 test('first moonfish gift schedules a night invitation, retry, and one shared catch memory', () => {
   const state = {day: 2, time: 21*60, life: {}, need: {energy: 90, mood: 50},
     inv: {moonfish: 2}, fishLog: {}};
