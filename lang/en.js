@@ -814,6 +814,11 @@ window.HL_LANG.en.objects.capsule = {"name": "Capsule Machine", "verb": "Use the
 Object.assign(window.HL_LANG.en.ui, {
   "requestMailPrompt": "Read the letter in the mailbox",
   "requestAccept": "Take the request",
+  "requestCompareIntro": "Two requests arrived. Read both if you like, then choose one. Delivery is due by {day}.",
+  "requestCompareItem": "{item} ×{count} (have {owned})",
+  "requestCompareLetter": "Read the letter from {name} · {items}",
+  "requestCompareBack": "Look at the other letter",
+  "requestCompareSkip": "Decline both requests",
   "requestDecline": "Skip this one",
   "requestAdded": "Added {name}’s letter to your diary.",
   "requestTerms": "Bring {items}, whichever you can spare, by {day}. I’ve set aside {reward} for you.",

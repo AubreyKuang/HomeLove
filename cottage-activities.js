@@ -121,7 +121,10 @@ const CottageActivities = (() => {
         !['offered', 'accepted', 'dropped', 'delivered', 'declined'].includes(request.status)) return null;
     const closedDay = Number.isInteger(request.closedDay) && request.closedDay >= request.day
       ? request.closedDay : request.day;
-    return {resident: request.resident, day: request.day, status: request.status, closedDay};
+    const alternate = request.status === 'offered' && request.alternate !== request.resident &&
+      Object.hasOwn(requests, request.alternate) ? request.alternate : null;
+    return {resident: request.resident, day: request.day, status: request.status, closedDay,
+      ...(alternate ? {alternate} : {})};
   }
 
   function openRequest(request, day) {
@@ -136,7 +139,8 @@ const CottageActivities = (() => {
     if (!residents.length) return null;
     const last = residents.indexOf(previous?.resident);
     const index = last < 0 ? (day - 1) % residents.length : (last + 1) % residents.length;
-    return {resident: residents[index], day, status: 'offered'};
+    return {resident: residents[index], day, status: 'offered',
+      ...(residents.length>1 ? {alternate:residents[(index+1)%residents.length]} : {})};
   }
 
   function fulfillRequest(request, resident, day, inventory, item, byMailbox = false) {

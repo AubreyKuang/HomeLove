@@ -209,7 +209,8 @@ function checkNeighborMail(){
   const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,neighborMailRelations());
   if(request){
     if(!current){state.neighborRequest=request;save();}
-    readNeighborRequest(request);
+    if(request.status==='offered'&&request.alternate)compareNeighborLetters(request);
+    else readNeighborRequest(request);
     return;
   }
   const fans=npcs.filter(n=>hearts(rel(n))>=5&&!rel(n).livesIn&&(n.id!=='xm'||!state.xiaoman?.answer));
@@ -225,6 +226,20 @@ function neighborRequestItems(request){
   const {items}=CottageActivities.requests[request.resident];
   return Object.entries(items).map(([item,count])=>`${ITEM_ICONS[item]} ${itemLabel(item)} ×${count}`);
 }
+function compareNeighborLetters(request){
+  const choices=[request.resident,request.alternate].map(resident=>{
+    const n=npcs.find(person=>person.id===resident);
+    const items=Object.entries(CottageActivities.requests[resident].items).map(([item,count])=>
+      tr('requestCompareItem',{item:itemLabel(item),count,owned:state.inv[item]??0}));
+    return {label:tr('requestCompareLetter',{name:nm(n),items:items.join(tr('requestOr'))}),
+      fn:()=>readNeighborRequest(request,resident)};
+  });
+  talk(objName('mailbox'),[tr('requestCompareIntro',{day:tr('day',{d:request.day+2})})],
+    choices.concat({label:tr('requestCompareSkip'),fn:()=>{
+      if(state.neighborRequest!==request||request.status!=='offered')return;
+      request.status='declined';request.closedDay=state.day;delete request.alternate;save();
+    }},{label:tr('walkAway'),fn:null}));
+}
 function cafeRequestPlan(){
   const [opens,closes]=VillageMap.places.cafe.hours;
   return tr('requestCafePlan',{
@@ -232,11 +247,11 @@ function cafeRequestPlan(){
     minutes:CAFE_REQUEST_MINUTES,start:fmt(opens),latest:fmt(closes-CAFE_REQUEST_MINUTES)
   });
 }
-function readNeighborRequest(request){
-  const n=npcs.find(n=>n.id===request.resident);
-  const {reward}=CottageActivities.requests[request.resident];
+function readNeighborRequest(request,resident=request.resident){
+  const n=npcs.find(n=>n.id===resident);
+  const {reward}=CottageActivities.requests[resident];
   const lines=[tr('requestLetter_'+n.id),tr('requestTerms',{
-    items:neighborRequestItems(request).join(tr('requestOr')),
+    items:neighborRequestItems({resident}).join(tr('requestOr')),
     reward:`${ITEM_ICONS[reward]} ${itemLabel(reward)} ×2`,
     day:tr('day',{d:request.day+2})
   })];
@@ -246,12 +261,13 @@ function readNeighborRequest(request){
     {label:tr('requestMailboxOffer'),fn:()=>offerMailboxDelivery(request)}
   ]:[
     {label:tr('requestAccept'),fn:()=>{
-      request.status='accepted';save();
+      if(state.neighborRequest!==request||request.status!=='offered'||!CottageActivities.openRequest(request,state.day))return;
+      request.resident=resident;request.status='accepted';delete request.alternate;save();
       say(objName('mailbox'),tr('requestAdded',{name:nm(n)}));
     }},
-    {label:tr('requestDecline'),fn:()=>{
+    ...(request.alternate?[{label:tr('requestCompareBack'),back:true,fn:()=>compareNeighborLetters(request)}]:[{label:tr('requestDecline'),fn:()=>{
       request.status='declined';request.closedDay=state.day;save();
-    }}
+    }}])
   ];
   talk(nm(n),lines,options.concat({label:tr('walkAway'),fn:null}));
 }
