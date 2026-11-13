@@ -424,6 +424,8 @@ window.HL_LANG.ja = {
     dateMeetingGo: '{place}で会ってからデートを始める',
     dateMeetingRoute: '待ち合わせ場所へ歩く',
     dateMeetingCancel: 'このデートを取り消す',
+    dateMeetingMissed: "{place}での{name}との待ち合わせ（{start}〜{end}）に間に合わなかった。時間を改められる。",
+    dateMeetingRebook: "{day}に変更 · {place} · {start}〜{end} · デート{minutes}分",
     dateTooLate: '（今日は時間が足りない）',
     boxPrepare: '明日の朝ごはんを用意 · にんじん1本、かぼちゃ1個 · {m}分',
     boxAlready: '朝ごはんは用意済み',

@@ -80,11 +80,25 @@ function renderDiary(){
     }
     b.append(section);
   }
-  const plan=activeDatePlan();
+  const missed=missedDatePlan();
+  const plan=activeDatePlan()||missed;
   if(plan){
     const section=el('section','dsec');
-    section.append(el('h3',null,tr('upcomingPlans')),el('p','rline',tr('dateMeetingBooked',describeDatePlan(plan))));
-    if(plan.day===state.day){
+    section.append(el('h3',null,tr('upcomingPlans')),el('p','rline',tr(
+      missed?'dateMeetingMissed':'dateMeetingBooked',describeDatePlan(plan))));
+    for(const option of dateRebookingChoices(missed)){
+      const change=el('button','pbtn',tr('dateMeetingRebook',describeDatePlan(option)));
+      change.type='button';
+      change.onclick=()=>{
+        const valid=dateRebookingChoices(missed).some(candidate=>candidate.day===option.day&&candidate.place===option.place);
+        if(valid&&setDatePlan(option)){
+          renderDiary();
+          $('#diaryClose').focus();
+        }
+      };
+      section.append(change);
+    }
+    if(!missed&&plan.day===state.day){
       const route=el('button','pbtn',tr('dateMeetingRoute'));
       route.type='button';
       route.onclick=()=>{

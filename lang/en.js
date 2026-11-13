@@ -424,6 +424,8 @@ window.HL_LANG.en = {
     dateMeetingGo: "Meet at {place} to start the date",
     dateMeetingRoute: "Walk to the meeting place",
     dateMeetingCancel: "Cancel this date",
+    dateMeetingMissed: "You missed your meeting with {name} at {place} ({start}–{end}). You can arrange another time.",
+    dateMeetingRebook: "Rebook for {day} · {place} · {start}–{end} · {minutes} min",
     dateTooLate: " (too late today)",
     boxPrepare: "Pack breakfast for tomorrow · 1 carrot, 1 pumpkin · {m} min",
     boxAlready: "A breakfast box is already packed",

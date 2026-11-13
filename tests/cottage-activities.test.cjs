@@ -214,6 +214,29 @@ test('date reservations reserve only the named resident and end without a penalt
   assert.equal(state.datePlan,null);
 });
 
+test('a missed garden date can move to the remaining pond slot or tomorrow with the same resident', () => {
+  const n={id:'gy'},plan={resident:'gy',place:'garden',day:2};
+  const state={day:2,time:659,datePlan:plan,rel:{gy:{done:{}}}};
+  const runtime=game({state,npcs:[n],xiaomanRoute:()=>false,
+    DATE_MEETINGS:{garden:{start:600,end:660},pond:{start:960,end:1020}}});
+  runSection(runtime,'function activeDatePlan(','function planDateMenu(');
+  const options=()=>JSON.parse(JSON.stringify(runtime.dateRebookingChoices(plan)));
+  assert.deepEqual(options(),[]);
+  state.time=660;
+  assert.deepEqual(options(),[
+    {resident:'gy',place:'pond',day:2},{resident:'gy',place:'garden',day:3},{resident:'gy',place:'pond',day:3}
+  ]);
+  state.time=1020;
+  assert.deepEqual(options().map(choice=>choice.day),[3,3]);
+  state.rel.gy.done.date=true;
+  assert.deepEqual(options(),[]);
+  state.rel.gy.done.date=false;
+  state.datePlan={...plan,place:'pond'};
+  assert.deepEqual(options(),[]);
+  state.day++;
+  assert.equal(runtime.missedDatePlan(),undefined);
+});
+
 test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
   const state={day:1,time:1200,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
   const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40},

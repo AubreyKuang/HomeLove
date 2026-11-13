@@ -512,6 +512,20 @@ function setDatePlan(plan){
   state.datePlan=previous;
   return false;
 }
+function missedDatePlan(){
+  const plan=state.datePlan;
+  if(plan?.day!==state.day||activeDatePlan()||state.rel[plan.resident].done.date)return;
+  const n=npcs.find(person=>person.id===plan.resident);
+  if(n&&!xiaomanRoute(n))return plan;
+}
+function dateRebookingChoices(plan){
+  if(!plan||plan!==missedDatePlan())return [];
+  const choices=Object.keys(DATE_MEETINGS).map(place=>({resident:plan.resident,place,day:state.day+1}));
+  if(plan.place==='garden'&&state.time<DATE_MEETINGS.pond.end){
+    choices.unshift({resident:plan.resident,place:'pond',day:state.day});
+  }
+  return choices;
+}
 function planDateMenu(n){
   if(activeDatePlan()||xiaomanRoute(n)||(hearts(rel(n))<6&&!rel(n).m6))return;
   const choices=Object.keys(DATE_MEETINGS).map(place=>{
