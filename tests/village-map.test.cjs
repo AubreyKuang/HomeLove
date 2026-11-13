@@ -162,3 +162,34 @@ test('wind and water clues have distinct trigger rules and one durable keepsake 
   assert.equal(river.cards(restored).length,2);
   assert.equal(restored.apron.heard,true);
 });
+
+vm.runInContext(read('village-projects.js')+'\nthis.projectsAPI=VillageProjects;',ctx);
+const projects=ctx.projectsAPI;
+
+test('village projects persist player choices and discard invalid save entries',()=>{
+  const loaded=projects.load({
+    cafe:{day:7,items:['berry','cookie'],style:'soft',name:'river',caption:'  我的菜单  '},
+    ball:{day:6,best:2},recording:true,sounds:['chime','water','chime','invalid','letter'],
+    music:{day:7,order:['chime','water','letter'],ending:'quiet'},
+    drafts:{rain:{day:4,frame:1,palette:0},clear:{day:50,frame:0,palette:0}},hung:'rain'
+  },8);
+  assert.equal(loaded.cafe.caption,'我的菜单');
+  assert.equal(projects.menuDay(loaded.cafe.day),8);
+  assert.equal(projects.menuDay(8),15);
+  assert.equal(loaded.sounds.length,3);
+  assert.equal(loaded.music.order[0],'chime');
+  assert.equal(loaded.hung,'rain');
+  assert.equal(projects.cards(loaded).length,4);
+  assert.equal(projects.load({hung:'constructor'},8).hung,null);
+});
+
+test('court rewards two kinds of teamwork and river light allows three independent sketches',()=>{
+  assert.equal(projects.shot(0,'left','shoot'),1);
+  assert.equal(projects.shot(0,'right','pass'),1);
+  assert.equal(projects.shot(0,'right','shoot'),0);
+  assert.equal(projects.shot(1,'right','shoot'),1);
+  assert.equal(projects.lightAt(1,15*60),'clear');
+  assert.equal(projects.lightAt(4,15*60),'rain');
+  assert.equal(projects.lightAt(4,18*60),'dusk');
+  assert.equal(projects.lightAt(4,21*60),null);
+});
