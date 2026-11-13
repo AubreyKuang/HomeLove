@@ -197,18 +197,33 @@ test('court rewards two kinds of teamwork and river light allows three independe
 vm.runInContext(read('village-blackout.js')+'\nthis.blackoutAPI=VillageBlackout;',ctx);
 const blackout=ctx.blackoutAPI;
 
-test('blackout light window and player choices survive repeat visits to multiple venues',()=>{
-  assert.equal(blackout.active(5,1140),false);
-  assert.equal(blackout.active(6,1089),false);
-  assert.equal(blackout.active(6,1090),true);
-  assert.equal(blackout.active(6,1320),false);
-  assert.equal(blackout.active(13,1140),false);
-  const first=blackout.complete(blackout.load(),6,1140,'stage','circle');
+test('first blackout is fixed and later Saturday rolls survive reloading',()=>{
+  const state=blackout.load({seed:42});
+  assert.equal(blackout.active(state,5,1140),false);
+  assert.equal(blackout.active(state,6,1089),false);
+  assert.equal(blackout.active(state,6,1090),true);
+  assert.equal(blackout.active(state,6,1320),false);
+  const weeks=Array.from({length:500},(_,week)=>13+week*7);
+  const nights=weeks.filter(day=>blackout.active(state,day,1140));
+  assert.ok(nights.length>30&&nights.length<70);
+  assert.deepEqual(weeks.filter(day=>blackout.active(blackout.load(JSON.parse(JSON.stringify(state)),day),day,1140)),nights);
+  assert.equal(blackout.active(state,nights[0]+1,1140),false);
+
+  const first=blackout.complete(state,6,1140,'stage','circle');
   assert.equal(blackout.complete(first,6,1140,'cafe','quiet'),null);
-  const second=blackout.complete(first,20,1140,'cafe','by');
-  const restored=blackout.load(JSON.parse(JSON.stringify(second)),34);
+  const next=nights[0];
+  const second=blackout.complete(first,next,1140,'cafe','by');
+  const restored=blackout.load(JSON.parse(JSON.stringify(second)),next);
   assert.equal(restored.visits.stage.choice,'circle');
   assert.equal(restored.visits.cafe.choice,'by');
   assert.equal(blackout.cards(restored)[0].place,'stage');
-  assert.equal(blackout.complete(restored,34,1140,'court','circle'),null);
+  const missed=weeks.find(day=>!nights.includes(day));
+  assert.equal(blackout.active(state,missed,1140,missed),true);
+});
+
+test('old fortnightly blackout visits and keepsakes remain readable',()=>{
+  const first={day:20,place:'court',choice:'river'};
+  const state=blackout.load({first,last:first},34);
+  assert.equal(state.visits.court.day,20);
+  assert.equal(blackout.cards(state)[0].choice,'river');
 });
