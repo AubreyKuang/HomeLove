@@ -295,7 +295,8 @@ function canRebookRainDraft(revisit,place=revisit?.place){
     state.rainSketches[revisit.place]||state.time<RAIN_DATE_MEETINGS[revisit.place].end)return false;
   const tomorrow=state.day+1;
   return Object.hasOwn(RAIN_DATE_MEETINGS,place)&&!state.rainSketches[place]&&
-    VillageRiverside.weather(tomorrow)!=='rain'&&!rainCompanionConflict({...revisit,place,day:tomorrow});
+    VillageRiverside.weather(tomorrow)!=='rain'&&!rainCompanionConflict({...revisit,place,day:tomorrow})&&
+    (!state.dedicationVisit||!rainCompanionConflict({...revisit,place,day:tomorrow},activeDedicationVisit()??null));
 }
 function rebookRainDraft(revisit,place=revisit?.place){
   if(!canRebookRainDraft(revisit,place))return false;
@@ -310,7 +311,8 @@ function setRainCompanion(revisit){
   const meeting=RAIN_DATE_MEETINGS[revisit.place];
   if(state.rainReturn!==revisit||revisit.done||VillageRiverside.weather(revisit.day)==='rain'||
     !(revisit.day===state.day+1||(revisit.day===state.day&&state.time<meeting.end)))return false;
-  if(!revisit.together&&rainCompanionConflict(revisit))return false;
+  if(!revisit.together&&(rainCompanionConflict(revisit)||
+    (state.dedicationVisit&&rainCompanionConflict(revisit,activeDedicationVisit()??null))))return false;
   const previous={...revisit};
   revisit.together=!revisit.together;
   delete revisit.walk;
@@ -587,6 +589,10 @@ function npcMenu(n,back){
   opts.push({label:tr('optBye'),fn:null});
   if(momentAvailable(n))opts.unshift({label:tr('worldTitle_moment_'+n.id),fn:()=>openResidentMoment(n)});
   const revisit=state.rainReturn;
+  const dedication=dedicationMeeting(n);
+  if(atPlannedDate(n,dedication)){
+    opts.unshift({label:tr('rainDedicationVisitAction',RAIN_DEDICATION_VISIT),fn:()=>finishDedicationVisit(n)});
+  }
   if(revisit?.walk==='meet'&&atPlannedDate(n,rainCompanionMeeting(n))){
     if(!revisit.relocated)opts.unshift({label:tr('rainWalkChoosePause',RAIN_WALK_PAUSE),
       disabled:!rainWalkCanPause(revisit),fn:()=>startRainCompanionWalk(revisit,n,true)});
@@ -821,6 +827,65 @@ function doAct(n,k){
     ()=>{note(n,'act_'+k,v);const lines=[fill(Lp.acts[k].line,{n:nm(n)}),v>=12?nt(n).actFav:v>=6?tr('actGood',{n:nm(n)}):tr('actMeh',{n:nm(n)})];if(got)lines.push(got);
       D.npc=n;talk(nm(n),lines,null,()=>{addPts(n,v);milestone(n);});});
 }
+const RAIN_DEDICATION_VISIT={minutes:20,mood:8,trust:4};
+function activeDedicationVisit(){
+  const visit=state.dedicationVisit;
+  if(visit&&visit.day>=state.day&&VillageRiverside.weather(visit.day)!=='rain'&&
+    (visit.day>state.day||state.time+RAIN_DEDICATION_VISIT.minutes<=RAIN_DATE_MEETINGS[visit.place].end))return visit;
+}
+function cancelDedicationVisit(visit){
+  if(activeDedicationVisit()!==visit||!visit)return false;
+  state.dedicationVisit=null;
+  if(save())return true;
+  state.dedicationVisit=visit;
+  return false;
+}
+function canBookDedicationVisit(source,day){
+  const sketch=state.rainSketches[source];
+  if(!sketch?.dedication||sketch.dedicationVisited||activeDedicationVisit()||
+    (day!==state.day&&day!==state.day+1)||VillageRiverside.weather(day)==='rain')return false;
+  if(day===state.day&&state.time+RAIN_DEDICATION_VISIT.minutes>RAIN_DATE_MEETINGS[sketch.dedication].end)return false;
+  const visit={resident:sketch.resident,place:sketch.dedication,day};
+  const rain=state.rainReturn;
+  return !rainCompanionConflict(visit)&&(!rain?.together||rain.done||!rainCompanionConflict(visit,rain));
+}
+function bookDedicationVisit(source,day){
+  if(!canBookDedicationVisit(source,day))return false;
+  const {resident,dedication:place}=state.rainSketches[source];
+  const previous=state.dedicationVisit;
+  state.dedicationVisit={source,resident,place,day};
+  if(save())return true;
+  state.dedicationVisit=previous;
+  return false;
+}
+function dedicationMeeting(n){
+  const visit=activeDedicationVisit();
+  if(visit?.day!==state.day||visit.resident!==n.id)return;
+  const meeting=RAIN_DATE_MEETINGS[visit.place];
+  if(state.time>=meeting.start-20)return meeting;
+}
+function finishDedicationVisit(n){
+  const visit=activeDedicationVisit();
+  if(!atPlannedDate(n,dedicationMeeting(n)))return;
+  const sketch=state.rainSketches[visit.source],trust=B().trust[n.id];
+  const before={time:state.time,need:{...state.need}};
+  const {minutes,mood,trust:gain}=RAIN_DEDICATION_VISIT;
+  state.dedicationVisit=null;
+  sketch.dedicationVisited=state.day;
+  advanceTime(minutes);
+  state.need.mood=clampN(state.need.mood+mood);
+  trustNpc(n,gain);
+  if(!save()){
+    state.dedicationVisit=visit;
+    delete sketch.dedicationVisited;
+    B().trust[n.id]=trust;
+    Object.assign(state,before);
+    return;
+  }
+  updateHud();
+  D.npc=n;
+  talk(nm(n),[tr('rainDedicationVisitDone',{place:tr(RAIN_DATE_MEETINGS[visit.place].name)})]);
+}
 function activeDatePlan(){
   const plan=state.datePlan;
   if(plan&&(plan.day>state.day||(plan.day===state.day&&state.time<DATE_MEETINGS[plan.place].end))){
@@ -852,7 +917,8 @@ function describeDatePlan(plan){
     minutes:(plan.shelter?DATE_SHELTER:plan.rainWalk?RAIN_DETOUR_DATE:DATES[plan.place]).minutes};
 }
 function setDatePlan(plan){
-  if(plan&&state.rainReturn?.together&&!state.rainReturn.done&&rainCompanionConflict(state.rainReturn,plan)){
+  if(plan&&((state.rainReturn?.together&&!state.rainReturn.done&&rainCompanionConflict(state.rainReturn,plan))||
+    (state.dedicationVisit&&rainCompanionConflict(activeDedicationVisit(),plan)))){
     notify(tr('rainCompanionConflict'));
     return false;
   }

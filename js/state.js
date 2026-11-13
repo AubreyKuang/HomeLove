@@ -60,7 +60,7 @@ const state={
   garden:CottageActivities.loadGarden(),tunnels:[],fishLog:{},capsuleDresses:[],capsuleHairs:[],capsuleTops:[],capsuleBottoms:[],neighborRequest:null,album:MemoryAlbum.load(),events:CottageEvents.load(),snowFishing:SnowFishing.load(),xiaoman:XiaomanStory.load(),stories:ResidentStories.load(),
   lamp:true,looks:[],seen:false,firstGreetingDismissed:false,changedToday:false,lastRead:-999,lastPet:-999,goldFound:false,summon:-1,pets:[],chores:{},meal:null,mealDay:-1,
   rel:Object.fromEntries(NPCS.map(n=>[n.id,newRel()])),
-  moments:ResidentMoments.load(),offlineProgress:false,datePlan:null,rainReturn:null,rainSketches:{},breakfastBoxDay:null,
+  moments:ResidentMoments.load(),offlineProgress:false,datePlan:null,rainReturn:null,rainSketches:{},dedicationVisit:null,breakfastBoxDay:null,
   villageVisits:{},riverside:VillageRiverside.load(),projects:VillageProjects.load(),blackout:VillageBlackout.load(),riverRest:0,weekend:VillageWeekend.load(),travel:CottageTravel.load(),bonds:CottageBonds.load(null,NPCS.map(n=>n.id))
 };
 const LS=document.body.dataset.mode==='test'?'homelove-save-dev':'homelove-save-v1';
@@ -145,10 +145,16 @@ function applySave(s){
       state.rainSketches[place]={resident:sketch.resident,day:sketch.day,
         ...(['bank','reflection'].includes(sketch.subject)||sketch.subject==='paired'&&sketch.shared===true?{subject:sketch.subject}:{}),
         ...(sketch.subject==='paired'&&sketch.shared===true&&sketch.given===true&&Object.hasOwn(RAIN_DATE_MEETINGS,sketch.dedication)
-          ?{dedication:sketch.dedication}:{}),
+          ?{dedication:sketch.dedication,
+            ...(Number.isInteger(sketch.dedicationVisited)&&sketch.dedicationVisited>=sketch.day&&sketch.dedicationVisited<=state.day
+              ?{dedicationVisited:sketch.dedicationVisited}:{})}:{}),
         ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
     }
   }
+  const visit=s.dedicationVisit,sketch=state.rainSketches[visit?.source];
+  state.dedicationVisit=sketch?.dedication&&!sketch.dedicationVisited&&
+    (visit.day===state.day||visit.day===state.day+1)
+    ?{source:visit.source,resident:sketch.resident,place:sketch.dedication,day:visit.day}:null;
   for(const pool of Object.values(CAPSULE_POOLS)){
     const saved=s[pool.owned];
     state[pool.owned]=Array.isArray(saved)?pool.items.filter(item=>saved.includes(item.id)).map(item=>item.id):[];

@@ -35,6 +35,35 @@ function appendKeepsake(container,n,key,title,details){
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
+  const dedication=activeDedicationVisit();
+  if(dedication){
+    const spot=RAIN_DATE_MEETINGS[dedication.place],section=el('section','dsec');
+    const name=nm(npcs.find(n=>n.id===dedication.resident));
+    section.append(el('h3',null,tr('rainDedicationVisitTitle')),el('p','rline',tr('rainDedicationVisitPlan',{
+      name,place:tr(spot.name),day:tr('day',{d:dedication.day}),start:fmt(spot.start),
+      last:fmt(spot.end-RAIN_DEDICATION_VISIT.minutes),...RAIN_DEDICATION_VISIT
+    })));
+    if(dedication.day===state.day){
+      const route=el('button','pbtn',tr('rainDedicationVisitRoute'));
+      route.type='button';
+      route.onclick=()=>{
+        const [x,y]=spot.p;
+        closeDiary();
+        if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
+      };
+      section.append(route);
+    }
+    const cancel=el('button','pbtn',tr('rainDedicationVisitCancel'));
+    cancel.type='button';
+    cancel.onclick=()=>{
+      if(cancelDedicationVisit(dedication)){
+        renderDiary();
+        $('#diaryClose').focus();
+      }
+    };
+    section.append(cancel);
+    b.append(section);
+  }
   const revisit=state.rainReturn;
   if(revisit&&!revisit.done&&(revisit.day===state.day+1||rainReturnReady())){
     const spot=RAIN_DATE_MEETINGS[revisit.place];
