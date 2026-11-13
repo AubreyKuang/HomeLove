@@ -1344,3 +1344,16 @@ Object.assign(window.HL_LANG.ja.ui, {
 
 window.HL_LANG.ja.objects.computer = {"name": "机のパソコン", "verb": "パソコンを使う"};
 window.HL_LANG.ja.ui.computerIntro = "机のパソコンをつけた。通販を見てみる？";
+
+Object.assign(window.HL_LANG.ja.ui, {
+  "frameChoose": "飾るカードを選ぶ",
+  "frameHang": "小屋の壁に飾る",
+  "frameRemove": "壁のカードを外す",
+  "frameSaveFailed": "額の状態を保存できませんでした。",
+  "frameRecognizePostcard": "私が送ったカード、飾ってくれたんだね。",
+  "frameRecognize_gy": "あの日のことを、ここに残してくれたんだね。入ってすぐに目に入ったよ。",
+  "frameRecognize_xy": "あの日だね。帰りに通った道、まだ覚えてるよ。",
+  "frameRecognize_jy": "あの日をここに飾ったんだね。あの時の音が聞こえてきそう。",
+  "frameRecognize_by": "アルバムで見つけるのと、家に入ってすぐ目に入るのとでは、感じ方が違うね。",
+  "frameRecognize_xm": "ずっと取っておいてくれたんだね。あの日のこと、覚えてるのは私だけかと思ってた。"
+});
