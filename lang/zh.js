@@ -424,6 +424,8 @@ window.HL_LANG.zh = {
     dateMeetingGo: '到{place}碰面后开始约会',
     dateMeetingRoute: '走去见面地点',
     dateMeetingCancel: '取消这次约会',
+    dateMeetingMissed: "错过了和{name}在{place}的见面（{start}–{end}）。可以改约同一个人。",
+    dateMeetingRebook: "改约{day} · {place} · {start}–{end} · 约会 {minutes} 分钟",
     dateTooLate: '（今天来不及）',
     boxPrepare: '备明早便当 · 胡萝卜 ×1、南瓜 ×1 · {m} 分钟',
     boxAlready: '已有一份便当',
