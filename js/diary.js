@@ -85,7 +85,7 @@ function renderDiary(){
   if(plan){
     const section=el('section','dsec');
     section.append(el('h3',null,tr('upcomingPlans')),el('p','rline',tr(
-      missed?'dateMeetingMissed':'dateMeetingBooked',describeDatePlan(plan))));
+      missed?'dateMeetingMissed':plan.shelter?'dateMeetingSheltered':'dateMeetingBooked',describeDatePlan(plan))));
     for(const option of dateRebookingChoices(missed)){
       const change=el('button','pbtn',tr('dateMeetingRebook',describeDatePlan(option)));
       change.type='button';
@@ -99,10 +99,23 @@ function renderDiary(){
       section.append(change);
     }
     if(!missed&&plan.day===state.day){
+      if(canChangeDateShelter(plan)){
+        const change=el('button','pbtn',plan.shelter
+          ?tr('dateMeetingRestore',{place:Lp.dates[plan.place].name})
+          :tr('dateMeetingShelter',DATE_SHELTER));
+        change.type='button';
+        change.onclick=()=>{
+          if(changeDateShelter(plan)){
+            renderDiary();
+            $('#diaryClose').focus();
+          }
+        };
+        section.append(change);
+      }
       const route=el('button','pbtn',tr('dateMeetingRoute'));
       route.type='button';
       route.onclick=()=>{
-        const [x,y]=DATES[plan.place].p;
+        const [x,y]=(plan.shelter?DATE_SHELTER:DATES[plan.place]).p;
         closeDiary();
         if(!setWalkDestination(x*16+8,y*16+10))notify(tr('villageNoRoute'));
       };

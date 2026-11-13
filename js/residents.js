@@ -133,7 +133,7 @@ function villageDuty(n){
 }
 // An unannounced visit: the resident shows up at any hour and comes looking for you, even indoors.
 const calling=n=>CottageBonds.calling(state.bonds,n.id,state.day,state.time);
-function npcGo(n,tx,ty){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,rel(n).livesIn||summoned(n)||calling(n)||t===FLOOR||t===DOOR);}
+function npcGo(n,tx,ty,indoors=false){const sx=Math.floor(n.x/16),sy=Math.floor((n.y-2)/16),t=at(sx,sy);n.path=bfs(sx,sy,tx,ty,indoors||rel(n).livesIn||summoned(n)||calling(n)||t===FLOOR||t===DOOR);}
 function npcSpots(n){const tk=partnerTask(n);if(tk==='sweep')return SWEEP_SPOTS;if(summoned(n)||calling(n)){const t=nearPlayerTiles();return t.length?t:n.spots;}if(!rel(n).livesIn){const duty=villageDuty(n);return duty?[duty.spot]:n.spots;}const night=state.time>=20*60||state.time<7*60;return night?HOME_IN:HOME_IN.concat(HOME_OUT);}
 function placeHome(n){const s=pick(HOME_IN);n.x=s[0]*16+8;n.y=s[1]*16+12;n.state='here';n.path=null;n.idle=10;n.leaving=false;}
 function updNpc(n,dt){
@@ -179,7 +179,7 @@ function updNpc(n,dt){
   }
   if(duty!==n.lastVillageDuty&&present(n)){
     n.lastVillageDuty=duty;n.leaving=false;n.path=null;n.idle=0;
-    if(duty)npcGo(n,...duty.spot);
+    if(duty)npcGo(n,...duty.spot,duty.indoors);
     else if(!invitation&&!summoned(n)&&!calling(n))npcGo(n,...pick(r.livesIn?HOME_IN:n.spots));
   }
   if(!present(n)&&!n.leaving){n.leaving=true;npcGo(n,6,19);if(!n.path){n.state='away';n.x=n.y=-100;return;}}
@@ -200,7 +200,7 @@ function updNpc(n,dt){
     if(task!==n.lastTask){n.lastTask=task;n.idle=0;}
     if(duty){
       n.working=null;
-      if(Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)>3)npcGo(n,...duty.spot);
+      if(Math.hypot(n.x-duty.spot[0]*16-8,n.y-duty.spot[1]*16-12)>3)npcGo(n,...duty.spot,duty.indoors);
       else if(dp<30)n.dir=Math.abs(dx)>Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
       return;
     }

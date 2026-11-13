@@ -274,12 +274,17 @@ function npcMenu(n,back){
   if(!story&&(h>=6||r.m6)){
     const reserved=activeDatePlan();
     if(reserved?.day===state.day&&reserved.resident===n.id){
-      const meeting=DATE_MEETINGS[reserved.place];
+      const meeting=dateMeetingFor(reserved);
       const ready=atPlannedDate(n,meeting);
-      const label=ready?'dateMeetingStart':state.time<meeting.start?'dateMeetingWait':'dateMeetingGo';
-      opts.push({label:tr(label,{t:fmt(meeting.start),place:Lp.dates[reserved.place].name}),
-        disabled:!ready||!!r.done.date,fn:()=>dateWith(n,reserved.place,reserved)});
-      if(ready&&!r.done.date)opts.push({label:tr('dateMeetingWalk',SHORT_DATE),fn:()=>walkPlannedDate(n,reserved)});
+      if(!ready){
+        const label=state.time<meeting.start?'dateMeetingWait':'dateMeetingGo';
+        opts.push({label:tr(label,{t:fmt(meeting.start),place:datePlanPlace(reserved)}),disabled:true});
+      }else if(reserved.shelter){
+        opts.push({label:tr('dateMeetingTea',DATE_SHELTER),disabled:!!r.done.date,fn:()=>finishShortDate(n,reserved)});
+      }else{
+        opts.push({label:tr('dateMeetingStart'),disabled:!!r.done.date,fn:()=>dateWith(n,reserved.place,reserved)});
+        if(!r.done.date)opts.push({label:tr('dateMeetingWalk',SHORT_DATE),fn:()=>finishShortDate(n,reserved)});
+      }
     }else if(r.done.date&&!reserved)opts.push({label:tr('dateMeetingTomorrow'),fn:()=>planDateMenu(n)});
     else opts.push({label:doneTag(r,'date',tr('optDate')),disabled:!!r.done.date,fn:()=>dateMenu(n)});
   }
@@ -491,10 +496,13 @@ function activeDatePlan(){
     if(plan.resident!=='xm'||state.rel.xm.couple||state.rel.xm.livesIn)return plan;
   }
 }
+function dateMeetingFor(plan){
+  return (plan.shelter?SHELTERED_DATE_MEETINGS:DATE_MEETINGS)[plan.place];
+}
 function plannedDateMeeting(n){
   const plan=activeDatePlan();
   if(plan?.day!==state.day||plan.resident!==n.id)return;
-  const meeting=DATE_MEETINGS[plan.place];
+  const meeting=dateMeetingFor(plan);
   if(state.time>=meeting.start-20)return meeting;
 }
 function atPlannedDate(n,meeting){
@@ -502,10 +510,13 @@ function atPlannedDate(n,meeting){
     Math.hypot(n.x-meeting.spot[0]*16-8,n.y-meeting.spot[1]*16-12)<32&&
     Math.hypot(n.x-P.x,n.y-P.y)<45;
 }
+function datePlanPlace(plan){
+  return plan.shelter?tr('dateMeetingCottage'):Lp.dates[plan.place].name;
+}
 function describeDatePlan(plan){
   const {start,end}=DATE_MEETINGS[plan.place];
-  return {name:nm(npcs.find(n=>n.id===plan.resident)), place:Lp.dates[plan.place].name,
-    day:tr('day',{d:plan.day}),start:fmt(start),end:fmt(end),minutes:DATES[plan.place].minutes};
+  return {name:nm(npcs.find(n=>n.id===plan.resident)),place:datePlanPlace(plan),
+    day:tr('day',{d:plan.day}),start:fmt(start),end:fmt(end),minutes:(plan.shelter?DATE_SHELTER:DATES[plan.place]).minutes};
 }
 function setDatePlan(plan){
   const previous=state.datePlan;
@@ -513,6 +524,15 @@ function setDatePlan(plan){
   if(save())return true;
   state.datePlan=previous;
   return false;
+}
+function canChangeDateShelter(plan){
+  return plan?.day===state.day&&plan===activeDatePlan()&&!state.rel[plan.resident].done.date&&
+    VillageRiverside.weather(state.day)==='rain';
+}
+function changeDateShelter(plan){
+  if(!canChangeDateShelter(plan))return false;
+  const {resident,place,day}=plan;
+  return setDatePlan({resident,place,day,...(plan.shelter?{}:{shelter:true})});
 }
 function missedDatePlan(){
   const plan=state.datePlan;
@@ -553,10 +573,10 @@ function dateBlock(d){
   if(d.dark&&darkness()<=.5)return 'needDark';
   if(state.time+d.minutes>=26*60)return 'dateTooLate';
 }
-function walkPlannedDate(n,plan){
+function finishShortDate(n,plan){
   const r=rel(n);
   if(busy||r.done.date||activeDatePlan()!==plan||!atPlannedDate(n,plannedDateMeeting(n)))return;
-  const {minutes,mood,points}=SHORT_DATE;
+  const {minutes,mood,points}=plan.shelter?DATE_SHELTER:SHORT_DATE;
   r.done.date=true;
   state.datePlan=null;
   advanceTime(minutes);
@@ -564,7 +584,7 @@ function walkPlannedDate(n,plan){
   addPts(n,points);
   updateHud();
   D.npc=n;
-  talk(nm(n),[tr('dateMeetingWalkDone')],null,()=>milestone(n));
+  talk(nm(n),[tr(plan.shelter?'dateMeetingTeaDone':'dateMeetingWalkDone')],null,()=>milestone(n));
 }
 function dateWith(n,loc,plan=null){
   const r=rel(n),L=DATES[loc],v=n.dates[loc];
@@ -572,7 +592,7 @@ function dateWith(n,loc,plan=null){
   const reserved=activeDatePlan();
   if(plan){
     const meeting=plannedDateMeeting(n);
-    if(plan!==reserved||plan.place!==loc||!atPlannedDate(n,meeting))return;
+    if(plan!==reserved||plan.shelter||plan.place!==loc||!atPlannedDate(n,meeting))return;
     r.done.date=true;
     if(!setDatePlan(null)){delete r.done.date;return;}
   }else if(reserved?.day===state.day&&reserved.resident===n.id)return;
