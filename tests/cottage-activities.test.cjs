@@ -5,7 +5,7 @@ const {join} = require('node:path');
 const vm = require('node:vm');
 
 const read = name => readFileSync(join(__dirname, '..', name), 'utf8');
-const html = read('index.html');
+const gameSource = require('./game-source.cjs')(read('index.html'));
 
 function game(context = {}) {
   // Trust and morning bookkeeping live in cottage-bonds tests; here they are no-ops.
@@ -17,10 +17,10 @@ function game(context = {}) {
 }
 
 function runSection(runtime, start, end) {
-  const from = html.indexOf(start);
-  const to = html.indexOf(end, from);
+  const from = gameSource.indexOf(start);
+  const to = gameSource.indexOf(end, from);
   assert.ok(from >= 0 && to > from);
-  vm.runInContext(html.slice(from, to), runtime);
+  vm.runInContext(gameSource.slice(from, to), runtime);
 }
 
 test('neighbor letters rotate among familiar residents and cannot be farmed on delivery day', () => {
@@ -191,7 +191,7 @@ test('first moonfish gift schedules a night invitation, retry, and one shared ca
   vm.runInContext(read('npc-memory.js'),runtime);
   vm.runInContext('Math.random = () => .2; this.memory = NPCMemory;',runtime);
   runSection(runtime,'const FISHING_INVITE=','const ACT_E=');
-  runSection(runtime,'function lifeOf(','function birthdayOf(');
+  runSection(runtime,'function lifeOf(','function applySave(');
   runSection(runtime,'const FISH=','/* ---------------- romance');
   runSection(runtime,'function rememberPlayer(','function memoryLine(');
   runSection(runtime,'function give(','function actMenu(');
@@ -327,8 +327,8 @@ test('click route goes around an obstacle, rejects blocked targets, and stops on
   const P={x:24,y:44,dir:'right'};
   const runtime=game({MW:width,MH:height,solid,P,FLOOR:1,DOOR:2,map:new Uint8Array(width*height),
     at:()=>0,isSolid:(x,y)=>solid[y*width+x],walkRoute:[]});
-  runSection(runtime,'function blocked(','function moveBy(');
-  runSection(runtime,'function npcPassable(','function lifeOf(');
+  runSection(runtime,'function blocked(','function movePlayerBy(');
+  runSection(runtime,'function npcPassable(','function birthdayOf(');
   assert.equal(runtime.setWalkDestination(40,42),false);
   assert.equal(runtime.setWalkDestination(-5,42),false);
   assert.equal(runtime.setWalkDestination(55,41),true);
