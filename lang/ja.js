@@ -420,6 +420,8 @@ window.HL_LANG.ja = {
     dateMeetingChoice: '{place} · {start}〜{end}に集合 · デート{minutes}分',
     dateMeetingBooked: '{day} · {start}〜{end}に{place}で{name}と待ち合わせ。デートは{minutes}分。',
     dateMeetingStart: '約束のデートを始める',
+    dateMeetingWalk: "少し散歩する · {minutes}分 · 好感度 +{points} · 気分 +{mood} · 今日のデート枠を使う",
+    dateMeetingWalkDone: "近くを一周し、お互いの今日の予定を話して、手を振って別れた。",
     dateMeetingWait: 'デートは{t}から',
     dateMeetingGo: '{place}で会ってからデートを始める',
     dateMeetingRoute: '待ち合わせ場所へ歩く',

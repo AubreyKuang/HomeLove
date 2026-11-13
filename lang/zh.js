@@ -420,6 +420,8 @@ window.HL_LANG.zh = {
     dateMeetingChoice: '{place} · {start}–{end} 见面 · 约会 {minutes} 分钟',
     dateMeetingBooked: '{day} · {name}会在{place}等你，{start}–{end} 到场即可。约会需要 {minutes} 分钟。',
     dateMeetingStart: '开始约好的约会',
+    dateMeetingWalk: "一起散步 · {minutes} 分钟 · 好感 +{points} · 心情 +{mood} · 用掉今日约会",
+    dateMeetingWalkDone: "你们在附近走了一小圈，聊了聊今天各自的安排，然后挥手道别。",
     dateMeetingWait: '约会从 {t} 开始',
     dateMeetingGo: '到{place}碰面后开始约会',
     dateMeetingRoute: '走去见面地点',
