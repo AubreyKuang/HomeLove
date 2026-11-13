@@ -48,6 +48,13 @@ function albumScene(card,n){
     if(card.shared)blitChar(g,n.outfit,'down',0,9,22);
     g.fillStyle='#a28164';g.fillRect(49,23,35,29);
     g.fillStyle='#fff0d7';g.fillRect(48,21,34,29);
+    if(card.subject==='bank'){
+      g.fillStyle='#9ab38a';g.fillRect(52,31,26,12);g.fillRect(54,27,16,8);
+      g.fillStyle='#7fa9b9';g.fillRect(52,41,26,5);g.fillRect(69,38,9,4);
+      g.fillStyle='#597d6b';g.fillRect(57,29,2,10);g.fillRect(60,26,2,12);g.fillRect(63,31,2,9);
+      g.fillStyle='#d6a589';g.fillRect(55,36,2,2);g.fillRect(62,34,2,2);
+      return art;
+    }
     g.fillStyle='#7fa9b9';g.fillRect(53,37,24,7);g.fillRect(56,35,18,11);
     g.fillStyle='#67917d';g.fillRect(63,26,5,9);g.fillRect(60,29,11,4);
     g.fillStyle='#608b93';g.fillRect(61,39,9,2);g.fillRect(63,41,5,3);
@@ -173,9 +180,11 @@ function albumScene(card,n){
   return art;
 }
 function albumDetails(card,n){
-  if(card.event==='rainSketch')return tr(card.shared?'rainCompanionSketchCard':'rainSketchCard',{
-    place:tr(RAIN_DATE_MEETINGS[card.place].name),name:nm(n)
-  });
+  if(card.event==='rainSketch'){
+    const place=tr(RAIN_DATE_MEETINGS[card.place].name),name=nm(n);
+    return tr(card.subject==='bank'?(card.shared?'rainSketchBankSharedCard':'rainSketchBankCard')
+      :card.shared?'rainCompanionSketchCard':'rainSketchCard',{place,name});
+  }
   if(card.event?.startsWith('moment_'))return Lp.moments[n.id].endings[card.choice].join(' ');
   if(card.event==='blackout')return tr('blackoutResult_'+card.choice);
   if(card.event==='project_cafe'){
@@ -209,7 +218,8 @@ function renderAlbum(){
   body.replaceChildren();
   body.scrollTop=0;
   const selected=cards.find(card=>card.key===albumSelected);
-  const title=card=>card.kind==='story'?residentChapter(card.resident,card.index)[0]:tr(card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
+  const title=card=>card.kind==='story'?residentChapter(card.resident,card.index)[0]:
+    tr(card.event==='rainSketch'&&card.subject==='bank'?'rainSketchBankTitle':card.event?'worldTitle_'+card.event:'albumCard_'+card.kind);
   const resident=card=>npcs.find(n=>n.id===card.resident);
   const stamp=(card,n)=>(n?nm(n)+' · ':'')+tr('day',{d:card.day});
   if(selected){
