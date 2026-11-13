@@ -660,10 +660,10 @@ test('a dedication revisit respects the weather and schedule, and saves its memo
   const sketch={dedication:'garden',resident:'gy'};
   const state={day:5,time:641,need:{mood:40},rainSketches:{pond:sketch},dedicationVisit:null};
   const bonds={trust:{gy:10}};
-  let write=false,rain=false;
+  let write=false,rain=false,wind=false;
   const meeting={name:'garden',start:600,end:660,p:[12,12],spot:[13,12]};
   const runtime=game({state,P,RAIN_DATE_MEETINGS:{garden:meeting},DATE_MEETINGS:{garden:meeting},
-    VillageRiverside:{weather:()=>rain?'rain':'clear'},save:()=>write,advanceTime:m=>{state.time+=m;},
+    VillageRiverside:{weather:()=>rain?'rain':wind?'wind':'clear'},save:()=>write,advanceTime:m=>{state.time+=m;},
     B:()=>bonds,trustNpc:(_,d)=>{bonds.trust.gy+=d;},clampN:n=>n,updateHud(){},notify(){},D:{},talk(){},nm:n=>n.id,tr:k=>k});
   runSection(runtime,'function rainCompanionConflict(','function canRebookRainDraft(');
   runSection(runtime,'const RAIN_DEDICATION_VISIT=','function canChangeDateShelter(');
@@ -678,6 +678,15 @@ test('a dedication revisit respects the weather and schedule, and saves its memo
   assert.equal(runtime.setDatePlan({place:'garden',resident:'gy',day:6}),false);
   assert.equal(runtime.cancelDedicationVisit(state.dedicationVisit),true);
   assert.equal(runtime.bookDedicationVisit('pond',6),true);
+  state.time=600;
+  const tomorrow=state.dedicationVisit;
+  write=false;
+  assert.equal(runtime.bookDedicationVisit('pond',5),false);
+  assert.equal(state.dedicationVisit,tomorrow);
+  write=true;
+  assert.equal(runtime.bookDedicationVisit('pond',5),true);
+  assert.equal(runtime.bookDedicationVisit('pond',5),false);
+  assert.equal(runtime.bookDedicationVisit('pond',6),true);
   const visit=state.dedicationVisit;
   assert.equal(runtime.dedicationMeeting(n),undefined);
   state.day=6;state.time=640;
@@ -691,14 +700,18 @@ test('a dedication revisit respects the weather and schedule, and saves its memo
   assert.equal(runtime.canBookDedicationVisit('pond',7),false);
   delete sketch.dedicationVisited;
   state.time=625;
+  wind=true;
   assert.equal(runtime.bookDedicationVisit('pond',6),true);
   const compareVisit=state.dedicationVisit;
   write=false;runtime.finishDedicationVisit(n,true);
   assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited,sketch.dedicationCompared],
     [625,48,14,compareVisit,undefined,undefined]);
+  assert.equal(sketch.dedicationWind,undefined);
   write=true;runtime.finishDedicationVisit(n,true);runtime.finishDedicationVisit(n,true);
   assert.deepEqual([state.time,state.need.mood,bonds.trust.gy,state.dedicationVisit,sketch.dedicationVisited,sketch.dedicationCompared],
     [660,60,18,null,6,true]);
+  assert.equal(sketch.dedicationWind,true);
+  assert.equal(runtime.dedicationComparison(sketch),'rainDedicationCompareGardenWind');
 });
 
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
