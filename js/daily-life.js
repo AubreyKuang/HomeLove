@@ -43,10 +43,25 @@ function tableMenu(){
   const snow=state.snowFishing;
   const dinner=snow.ready&&!snow.dinner;
   const story=dinner?[{label:tr('snowGoDinner'),fn:eatSnowDinner}]:[];
+  if(breakfastBoxReady())story.push({label:tr('boxEat',{m:BREAKFAST_BOX.eatMinutes,h:BREAKFAST_BOX.hunger}),fn:eatBreakfastBox});
   talk(objName('table'),[tr('tableQ')],story.concat(meal?[{label:tr('mealOpt',{n:nm(ph),m:tr(state.meal)}),fn:eatMeal}]:[],[
     {label:tr('eatOpt'),fn:eat},
     {label:tr('bakeOpt',{x:state.inv.berry}),disabled:state.inv.berry<2,fn:bake},
     {label:tr('walkAway'),fn:null}]));
+}
+function breakfastBoxReady(){
+  return state.breakfastBoxDay===state.day&&state.time+BREAKFAST_BOX.eatMinutes<=BREAKFAST_BOX.until;
+}
+function eatBreakfastBox(){
+  if(busy||!breakfastBoxReady())return;
+  sfx('eat');
+  busyFade(()=>{
+    state.breakfastBoxDay=null;
+    advanceTime(BREAKFAST_BOX.eatMinutes);
+    state.need.hunger=clampN(state.need.hunger+BREAKFAST_BOX.hunger);
+    state.need.mood=clampN(state.need.mood+BREAKFAST_BOX.mood);
+    updateHud();save();
+  },()=>say(objName('table'),tr('boxAte')));
 }
 function eat(){
   const N=state.need;if(N.hunger>92){say(objName('table'),tr('notHungry'));return;}

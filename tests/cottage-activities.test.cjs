@@ -184,6 +184,30 @@ test('date reservations reserve only the named resident and end without a penalt
   assert.equal(state.datePlan,null);
 });
 
+test('a packed breakfast spends produce once and can be eaten only the next morning', () => {
+  const state={day:1,time:1200,need:{hunger:20,mood:30},inv:{carrot:1,pumpkin:1}};
+  const runtime=game({state,busy:false,BREAKFAST_BOX:{prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6},
+    sfx(){},busyFade(mid){mid();},advanceTime(m){state.time+=m;},clampN:n=>Math.min(100,n),updateHud(){},save(){}});
+  runSection(runtime,'function breakfastBoxReady(','function eat(){');
+  runSection(runtime,'const RECIPES=','function workout(');
+  const recipe=vm.runInContext("RECIPES.find(recipe=>recipe.label==='cookStew')",runtime);
+  runtime.prepareBreakfastBox(recipe);
+  runtime.prepareBreakfastBox(recipe);
+  assert.deepEqual(state.inv,{carrot:0,pumpkin:0});
+  assert.equal(state.time,1240);
+  assert.equal(state.need.hunger,20);
+  assert.equal(state.breakfastBoxDay,2);
+  assert.equal(runtime.breakfastBoxReady(),false);
+  state.day=2;state.time=716;
+  assert.equal(runtime.breakfastBoxReady(),false);
+  state.time=715;
+  runtime.eatBreakfastBox();
+  runtime.eatBreakfastBox();
+  assert.equal(state.time,720);
+  assert.equal(state.need.hunger,75);
+  assert.equal(state.breakfastBoxDay,null);
+});
+
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {
   const {activities} = game();
   const fresh = activities.loadGarden();

@@ -423,7 +423,26 @@ function stoveMenu(){
     const stock=Object.keys(recipe.ingredients).map(k=>`${ITEM_ICONS[k]} ×${state.inv[k]}`).join(' · ');
     return {label:`${tr(recipe.label)} · ${stock}`,disabled:!canCook(recipe),fn:()=>cookDish(recipe)};
   });
+  const stew=RECIPES.find(recipe=>recipe.label==='cookStew');
+  const block=breakfastBoxBlock(stew);
+  opts.push({label:tr('boxPrepare',{m:BREAKFAST_BOX.prepMinutes})+(block?' · '+tr(block):''),
+    disabled:!!block,fn:()=>prepareBreakfastBox(stew)});
   talk(objName('stove'),[tr('stoveQ')],opts.concat({label:tr('walkAway'),fn:null}));
+}
+function breakfastBoxBlock(recipe){
+  if(state.breakfastBoxDay===state.day+1||breakfastBoxReady())return 'boxAlready';
+  if(!canCook(recipe))return 'boxIngredients';
+  if(state.time+BREAKFAST_BOX.prepMinutes>=26*60)return 'dateTooLate';
+}
+function prepareBreakfastBox(recipe){
+  if(busy||breakfastBoxBlock(recipe))return;
+  sfx('ding');
+  busyFade(()=>{
+    advanceTime(BREAKFAST_BOX.prepMinutes);
+    for(const [key,count] of Object.entries(recipe.ingredients))state.inv[key]-=count;
+    state.breakfastBoxDay=state.day+1;
+    updateHud();save();
+  },()=>say(objName('stove'),tr('boxPacked')));
 }
 function cookDish(recipe){
   if(!canCook(recipe))return;

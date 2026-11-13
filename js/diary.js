@@ -35,6 +35,12 @@ function appendKeepsake(container,n,key,title,details){
 function renderDiary(){
   $('#diarySub').textContent=`${tr('day',{d:state.day})} · ${fmt(state.time)}`;
   const b=$('#diaryBody');b.innerHTML='';
+  if(state.breakfastBoxDay===state.day+1||breakfastBoxReady()){
+    const section=el('section','dsec');
+    section.append(el('h3',null,tr('boxTitle')),el('p','rline',
+      tr(breakfastBoxReady()?'boxToday':'boxTomorrow',{t:fmt(BREAKFAST_BOX.until),m:BREAKFAST_BOX.eatMinutes})));
+    b.append(section);
+  }
   const plan=activeDatePlan();
   if(plan){
     const section=el('section','dsec');
