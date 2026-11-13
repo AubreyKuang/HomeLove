@@ -133,7 +133,7 @@ function applySave(s){
   state.rainReturn=revisit&&ALBUM_RESIDENTS.includes(revisit.resident)&&Object.hasOwn(RAIN_DATE_MEETINGS,revisit.place)&&
     Number.isInteger(revisit.day)&&revisit.day>=state.day&&revisit.day<=state.day+1
     ? {resident:revisit.resident,place:revisit.place,day:revisit.day,done:revisit.done===true,
-      ...(revisit.draft===true?{draft:true}:{}),
+      ...(revisit.draft===true?{draft:true,...(['bank','reflection'].includes(revisit.subject)?{subject:revisit.subject}:{})}:{}),
       ...(revisit.together===true?{together:true,
         ...(['meet','pause','walking'].includes(revisit.walk)?{walk:revisit.walk}:{})}:{})}:null;
   state.rainSketches={};
@@ -141,6 +141,7 @@ function applySave(s){
     const sketch=s.rainSketches?.[place];
     if(ALBUM_RESIDENTS.includes(sketch?.resident)&&Number.isInteger(sketch.day)&&sketch.day>0&&sketch.day<=state.day){
       state.rainSketches[place]={resident:sketch.resident,day:sketch.day,
+        ...(['bank','reflection'].includes(sketch.subject)?{subject:sketch.subject}:{}),
         ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
     }
   }

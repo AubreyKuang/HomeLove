@@ -467,16 +467,17 @@ test('an early draft saves time together and can still be completed alone', () =
   const n={id:'gy',state:'away',x:216,y:204},P={x:200,y:204},bonds={trust:{gy:10}};
   let write=false,choices;
   const runtime=game({state,P,npcs:[n],RAIN_DATE_MEETINGS:{garden:{start:600,end:660,p:[12,12],spot:[13,12],name:'garden'}},
-    RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,
+    RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,RAIN_DRAFT_BANK_BONUS:5,
     RAIN_COMPANION:{minutes:25,mood:11,trust:4},VillageRiverside:{weather:()=> 'clear'},save:()=>write,
     advanceTime:m=>{state.time+=m;},clampN:n=>n,B:()=>bonds,trustNpc:(_,delta)=>{bonds.trust.gy+=delta;},
     updateHud(){},D:{},talk(_who,_lines,options){choices=options;},tr:k=>k,nm:n=>n.id});
   runSection(runtime,'function rainReturnReady(','function hasSharedExperience(');
   runSection(runtime,'function atPlannedDate(','function datePlanPlace(');
   runtime.rainReturnMenu(revisit);
-  assert.equal(choices[0].label,'rainSketchDraftAction');
+  assert.equal(choices[0].label,'rainSketchSubjectAction');
   choices[0].fn();
   assert.deepEqual([state.time,revisit.draft],[600,undefined]);
+  assert.equal(revisit.subject,undefined);
   write=true;state.time=650;runtime.draftRainSketch(revisit);
   assert.equal(revisit.draft,undefined);
   state.time=590;n.state='here';runtime.draftRainSketch(revisit);
@@ -485,9 +486,16 @@ test('an early draft saves time together and can still be completed alone', () =
   assert.deepEqual([state.time,revisit.draft,revisit.done,state.rainSketches],[610,true,false,{}]);
   n.state='here';runtime.finishRainCompanion(revisit,n,true);
   assert.deepEqual([state.time,revisit.done,bonds.trust.gy,state.rainSketches.garden.shared],[630,true,12,true]);
+  assert.equal(state.rainSketches.garden.subject,'reflection');
+  const bank={...revisit,subject:'bank'};
+  assert.equal(runtime.rainCompanionActivity(bank,true).minutes,25);
+  assert.equal(runtime.soloRainSketch(bank).minutes,15);
   state.rainSketches={};state.rainReturn={...revisit,done:false,together:false};state.time=1535;
   runtime.finishRainReturn(state.rainReturn,true);
   assert.deepEqual([state.time,state.rainReturn.done,state.rainSketches.garden.shared],[1555,true,undefined]);
+  state.rainSketches={};state.rainReturn={...bank,done:false,together:false};state.time=1540;
+  runtime.finishRainReturn(state.rainReturn,true);
+  assert.deepEqual([state.time,state.rainReturn.done,state.rainSketches.garden.subject],[1555,true,'bank']);
 });
 
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {

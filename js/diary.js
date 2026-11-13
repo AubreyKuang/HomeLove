@@ -63,9 +63,7 @@ function renderDiary(){
       section.append(invite);
       if(revisit.together&&!state.rainSketches[revisit.place]){
         section.append(el('p','rline',tr('rainCompanionSketchHint')));
-        if(!revisit.draft)section.append(el('p','rline',tr('rainSketchDraftHint',{
-          minutes:RAIN_SKETCH_DRAFT_MINUTES,saving:RAIN_SHARED_DRAFT_SAVING
-        })));
+        if(!revisit.draft)section.append(el('p','rline',tr('rainSketchSubjectHint',{minutes:RAIN_SKETCH_DRAFT_MINUTES})));
       }
       if(revisit.together&&(!revisit.walk||revisit.walk==='meet')&&(revisit.day>state.day||state.time<spot.start)){
         section.append(el('p','rline',tr('rainCompanionWalkHint',RAIN_COMPANION_WALK)));
