@@ -5,10 +5,21 @@ const VillageBlackout = (() => {
     court:{host:'xy',choices:['river','court'],spot:[32,24]},
     cafe:{host:'gy',choices:['quiet','jy','xy','by'],spot:[14,22]}
   };
-  const night=day=>Number.isInteger(day)&&day>=6&&(day-6)%14===0;
-  const active=(day,time)=>night(day)&&time>=start&&time<end;
+  const saturday=day=>Number.isInteger(day)&&day>=6&&(day-6)%7===0;
+  const repeatChance=.1;
+  function night(state,day){
+    if(!saturday(day))return false;
+    if(day===6)return true;
+    // Mix the save's seed with the week so reloading cannot reroll the evening.
+    let roll=Math.imul((day-6)/7,0x9e3779b1)^state.seed;
+    roll=Math.imul(roll^(roll>>>16),0x21f0aaad);
+    roll=Math.imul(roll^(roll>>>15),0x735a2d97);
+    return ((roll^(roll>>>15))>>>0)/0x100000000<repeatChance;
+  }
+  const active=(state,day,time,previewDay)=>saturday(day)&&(day===previewDay||night(state,day))&&time>=start&&time<end;
   function load(saved,day=1){
-    const restore=record=>record&&record.day<=day&&night(record.day)&&
+    const seed=Number.isInteger(saved?.seed)&&saved.seed>=0&&saved.seed<=0xffffffff?saved.seed:Math.floor(Math.random()*0x100000000);
+    const restore=record=>record&&record.day<=day&&saturday(record.day)&&
       Object.hasOwn(scenes,record.place)&&scenes[record.place].choices.includes(record.choice)
       ?{day:record.day,place:record.place,choice:record.choice}:null;
     const first=restore(saved?.first);
@@ -21,16 +32,16 @@ const VillageBlackout = (() => {
       const visit=restore(saved?.visits?.[id]);
       if(visit?.place===id&&first&&visit.day>=first.day&&visit.day<=latest.day&&visit.day>=(visits[id]?.day??0))visits[id]=visit;
     }
-    return {first,last:latest,visits};
+    return {seed,first,last:latest,visits};
   }
-  function complete(state,day,time,place,choice){
-    if(!active(day,time)||state.last?.day===day||!Object.hasOwn(scenes,place)||!scenes[place].choices.includes(choice))return null;
+  function complete(state,day,time,place,choice,previewDay){
+    if(!active(state,day,time,previewDay)||state.last?.day===day||!Object.hasOwn(scenes,place)||!scenes[place].choices.includes(choice))return null;
     const last={day,place,choice};
-    return {first:state.first??last,last,visits:{...state.visits,[place]:last}};
+    return {...state,first:state.first??last,last,visits:{...state.visits,[place]:last}};
   }
   function cards(state){
     return state.first?[{key:'blackout:first',kind:'world',event:'blackout',resident:scenes[state.first.place].host,
       day:state.first.day,place:state.first.place,choice:state.first.choice}]:[];
   }
-  return {start,end,scenes,night,active,load,complete,cards};
+  return {start,end,scenes,saturday,night,active,load,complete,cards};
 })();

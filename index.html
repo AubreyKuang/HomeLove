@@ -389,7 +389,7 @@ kbd{display:inline-block;min-width:22px;padding:0 5px;margin-right:6px;border:2p
 <script src="village-weekend.js"></script>
 <script src="village-riverside.js"></script>
 <script src="village-projects.js"></script>
-<script src="village-blackout.js"></script>
+<script src="village-blackout.js?v=rare-nights"></script>
 <script src="lang/zh.js?v=home-computer-1" charset="utf-8"></script>
 <script src="lang/en.js?v=home-computer-1" charset="utf-8"></script>
 <script src="lang/ja.js?v=home-computer-1" charset="utf-8"></script>
@@ -3624,8 +3624,9 @@ function drawVillageSketch(g,light,draft){
   for(let i=0;i<5;i++)r(9+i*15,47+(i%2)*3,8-i%3,1,'#c8d9cb');
 }
 
+let blackoutPreviewDay=0;
 function blackoutActive(){
-  return VillageBlackout.active(state.day,state.time);
+  return VillageBlackout.active(state.blackout,state.day,state.time,blackoutPreviewDay);
 }
 function blackoutOption(id){
   if(!blackoutActive()||state.blackout.last?.day===state.day||!Object.hasOwn(VillageBlackout.scenes,id))return [];
@@ -3645,7 +3646,7 @@ function openBlackoutScene(id){
   ]);
 }
 function finishBlackout(id,choice){
-  const previous=state.blackout,next=VillageBlackout.complete(previous,state.day,state.time,id,choice);
+  const previous=state.blackout,next=VillageBlackout.complete(previous,state.day,state.time,id,choice,blackoutPreviewDay);
   if(!next)return;
   state.blackout=next;
   if(!save()){
