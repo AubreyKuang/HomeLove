@@ -40,7 +40,7 @@ function renderDiary(){
     const section=el('section','dsec'),n=npcs.find(person=>person.id===request.resident);
     section.append(el('h3',null,tr('requestJournal')),el('div','rline',tr('requestJournalEntry',{
       name:nm(n),items:neighborRequestItems(request).join(tr('requestOr')),day:tr('day',{d:request.day+2})
-    })));
+    })),el('p','rline',tr('requestMailboxPlan')));
     if(n.id==='gy'){
       section.append(el('p','rline',cafeRequestPlan()));
       const route=el('button','pbtn',tr('requestCafeRoute'));
@@ -51,6 +51,11 @@ function renderDiary(){
       };
       section.append(route);
     }
+    b.append(section);
+  }else if(state.neighborRequest?.status==='dropped'){
+    const section=el('section','dsec');
+    section.append(el('h3',null,tr('requestJournal')),el('p','rline',
+      tr(state.day>state.neighborRequest.closedDay?'requestMailboxReady':'requestMailboxPending')));
     b.append(section);
   }
   const invitation=state.life[FISHING_INVITE.resident]?.fishingInvitation;

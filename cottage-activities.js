@@ -118,7 +118,7 @@ const CottageActivities = (() => {
   function loadRequest(request) {
     if (!request || !Object.hasOwn(requests, request.resident) ||
         !Number.isInteger(request.day) || request.day < 1 ||
-        !['offered', 'accepted', 'delivered', 'declined'].includes(request.status)) return null;
+        !['offered', 'accepted', 'dropped', 'delivered', 'declined'].includes(request.status)) return null;
     const closedDay = Number.isInteger(request.closedDay) && request.closedDay >= request.day
       ? request.closedDay : request.day;
     return {resident: request.resident, day: request.day, status: request.status, closedDay};
@@ -130,7 +130,8 @@ const CottageActivities = (() => {
   }
 
   function nextRequest(day, previous, relations) {
-    if (openRequest(previous, day) || previous?.day >= day || previous?.closedDay >= day) return null;
+    if (previous?.status === 'dropped' || openRequest(previous, day) ||
+        previous?.day >= day || previous?.closedDay >= day) return null;
     const residents = Object.keys(requests).filter(id => relations[id]?.met);
     if (!residents.length) return null;
     const last = residents.indexOf(previous?.resident);
@@ -138,11 +139,20 @@ const CottageActivities = (() => {
     return {resident: residents[index], day, status: 'offered'};
   }
 
-  function fulfillRequest(request, resident, day, inventory, item) {
+  function fulfillRequest(request, resident, day, inventory, item, byMailbox = false) {
     if (!openRequest(request, day) || request.status !== 'accepted' || request.resident !== resident) return null;
     const {items, reward} = requests[resident];
     if (!Object.hasOwn(items, item) || !(inventory[item] >= items[item])) return null;
     inventory[item] -= items[item];
+    if (!byMailbox) inventory[reward] += 2;
+    request.status = byMailbox ? 'dropped' : 'delivered';
+    request.closedDay = day;
+    return reward;
+  }
+
+  function collectRequestReward(request, day, inventory) {
+    if (request?.status !== 'dropped' || !(day > request.closedDay)) return null;
+    const {reward} = requests[request.resident];
     inventory[reward] += 2;
     request.status = 'delivered';
     request.closedDay = day;
@@ -150,5 +160,5 @@ const CottageActivities = (() => {
   }
 
   return {seasons,seasonLength,seasonOf,tunnelCost,tunnelLimit,canGrow,loadTunnels,installTunnel,crops, fish, seed, ripe, loadGarden, grow, pickCrop, rollCatch, loadFishLog, logFish,
-    requests, loadRequest, openRequest, nextRequest, fulfillRequest};
+    requests, loadRequest, openRequest, nextRequest, fulfillRequest, collectRequestReward};
 })();

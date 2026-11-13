@@ -172,6 +172,24 @@ function neighborMailRelations(){
   return state.xiaoman?.answer?{...state.rel,xm:{met:false}}:state.rel;
 }
 function checkNeighborMail(){
+  const pending=state.neighborRequest;
+  if(pending?.status==='dropped'){
+    if(state.day<=pending.closedDay){
+      say(objName('mailbox'),tr('requestMailboxPending'));
+      return;
+    }
+    talk(objName('mailbox'),[tr('requestMailboxReady')],[
+      {label:tr('requestMailboxCollect'),fn:()=>{
+        if(state.neighborRequest!==pending)return;
+        const reward=CottageActivities.collectRequestReward(pending,state.day,state.inv);
+        if(!reward)return;
+        save();updateHud();
+        say(objName('mailbox'),tr('requestMailboxReward',{item:itemLabel(reward)}));
+      }},
+      {label:tr('walkAway'),fn:null}
+    ]);
+    return;
+  }
   const current=CottageActivities.openRequest(state.neighborRequest,state.day);
   const request=current??CottageActivities.nextRequest(state.day,state.neighborRequest,neighborMailRelations());
   if(request){
@@ -183,7 +201,9 @@ function checkNeighborMail(){
   if(fans.length&&Math.random()<.6)say(objName('mailbox'),nt(pick(fans)).mail);else say(objName('mailbox'),pick(Lp.letters));
 }
 function hasNeighborMail(){
-  return CottageActivities.openRequest(state.neighborRequest,state.day)?.status==='offered'||
+  const request=state.neighborRequest;
+  return (request?.status==='dropped'&&state.day>request.closedDay)||
+    CottageActivities.openRequest(request,state.day)?.status==='offered'||
     !!CottageActivities.nextRequest(state.day,state.neighborRequest,neighborMailRelations());
 }
 function neighborRequestItems(request){
@@ -206,7 +226,10 @@ function readNeighborRequest(request){
     day:tr('day',{d:request.day+2})
   })];
   if(n.id==='gy')lines.push(cafeRequestPlan());
-  const options=request.status==='offered'?[
+  if(request.status==='accepted')lines.push(tr('requestMailboxPlan'));
+  const options=request.status==='accepted'?[
+    {label:tr('requestMailboxOffer'),fn:()=>offerMailboxDelivery(request)}
+  ]:[
     {label:tr('requestAccept'),fn:()=>{
       request.status='accepted';save();
       say(objName('mailbox'),tr('requestAdded',{name:nm(n)}));
@@ -214,8 +237,22 @@ function readNeighborRequest(request){
     {label:tr('requestDecline'),fn:()=>{
       request.status='declined';request.closedDay=state.day;save();
     }}
-  ]:[];
+  ];
   talk(nm(n),lines,options.concat({label:tr('walkAway'),fn:null}));
+}
+function offerMailboxDelivery(request){
+  const {items,reward}=CottageActivities.requests[request.resident];
+  const choices=Object.entries(items).map(([item,count])=>({
+    label:tr('requestMailboxDrop',{item:itemLabel(item),count,owned:state.inv[item]}),
+    disabled:state.inv[item]<count,fn:()=>{
+      if(state.neighborRequest!==request||
+        !CottageActivities.fulfillRequest(request,request.resident,state.day,state.inv,item,true))return;
+      save();updateHud();
+      say(objName('mailbox'),tr('requestMailboxPending'));
+    }
+  }));
+  talk(objName('mailbox'),[tr('requestMailboxTerms',{item:itemLabel(reward)})],
+    choices.concat({label:tr('optBack'),back:true,fn:checkNeighborMail}));
 }
 function acceptedNeighborRequest(n){
   const request=CottageActivities.openRequest(state.neighborRequest,state.day);
