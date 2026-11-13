@@ -1,5 +1,5 @@
 const MemoryAlbum = (() => {
-  const kinds=['firstDate','birthday','visitSick','rareDate','neighborRequest','firstGift','sharedFishing'];
+  const kinds=['firstDate','birthday','visitSick','rareDate','neighborRequest','firstGift','sharedFishing','cafeRequest'];
   const postcardKey=card=>`postcard:${card.resident}:${card.variant}`;
   function loadFrame(saved,residents,day){
     if(typeof saved?.key!=='string'||saved.key.length<1||saved.key.length>100||
@@ -38,6 +38,7 @@ const MemoryAlbum = (() => {
     for(const resident of residents){
       const record=life?.[resident];
       for(const kind of kinds){
+        if(kind==='cafeRequest'&&resident!=='gy')continue;
         const info=kind==='sharedFishing'?record?.fishingInvitation?.catch:
           kind==='firstGift'?record?.firstGift:null;
         const day=info?.day??record?.cards?.[kind];

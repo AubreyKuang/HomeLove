@@ -5,7 +5,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 const read = name => readFileSync(path.join(__dirname, '..', name), 'utf8');
 const source = read('memory-album.js');
-const html = read('index.html');
+const gameSource = require('./game-source.cjs')(read('index.html'));
 const residents = ['gy', 'xm'];
 
 function runtime(stubs = {}) {
@@ -60,7 +60,7 @@ test('overnight delivery rotates familiar residents and stays unique across relo
   state.album = context.album.load();
   for (const [start, end] of [['function newDay(', 'function wakeAtBed('],
     ['function deliverAlbumPostcard(', 'function checkNeighborMail(']]) {
-    vm.runInContext(html.slice(html.indexOf(start), html.indexOf(end)), context);
+    vm.runInContext(gameSource.slice(gameSource.indexOf(start), gameSource.indexOf(end)), context);
   }
 
   context.newDay(420);

@@ -5,7 +5,7 @@ const {join} = require('node:path');
 const vm = require('node:vm');
 
 const read = name => readFileSync(join(__dirname, '..', name), 'utf8');
-const html = read('index.html');
+const gameSource = require('./game-source.cjs')(read('index.html'));
 
 function game(context = {}) {
   // Trust and morning bookkeeping live in cottage-bonds tests; here they are no-ops.
@@ -17,10 +17,10 @@ function game(context = {}) {
 }
 
 function runSection(runtime, start, end) {
-  const from = html.indexOf(start);
-  const to = html.indexOf(end, from);
+  const from = gameSource.indexOf(start);
+  const to = gameSource.indexOf(end, from);
   assert.ok(from >= 0 && to > from);
-  vm.runInContext(html.slice(from, to), runtime);
+  vm.runInContext(gameSource.slice(from, to), runtime);
 }
 
 test('neighbor letters rotate among familiar residents and cannot be farmed on delivery day', () => {
@@ -47,11 +47,12 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   const n = {id:'gy'};
   const state = {day:1,neighborRequest:null,rel:{gy:{met:true}},inv:{berry:2,cookie:0,flower:0}};
   const life = {cards:{}}, memories = [];
-  let options, saved;
+  let options, saved, letter;
   const runtime = game({
     state,npcs:[n],D:{},ITEM_ICONS:{berry:'🍓',cookie:'🍪',flower:'🌼'},
-    tr:key=>key,itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,say(){},updateHud(){},
-    talk(_who,_lines,choices){options=choices;},
+    VillageMap:{places:{cafe:{hours:[750,1020]}}},fmt:String,
+    tr:(key,vars)=>key+(key==='requestCafePlan'?JSON.stringify(vars):''),itemLabel:key=>key,nm:npc=>npc.id,objName:key=>key,say(){},updateHud(){},
+    talk(_who,lines,choices){options=choices;letter=lines;},
     save(){saved=JSON.parse(JSON.stringify(state.neighborRequest));},
     lifeOf:()=>life,rememberPlayer(...args){memories.push(args);},
     addPts(_who,points){assert.equal(points,6);runtime.save();}
@@ -60,6 +61,7 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   assert.equal(runtime.hasNeighborMail(),true);
   runtime.checkMail();
   assert.equal(saved.status,'offered');
+  assert.ok(letter.includes('requestCafePlan{"count":2,"minutes":20,"start":"750","latest":"1000"}'));
   options[0].fn();
   assert.equal(saved.status,'accepted');
   const request=runtime.acceptedNeighborRequest(n);
@@ -72,6 +74,44 @@ test('mailbox and delivery handlers persist acceptance, first keepsake and memor
   assert.equal(memories[0][1],'neighborRequest');
   assert.equal(state.inv.flower,2);
   assert.equal(runtime.hasNeighborMail(),false);
+});
+
+test('the café request shares the regular payout, spends time only when feasible, and persists one keepsake', () => {
+  const n={id:'gy',state:'here',x:232,y:364};
+  const cafe={spot:[14,22],hours:[750,1020]};
+  const request={day:1,resident:'gy',status:'accepted'};
+  const life={cards:{}}, state={
+    day:1,time:1001,need:{energy:90},inv:{berry:2,cookie:0,flower:0},neighborRequest:request
+  };
+  let choices, saved;
+  const runtime=game({state,P:{x:232,y:364},VillageMap:{places:{cafe}},villageDuty:()=>cafe,
+    D:{},fmt:String,ITEM_ICONS:{berry:'🍓',cookie:'🍪',flower:'🌼'},
+    tr:key=>key,itemLabel:key=>key,nm:npc=>npc.id,lifeOf:()=>life,rememberPlayer(){},updateHud(){},
+    talk(_who,_lines,options){choices=options;},
+    addPts(_who,amount){assert.equal(amount,6);saved=JSON.parse(JSON.stringify({state,life}));},
+    advanceTime(minutes){state.time+=minutes;}
+  });
+  runSection(runtime,'function unreadAlbumPostcard(','function petCat(');
+  runtime.offerNeighborDelivery(n,request);
+  const joint=choices.find(option=>option.label.includes('requestCafeTogether'));
+  assert.match(joint.label,/requestCafeClosing/);
+  assert.equal(choices[0].disabled,false);
+  joint.fn();
+  assert.equal(request.status,'accepted');
+  assert.equal(state.inv.berry,2);
+  state.time=1000;
+  runtime.offerNeighborDelivery(n,request);
+  const prepared=choices.find(option=>option.label.includes('requestCafeTogether'));
+  assert.equal(prepared.disabled,false);
+  prepared.fn();
+  prepared.fn();
+  assert.equal(saved.state.time,1020);
+  assert.deepEqual(saved.state.inv,{berry:0,cookie:0,flower:2});
+  assert.equal(saved.life.cards.cafeRequest,1);
+  assert.equal(runtime.activities.loadRequest(saved.state.neighborRequest).status,'delivered');
+  const album=vm.runInContext(read('memory-album.js')+'\nMemoryAlbum',runtime);
+  const cards=album.collect(['gy'],{gy:saved.life},{postcards:[]});
+  assert.equal(cards.filter(card=>card.kind==='cafeRequest').length,1);
 });
 
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {
@@ -171,6 +211,33 @@ test('normal fishing menu consumes one bait, records a successful catch and allo
   assert.equal(state.need.energy, 85);
 });
 
+test('confession requires the right resident’s completed outing as well as eight hearts', () => {
+  const resident={id:'by'};
+  const relation={pts:80,done:{}};
+  const state={life:{gy:{firstDate:{day:2}},by:{fishingInvitation:{dueDay:3}}},
+    moments:{records:{}},need:{mood:50}};
+  let message;
+  const runtime=game({
+    state,D:{},rel:()=>relation,hearts:r=>Math.floor(r.pts/10),anyCouple:()=>false,
+    xiaomanRoute:()=>false,notify:key=>{message=key;},tr:key=>key,talk(){},
+  });
+  runSection(runtime,'function hasSharedExperience(','function npcMenu(');
+  runSection(runtime,'function confess(','function moveIn(');
+  runtime.confess(resident);
+  assert.equal(message,'hintSharedExperience');
+  assert.equal(relation.done.confess,undefined);
+  state.life.by.fishingInvitation.catch={day:3};
+  assert.equal(runtime.hasSharedExperience(resident),true);
+  runtime.confess(resident);
+  assert.equal(relation.done.confess,true);
+  delete state.life.by.fishingInvitation;
+  state.moments.records.by={day:4};
+  assert.equal(runtime.hasSharedExperience(resident),true);
+  delete state.moments.records.by;
+  state.life.by.firstDate={day:5};
+  assert.equal(runtime.hasSharedExperience(resident),true);
+});
+
 test('first moonfish gift schedules a night invitation, retry, and one shared catch memory', () => {
   const state = {day: 2, time: 21*60, life: {}, need: {energy: 90, mood: 50},
     inv: {moonfish: 2}, fishLog: {}};
@@ -191,7 +258,7 @@ test('first moonfish gift schedules a night invitation, retry, and one shared ca
   vm.runInContext(read('npc-memory.js'),runtime);
   vm.runInContext('Math.random = () => .2; this.memory = NPCMemory;',runtime);
   runSection(runtime,'const FISHING_INVITE=','const ACT_E=');
-  runSection(runtime,'function lifeOf(','function birthdayOf(');
+  runSection(runtime,'function lifeOf(','function applySave(');
   runSection(runtime,'const FISH=','/* ---------------- romance');
   runSection(runtime,'function rememberPlayer(','function memoryLine(');
   runSection(runtime,'function give(','function actMenu(');
@@ -327,8 +394,8 @@ test('click route goes around an obstacle, rejects blocked targets, and stops on
   const P={x:24,y:44,dir:'right'};
   const runtime=game({MW:width,MH:height,solid,P,FLOOR:1,DOOR:2,map:new Uint8Array(width*height),
     at:()=>0,isSolid:(x,y)=>solid[y*width+x],walkRoute:[]});
-  runSection(runtime,'function blocked(','function moveBy(');
-  runSection(runtime,'function npcPassable(','function lifeOf(');
+  runSection(runtime,'function blocked(','function movePlayerBy(');
+  runSection(runtime,'function npcPassable(','function birthdayOf(');
   assert.equal(runtime.setWalkDestination(40,42),false);
   assert.equal(runtime.setWalkDestination(-5,42),false);
   assert.equal(runtime.setWalkDestination(55,41),true);

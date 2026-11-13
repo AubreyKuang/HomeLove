@@ -4,14 +4,14 @@ const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
 const vm=require('node:vm');
 const read=file=>readFileSync(join(__dirname,'..',file),'utf8');
-const html=read('index.html');
+const gameSource = require('./game-source.cjs')(read('index.html'));
 const ctx=vm.createContext({Lp:{objects:{}},state:{picked:[],day:1},pick:xs=>xs[0]});
 vm.runInContext(read('village-map.js')+read('village-riverside.js')+'\nthis.river=VillageRiverside;',ctx);
-const mapStart=html.indexOf('const G=0,PATH=1');
-const mapEnd=html.indexOf('/* ---------------- sprites',mapStart);
-const pathStart=html.indexOf('function npcPassable(');
-const pathEnd=html.indexOf('function setWalkDestination(',pathStart);
-vm.runInContext('const MW=VillageMap.width,MH=VillageMap.height;\n'+html.slice(mapStart,mapEnd)+html.slice(pathStart,pathEnd)+
+const mapStart=gameSource.indexOf('const G=0,PATH=1');
+const mapEnd=gameSource.indexOf('/* ---------------- sprites',mapStart);
+const pathStart=gameSource.indexOf('function npcPassable(');
+const pathEnd=gameSource.indexOf('function setWalkDestination(',pathStart);
+vm.runInContext('const MW=VillageMap.width,MH=VillageMap.height;\n'+gameSource.slice(mapStart,mapEnd)+gameSource.slice(pathStart,pathEnd)+
   '\nthis.mapAPI={VillageMap,bfs,npcPassable,at,WATER,BRIDGE};',ctx);
 const {VillageMap:V,bfs,npcPassable,at,WATER,BRIDGE}=ctx.mapAPI;
 

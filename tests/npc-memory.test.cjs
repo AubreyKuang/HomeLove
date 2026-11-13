@@ -8,6 +8,7 @@ const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const dollhouse = fs.existsSync(path.join(root, 'js/social.js'));
 const palace = !fs.existsSync(path.join(root, 'npc-memory.js')) && !dollhouse;
 const html = read('index.html');
+const gameSource = !palace && !dollhouse ? require('./game-source.cjs')(html) : html;
 const end = 'return { record, influence, recall };\n})();';
 const memorySource = palace
   ? html.slice(html.indexOf('const NPCMemory ='), html.indexOf(end) + end.length)
@@ -112,10 +113,10 @@ if(dollhouse) {
     const state={day:1,time:480,life:{},inv:{cookie:2},need:{mood:50}};
     const relation={done:{},notes:{}},n={id:'alice',x:1,y:2,gifts:{cookie:15}};
     const ctx=runtime({state,D:{},rel:()=>relation,note:()=>{},advanceTime:n=>state.time+=n,updateHud:()=>{},nt:()=>({giftLines:['Thanks {i}']}),tierOf:()=>0,itemLabel:k=>k,talk:(n,t,o,cb)=>cb(),nm:()=> 'Alice',addPts:()=>{},clampN:n=>n,milestone:()=>{}});
-    vm.runInContext(html.match(/^const FISHING_INVITE=.*$/m)[0],ctx);
-    loadFunction(ctx,html,'rememberPlayer','function addPts(');
-    loadFunction(ctx,html,'lifeOf','function ');
-    loadFunction(ctx,html,'give','function ');
+    vm.runInContext(gameSource.match(/^const FISHING_INVITE=.*$/m)[0],ctx);
+    loadFunction(ctx,gameSource,'rememberPlayer','function addPts(');
+    loadFunction(ctx,gameSource,'lifeOf','function ');
+    loadFunction(ctx,gameSource,'give','function ');
     ctx.give(n,'cookie');
     ctx.give(n,'cookie');
     assert.equal(state.inv.cookie,1);
@@ -133,7 +134,7 @@ test('missed occasions become memories only when a familiar resident was not ack
   const relation={met:true,done:{}};
   const ctx=runtime({rel:()=>relation,hearts:()=>4,birthdayToday:()=>true,sickToday:()=>true,
     rememberPlayer:(person,type,outcome,emotion)=>misses.push({type,outcome,emotion})});
-  loadFunction(ctx,html,'rememberMissedOccasions','function markLife(');
+  loadFunction(ctx,gameSource,'rememberMissedOccasions','function markLife(');
   const resident={id:'alice'};
   ctx.rememberMissedOccasions(resident);
   assert.deepEqual(misses.map(m=>m.type),['birthday','visit']);
