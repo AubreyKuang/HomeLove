@@ -102,6 +102,9 @@ function renderDiary(){
       if(canChangeDateShelter(plan)){
         const weather=tr('riverWeather_'+VillageRiverside.weather(state.day+1));
         section.append(el('p','rline',tr('dateMeetingRainForecast',{weather})));
+        if(!plan.shelter&&state.travel.owned.includes('umbrella')){
+          section.append(el('p','rline',tr('dateMeetingUmbrellaHint',UMBRELLA_DATE)));
+        }
         const tomorrow=rainDateTomorrow(plan);
         if(tomorrow){
           const postpone=el('button','pbtn',tr('dateMeetingPostpone',describeDatePlan(tomorrow)));
