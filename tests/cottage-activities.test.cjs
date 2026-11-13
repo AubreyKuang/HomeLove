@@ -412,6 +412,33 @@ test('rain sketches use the revisit, save once per place, and roll back on write
   assert.equal(state.rainSketches.garden.day,4);
 });
 
+test('a rain sketch gift requires its companion and rolls back before a successful one-time transfer', () => {
+  const resident={id:'gy'},other={id:'xy'};
+  const frame={key:'rain-sketch:garden'},sketch={resident:'gy',day:4};
+  const state={day:5,time:600,rainSketches:{garden:sketch},album:{framed:frame},need:{mood:60}};
+  const relationship={done:{}},bonds={trust:{gy:4}};
+  let target=other,write=false;
+  const runtime=game({state,rel:()=>relationship,B:()=>bonds,findTarget:()=>({n:target}),
+    RAIN_DATE_MEETINGS:{garden:{name:'dateRainLane'}},save:()=>write,
+    advanceTime:m=>{state.time+=m;state.need.mood--;},trustNpc:(n,d)=>{bonds.trust[n.id]+=d;},
+    updateHud(){},talk(){},D:{},nm:n=>n.id,tr:k=>k});
+  runSection(runtime,'const RAIN_SKETCH_GIFT=','function giftMenu(');
+  assert.equal(runtime.rainSketchGifts(other).length,0);
+  runtime.giveRainSketch(resident,'garden');
+  assert.equal(state.time,600);
+  target=resident;
+  runtime.giveRainSketch(resident,'garden');
+  assert.deepEqual([state.time,state.need.mood,sketch.given,state.album.framed,bonds.trust.gy,relationship.done],
+    [600,60,undefined,frame,4,{}]);
+  write=true;
+  runtime.giveRainSketch(resident,'garden');
+  assert.deepEqual([state.time,sketch.given,state.album.framed,bonds.trust.gy,relationship.done.gift],[605,true,null,12,true]);
+  delete relationship.done.gift;
+  runtime.giveRainSketch(resident,'garden');
+  assert.equal(state.time,605);
+  assert.equal(runtime.rainSketchGifts(resident).length,0);
+});
+
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
   const plan={resident:'gy',place:'garden',day:3};
   const n={id:'gy',state:'here',x:328,y:204},P={x:312,y:204};

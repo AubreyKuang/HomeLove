@@ -238,7 +238,10 @@ function renderAlbum(){
       }
     };
     display.dataset.frameAction='';
-    page.append(art,el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)),keep,display);
+    page.append(art,el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)));
+    if(selected.event==='rainSketch')page.append(el('p',null,tr(selected.given?'rainSketchGiftAlbumDone':'rainSketchGiftAlbumHint',{name:nm(n)})));
+    page.append(keep);
+    if(!selected.given)page.append(display);
     if(selected.event==='project_stage'){
       const play=el('button','pbtn',tr('projectMusicPlay'));
       play.type='button';play.onclick=()=>sfx('villageMix',state.projects.music);page.append(play);
