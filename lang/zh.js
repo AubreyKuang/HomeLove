@@ -424,6 +424,8 @@ window.HL_LANG.zh = {
     dateMeetingWalkDone: "你们在附近走了一小圈，聊了聊今天各自的安排，然后挥手道别。",
     dateMeetingCottage: '小屋餐桌旁',
     dateMeetingShelter: '下雨了，改到小屋喝茶 · {minutes} 分钟',
+    dateMeetingRainForecast: '明日天气：{weather}。',
+    dateMeetingPostpone: '改到明天 · {place} · {start}–{end} 见面 · 约会 {minutes} 分钟',
     dateMeetingRestore: '改回{place}见面',
     dateMeetingSheltered: '{day} · {name}会在小屋餐桌旁等你，见面时间仍是 {start}–{end}。喝茶需要 {minutes} 分钟。',
     dateMeetingTea: '坐下喝茶 · {minutes} 分钟 · 好感 +{points} · 心情 +{mood} · 用掉今日约会',

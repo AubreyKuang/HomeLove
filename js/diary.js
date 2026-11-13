@@ -100,6 +100,20 @@ function renderDiary(){
     }
     if(!missed&&plan.day===state.day){
       if(canChangeDateShelter(plan)){
+        const weather=tr('riverWeather_'+VillageRiverside.weather(state.day+1));
+        section.append(el('p','rline',tr('dateMeetingRainForecast',{weather})));
+        const tomorrow=rainDateTomorrow(plan);
+        if(tomorrow){
+          const postpone=el('button','pbtn',tr('dateMeetingPostpone',describeDatePlan(tomorrow)));
+          postpone.type='button';
+          postpone.onclick=()=>{
+            if(postponeRainDate(plan)){
+              renderDiary();
+              $('#diaryClose').focus();
+            }
+          };
+          section.append(postpone);
+        }
         const change=el('button','pbtn',plan.shelter
           ?tr('dateMeetingRestore',{place:Lp.dates[plan.place].name})
           :tr('dateMeetingShelter',DATE_SHELTER));
