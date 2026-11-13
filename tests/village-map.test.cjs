@@ -82,3 +82,54 @@ test('mounted travel respects indoor tiles and the car needs a road',()=>{
   }
   assert.equal(travel.load({owned:[],selected:'car'}).selected,null);
 });
+
+vm.runInContext(read('village-weekend.js')+'\nthis.weekendAPI=VillageWeekend;',ctx);
+const weekend=ctx.weekendAPI;
+
+test('the Saturday stall limits sales to three stocked slots and pays rotating demand',()=>{
+  const state=weekend.load(),inventory={berry:2,flower:2,shell:0};
+  assert.equal(weekend.sell(state,inventory,5,600,['berry']),0);
+  assert.equal(weekend.sell(state,inventory,6,1080,['berry']),0);
+  assert.equal(weekend.sell(state,inventory,6,600,['berry','berry','berry']),0);
+  assert.equal(weekend.sell(state,inventory,6,600,['berry','flower','berry','flower']),0);
+  assert.equal(weekend.sell(state,inventory,6,540,['berry','flower','berry']),11);
+  assert.equal(weekend.sell(state,inventory,6,600,['flower']),0);
+  assert.equal(weekend.coffee(state,6,600),null);
+  const restored=weekend.load(JSON.parse(JSON.stringify(state)),7);
+  assert.equal(weekend.coffee(restored,7,600),'berry');
+  restored.sale.served=true;
+  assert.equal(weekend.coffee(restored,7,600),null);
+  assert.equal(weekend.cards(restored)[0].day,6);
+  assert.notEqual(weekend.demand(13)[0],weekend.demand(6)[0]);
+  assert.deepEqual(inventory,{berry:0,flower:1,shell:11});
+});
+
+test('each weekend event has a reachable guest spot and a first-visit card that survives repeat visits',()=>{
+  const state=weekend.load();
+  for(const [id,event] of Object.entries(weekend.activities)){
+    const place=V.places[id];
+    assert.equal(place.resident,event.host);
+    assert.ok(bfs(...place.anchor,...event.spot,false)?.length);
+    assert.equal(weekend.play(state,id,event.day,event.end,1),false);
+    assert.equal(weekend.play(state,id,event.day,event.start,1),true);
+    assert.equal(weekend.play(state,id,event.day,event.start,0),false);
+    assert.equal(weekend.play(state,id,event.day+7,event.start,0),true);
+  }
+  const restored=weekend.load(JSON.parse(JSON.stringify(state)),14);
+  assert.equal(weekend.cards(restored).length,4);
+  assert.equal(restored.played.stage.choice,1);
+  assert.equal(restored.played.stage.last,14);
+});
+
+test('only the first successful online order earns a durable keepsake',()=>{
+  const state=travel.load(),inventory={shell:25};
+  assert.equal(travel.order(state,inventory,'car',3),false);
+  assert.equal(travel.cards(state).length,0);
+  assert.equal(travel.order(state,inventory,'scooter',3),true);
+  assert.equal(travel.receive(state,'scooter',4),true);
+  assert.equal(travel.order(state,inventory,'bicycle',4),true);
+  const restored=travel.load(JSON.parse(JSON.stringify(state)),4);
+  assert.equal(travel.cards(restored).length,1);
+  assert.equal(travel.cards(restored)[0].vehicle,'scooter');
+  assert.equal(travel.cards(restored)[0].day,3);
+});
