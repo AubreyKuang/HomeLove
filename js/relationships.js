@@ -593,9 +593,9 @@ function npcMenu(n,back){
   if(atPlannedDate(n,dedication)){
     opts.unshift({label:tr('rainDedicationVisitAction',RAIN_DEDICATION_VISIT),fn:()=>finishDedicationVisit(n)},
       {label:tr('rainDedicationCompareAction',RAIN_DEDICATION_COMPARE),
-        disabled:state.time+RAIN_DEDICATION_COMPARE.minutes>dedication.end,fn:()=>finishDedicationVisit(n,'compare')},
-      {label:tr('rainDedicationStoryAction',RAIN_DEDICATION_STORY),
-        disabled:state.time+RAIN_DEDICATION_STORY.minutes>dedication.end,fn:()=>finishDedicationVisit(n,'story')});
+        disabled:state.time+RAIN_DEDICATION_COMPARE.minutes>dedication.end,fn:()=>finishDedicationVisit(n,'compare')});
+    if(!state.dedicationVisit.second)opts.splice(2,0,{label:tr('rainDedicationStoryAction',RAIN_DEDICATION_STORY),
+      disabled:state.time+RAIN_DEDICATION_STORY.minutes>dedication.end,fn:()=>finishDedicationVisit(n,'story')});
   }
   if(revisit?.walk==='meet'&&atPlannedDate(n,rainCompanionMeeting(n))){
     if(!revisit.relocated)opts.unshift({label:tr('rainWalkChoosePause',RAIN_WALK_PAUSE),
@@ -848,18 +848,20 @@ function cancelDedicationVisit(visit){
 }
 function canBookDedicationVisit(source,day){
   const sketch=state.rainSketches[source],current=activeDedicationVisit();
-  if(!sketch?.dedication||sketch.dedicationVisited||(current&&(current.source!==source||current.day===day))||
+  const place=dedicationVisitPlace(sketch,day);
+  if(!place||(current&&(current.source!==source||current.day===day))||
     (day!==state.day&&day!==state.day+1)||VillageRiverside.weather(day)==='rain')return false;
-  if(day===state.day&&state.time+RAIN_DEDICATION_VISIT.minutes>RAIN_DATE_MEETINGS[sketch.dedication].end)return false;
-  const visit={resident:sketch.resident,place:sketch.dedication,day};
+  if(day===state.day&&state.time+RAIN_DEDICATION_VISIT.minutes>RAIN_DATE_MEETINGS[place].end)return false;
+  const visit={resident:sketch.resident,place,day};
   const rain=state.rainReturn;
   return !rainCompanionConflict(visit)&&(!rain?.together||rain.done||!rainCompanionConflict(visit,rain));
 }
 function bookDedicationVisit(source,day){
   if(!canBookDedicationVisit(source,day))return false;
-  const {resident,dedication:place}=state.rainSketches[source];
+  const sketch=state.rainSketches[source];
   const previous=state.dedicationVisit;
-  state.dedicationVisit={source,resident,place,day};
+  state.dedicationVisit={source,resident:sketch.resident,place:dedicationVisitPlace(sketch,day),day,
+    ...(sketch.dedicationVisited?{second:true}:{})};
   if(save())return true;
   state.dedicationVisit=previous;
   return false;
@@ -875,14 +877,16 @@ function finishDedicationVisit(n,activity='visit'){
   const meeting=dedicationMeeting(n);
   const compare=activity==='compare',story=activity==='story';
   const {minutes,mood,trust:gain}=compare?RAIN_DEDICATION_COMPARE:story?RAIN_DEDICATION_STORY:RAIN_DEDICATION_VISIT;
-  if(!atPlannedDate(n,meeting)||state.time+minutes>meeting.end)return;
+  if(!atPlannedDate(n,meeting)||state.time+minutes>meeting.end||(visit.second&&story))return;
   const sketch=state.rainSketches[visit.source],trust=B().trust[n.id];
   const before={time:state.time,need:{...state.need}};
   state.dedicationVisit=null;
-  sketch.dedicationVisited=state.day;
+  const record=visit.second?{dedication:visit.place,dedicationVisited:state.day}:sketch;
+  if(visit.second)sketch.dedicationSecond=record;
+  else sketch.dedicationVisited=state.day;
   if(compare){
-    sketch.dedicationCompared=true;
-    if(VillageRiverside.weather(visit.day)==='wind')sketch.dedicationWind=true;
+    record.dedicationCompared=true;
+    if(VillageRiverside.weather(visit.day)==='wind')record.dedicationWind=true;
   }
   if(story)sketch.dedicationStory=true;
   advanceTime(minutes);
@@ -890,10 +894,11 @@ function finishDedicationVisit(n,activity='visit'){
   trustNpc(n,gain);
   if(!save()){
     state.dedicationVisit=visit;
-    delete sketch.dedicationVisited;
+    if(visit.second)delete sketch.dedicationSecond;
+    else delete sketch.dedicationVisited;
     if(compare){
-      delete sketch.dedicationCompared;
-      delete sketch.dedicationWind;
+      delete record.dedicationCompared;
+      delete record.dedicationWind;
     }
     if(story)delete sketch.dedicationStory;
     B().trust[n.id]=trust;
@@ -902,7 +907,7 @@ function finishDedicationVisit(n,activity='visit'){
   }
   updateHud();
   D.npc=n;
-  talk(nm(n),[compare?dedicationComparison(sketch):story?dedicationStory(sketch):
+  talk(nm(n),[compare?dedicationComparison(record):story?dedicationStory(sketch):
     tr('rainDedicationVisitDone',{place:tr(meeting.name)})]);
 }
 function dedicationStory(sketch){

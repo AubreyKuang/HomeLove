@@ -275,7 +275,7 @@ function renderAlbum(){
     page.append(art,el('h3',null,title(selected)),el('small',null,stamp(selected,n)),el('p',null,albumDetails(selected,n)));
     if(selected.event==='rainSketch')page.append(el('p',null,tr(selected.given?'rainSketchGiftAlbumDone':'rainSketchGiftAlbumHint',{name:nm(n)})));
     if(selected.dedication){
-      const meeting=RAIN_DATE_MEETINGS[selected.dedication],place=tr(meeting.name);
+      const place=tr(RAIN_DATE_MEETINGS[selected.dedication].name);
       page.append(el('p',null,tr('rainSketchDedicateAlbum',{place})));
       const visit=activeDedicationVisit();
       if(selected.dedicationVisited){
@@ -284,18 +284,26 @@ function renderAlbum(){
         if(selected.dedicationStory)page.append(el('p',null,tr('rainDedicationStoryMemory',{
           name:nm(n),story:dedicationStory(selected)
         })));
+      }
+      const second=selected.dedicationSecond;
+      if(second){
+        page.append(el('p',null,tr('rainDedicationSecondMemory',{
+          place:tr(RAIN_DATE_MEETINGS[second.dedication].name),day:tr('day',{d:second.dedicationVisited}),name:nm(n)
+        })));
+        if(second.dedicationCompared)page.append(el('p',null,dedicationComparison(second)));
       }else{
+        if(selected.dedicationVisited)page.append(el('p',null,tr('rainDedicationSecondHint')));
         const booked=visit?.source===selected.place;
         if(booked)page.append(el('p',null,tr('rainDedicationVisitBookedWeather',{
           day:tr('day',{d:visit.day}),weather:tr('riverWeather_'+VillageRiverside.weather(visit.day))
         })));
-        const last=fmt(meeting.end-RAIN_DEDICATION_VISIT.minutes);
         let available=false;
         for(const day of [state.day,state.day+1]){
           if(!canBookDedicationVisit(selected.place,day))continue;
           available=true;
+          const meeting=RAIN_DATE_MEETINGS[dedicationVisitPlace(selected,day)];
           const schedule=tr(day===state.day?'rainDedicationVisitToday':'rainDedicationVisitTomorrow',
-            {place,start:fmt(meeting.start),last});
+            {place:tr(meeting.name),start:fmt(meeting.start),last:fmt(meeting.end-RAIN_DEDICATION_VISIT.minutes)});
           const book=el('button','pbtn',tr(booked?'rainDedicationRescheduleWeather':'rainDedicationBookWeather',{
             schedule,weather:tr('riverWeather_'+VillageRiverside.weather(day))
           }));

@@ -151,12 +151,20 @@ function applySave(s){
                 ?{dedicationCompared:true,...(sketch.dedicationWind===true?{dedicationWind:true}:{})}
                 :sketch.dedicationStory===true?{dedicationStory:true}:{})}:{})}:{}),
         ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
+      const restored=state.rainSketches[place],second=sketch.dedicationSecond;
+      if(restored.dedicationVisited&&Number.isInteger(second?.dedicationVisited)&&
+        second.dedicationVisited>restored.dedicationVisited&&second.dedicationVisited<=state.day){
+        restored.dedicationSecond={dedication:dedicationVisitPlace(restored,second.dedicationVisited),
+          dedicationVisited:second.dedicationVisited,
+          ...(second.dedicationCompared===true?{dedicationCompared:true,...(second.dedicationWind===true?{dedicationWind:true}:{})}:{})};
+      }
     }
   }
   const visit=s.dedicationVisit,sketch=state.rainSketches[visit?.source];
-  state.dedicationVisit=sketch?.dedication&&!sketch.dedicationVisited&&
+  const visitPlace=dedicationVisitPlace(sketch,visit?.day);
+  state.dedicationVisit=visitPlace&&
     (visit.day===state.day||visit.day===state.day+1)
-    ?{source:visit.source,resident:sketch.resident,place:sketch.dedication,day:visit.day}:null;
+    ?{source:visit.source,resident:sketch.resident,place:visitPlace,day:visit.day,...(sketch.dedicationVisited?{second:true}:{})}:null;
   for(const pool of Object.values(CAPSULE_POOLS)){
     const saved=s[pool.owned];
     state[pool.owned]=Array.isArray(saved)?pool.items.filter(item=>saved.includes(item.id)).map(item=>item.id):[];
@@ -168,6 +176,11 @@ function applySave(s){
   const priorGift=NPCMemory.recall(state,fisher.id).findLast(entry=>
     entry.type==='gift'&&entry.interpretation?.object===FISHING_INVITE.gift);
   if(Number.isFinite(priorGift?.time))queueFishingInvitation(fisher,Math.floor(priorGift.time/1440)+1);
+}
+function dedicationVisitPlace(sketch,day){
+  if(!sketch?.dedication||sketch.dedicationSecond)return;
+  if(!sketch.dedicationVisited)return sketch.dedication;
+  if(day>sketch.dedicationVisited)return sketch.dedication==='garden'?'pond':'garden';
 }
 applySave(SaveManager.load(SaveManager.getStorage(),LS,validSave,migrateSave));
 state.life ||= {};
