@@ -1357,3 +1357,128 @@ Object.assign(window.HL_LANG.en.ui, {
   "frameRecognize_by": "Seeing it when I walk in feels different from finding it in an album.",
   "frameRecognize_xm": "You kept this all this time. I thought I was the only one who still remembered."
 });
+
+Object.assign(window.HL_LANG.en.ui, {
+  "momentLater": "Another time",
+  "momentKeep": "Keep this in the album",
+  "momentStay": "Stay a little longer",
+  "quietSettings": "Play and saves",
+  "offlineOn": "Offline time: running",
+  "offlineOff": "Offline time: paused",
+  "offlineHint": "Time pauses while you are away by default. You can enable offline progress, capped at four game hours per return.",
+  "saveExport": "Export save",
+  "saveImport": "Import save",
+  "saveInvalid": "This save file could not be read.",
+  "saveImportConfirm": "Load the save from day {day}? This replaces current progress. Export a backup first if you want to keep it.",
+  "saveImportAccept": "Load this save",
+  "worldTitle_moment_gy": "Room for Two Beneath the Rain",
+  "worldTitle_moment_xy": "The Wind Turns Your Way",
+  "worldTitle_moment_jy": "The Last Beat Is Yours",
+  "worldTitle_moment_by": "A Sunset in Your Pocket"
+});
+window.HL_LANG.en.moments = {
+  "gy": {
+    "intro": [
+      "Under the eaves, Gu Yan tests a cup’s warmth and moves a dry chair farther from the rain.",
+      "“The beans are dark today.” He puts the coffee tin away and takes out two small cups.",
+      "“Osmanthus milk, or warm barley tea? You can sit as long as you like.”"
+    ],
+    "choices": [
+      "Warm milk, and a story about roasting",
+      "Barley tea, and the sound of rain"
+    ],
+    "endings": [
+      [
+        "He checks the cup before turning its handle toward you. He tells you about his first burnt batch. “The entire street knew I was learning that night.”",
+        "You laugh, and he pauses to look at you. Later, a pale coaster stays beneath the eaves."
+      ],
+      [
+        "He lowers the radio and reads beside you. While your thoughts wander, he quietly refills your cup.",
+        "When you say you barely talked, he closes the ledger. “You looked comfortable here. I liked that.”"
+      ]
+    ],
+    "recall": [
+      "Osmanthus milk? Your coaster is still where you sat.",
+      "Stay a while if you like. I can work, and you can daydream."
+    ],
+    "later": "“Of course. The path is slippery. Take your time.” He leaves the chair under the eaves."
+  },
+  "xy": {
+    "intro": [
+      "Lu Xingye is fixing folded paper onto a thin wooden stick beside the court. It barely turns.",
+      "He loosens the pin. The blades begin to spin. Looking up at you, he smiles. “Found the wind.”",
+      "“Want to try? I have another sheet if you’d like to make one together.”"
+    ],
+    "choices": [
+      "Fold a pink pinwheel together",
+      "Take the blue one and find a breeze"
+    ],
+    "endings": [
+      [
+        "He folds one corner, then waits with his paper beside yours. When you finish the last corner, he holds the stick steady.",
+        "Both pinwheels turn. “I can recognize the corner you folded.” A pink pinwheel later stays by the court."
+      ],
+      [
+        "You walk slowly beside the fence with him half a step behind. When the wind stops, you turn and catch him blowing gently at the blades.",
+        "He laughs with you. “You were waiting so patiently. I wanted it to turn once more.” The blue pinwheel later stands beside the court."
+      ]
+    ],
+    "recall": [
+      "The pink one still turns. I recognize your corner every time.",
+      "Good breeze today. The pinwheel can manage without my help."
+    ],
+    "later": "“Sure. I’ll loosen the pin a little more. It’ll turn better next time.”"
+  },
+  "jy": {
+    "intro": [
+      "Jiang Yu finishes a phrase in the empty pavilion and lets the river carry its last note.",
+      "“I keep filling this part too much.” He closes his guitar case to make room beside him.",
+      "“Listen with me? Should the ending rise a little, or settle gently?”"
+    ],
+    "choices": [
+      "Let it rise like sunlight on water",
+      "Let it settle into quiet"
+    ],
+    "endings": [
+      [
+        "You tap your knee three times. He follows your rhythm with three rising notes and glances at you as he plays them.",
+        "“I’ll keep this part.” He marks three dots on the score, then plays the whole melody for you."
+      ],
+      [
+        "You gesture softly. He slows the final beats, lifts his fingers, and waits for the wind to pass through the pavilion.",
+        "“Now you can hear the river.” He leaves the final line of the score empty and plays it once more."
+      ]
+    ],
+    "recall": [
+      "I kept those three rising notes. I think of you whenever I reach them.",
+      "At the end, I still leave that little quiet you chose."
+    ],
+    "later": "“All right.” He holds down a fluttering page. “I’ll write it down and play it for you another day.”"
+  },
+  "by": {
+    "intro": [
+      "On the studio terrace, Bai Ye presses thin paper over a leaf, studying the shadows between its veins.",
+      "Light rests on his hand. He shifts the paper toward you. “This color will change soon.”",
+      "“Want to keep one? Choose the color. I’ll hold the paper.”"
+    ],
+    "choices": [
+      "Dusk pink, for the leaf’s shadow",
+      "Warm gold, for the leaf’s veins"
+    ],
+    "endings": [
+      [
+        "You rub pink across the paper while he steadies its edges. Lifting it reveals a leaf floating in a little sunset.",
+        "“You kept its shadow.” He folds the edge into a small envelope. “Just the right size for a pocket.”"
+      ],
+      [
+        "Fine veins emerge in gold. As you hold the paper toward the sun, he shields it from a passing gust.",
+        "“Like a very small river.” He dates the corner and gives you the print. A golden trial print later stays at the studio."
+      ]
+    ],
+    "recall": [
+      "Still have the pink one? The sunset has found another color today.",
+      "I thought of that leaf’s veins again while painting a river."
+    ],
+    "later": "“There will be other light.” He gathers the paper and steps aside for you."
+  }
+};
