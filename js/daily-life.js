@@ -73,18 +73,66 @@ function canShareLunch(n){
 function shareLunch(n){
   if(busy||!canShareLunch(n))return;
   const {minutes,hunger,mood,points}=LUNCH_SHARE;
+  const first=!lifeOf(n).lunchReturn;
   sfx('eat');
   busyFade(()=>{
     state.breakfastBoxDay=null;
     advanceTime(minutes);
     state.need.hunger=clampN(state.need.hunger+hunger);
     state.need.mood=clampN(state.need.mood+mood);
+    lifeOf(n).lunchReturn ??= {day:state.day+1};
     addPts(n,points);
     updateHud();
   },()=>{
     D.npc=n;
-    talk(nm(n),[tr('boxShared')],null,()=>milestone(n));
+    talk(nm(n),[tr(first?'boxShared':'boxSharedAgain')],null,()=>milestone(n));
   });
+}
+function pendingLunchReturn(){
+  const invitation=state.life.gy?.lunchReturn;
+  return invitation&&!invitation.done ? invitation : null;
+}
+function lunchReturnOption(n){
+  const invitation=pendingLunchReturn();
+  const [opens,closes]=VillageMap.places.cafe.hours;
+  if(!invitation||state.day<invitation.day||n?.id!=='gy'||!atCafeWithResident(n)||
+    state.time<opens||state.time>=closes)return [];
+  return [{label:tr('boxReturnOpen'),fn:()=>openLunchReturn(n)}];
+}
+function openLunchReturn(n){
+  if(!lunchReturnOption(n).length)return;
+  const {minutes}=LUNCH_RETURN;
+  const closes=VillageMap.places.cafe.hours[1];
+  D.npc=n;
+  talk(nm(n),[tr('boxReturnIntro')],[
+    {label:tr('boxReturnStay',LUNCH_RETURN),disabled:state.time+minutes>closes,fn:()=>finishLunchReturn(n,true)},
+    {label:tr('boxReturnTake'),fn:()=>finishLunchReturn(n,false)},
+    {label:tr('boxReturnLater'),back:true,fn:null}
+  ]);
+}
+function finishLunchReturn(n,stay){
+  if(busy||!lunchReturnOption(n).length)return;
+  const {minutes,hunger,mood}=LUNCH_RETURN;
+  if(stay&&state.time+minutes>VillageMap.places.cafe.hours[1])return;
+  const invitation=pendingLunchReturn();
+  const before={time:state.time,need:{...state.need},cookie:state.inv.cookie};
+  invitation.done=true;
+  if(stay){
+    advanceTime(minutes);
+    state.need.hunger=clampN(state.need.hunger+hunger);
+    state.need.mood=clampN(state.need.mood+mood);
+  }else state.inv.cookie++;
+  if(!save()){
+    delete invitation.done;
+    state.time=before.time;
+    Object.assign(state.need,before.need);
+    state.inv.cookie=before.cookie;
+    return;
+  }
+  updateHud();
+  sfx(stay?'eat':'pickup');
+  D.npc=n;
+  talk(nm(n),[tr(stay?'boxReturnStayed':'boxReturnTaken')]);
 }
 function eat(){
   const N=state.need;if(N.hunger>92){say(objName('table'),tr('notHungry'));return;}

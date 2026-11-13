@@ -9,6 +9,7 @@ const ACT_E={walk:5,fish:5,read:2,sport:15,stars:3},ACT_DARK={stars:true};
 const DATES={pond:{minutes:45,p:[19,7],n:[20,7]},garden:{minutes:60,p:[19,12],n:[20,12]},stars:{minutes:90,dark:true,p:[4,13],n:[5,13]},home:{minutes:105,p:[13,6],n:[14,6]}};
 const BREAKFAST_BOX={prepMinutes:40,eatMinutes:5,until:720,hunger:55,mood:6,outdoorUntil:840,outdoorHunger:40};
 const LUNCH_SHARE={minutes:15,hunger:22,mood:8,points:5};
+const LUNCH_RETURN={minutes:20,hunger:30,mood:12};
 const DATE_MEETINGS={garden:{start:600,end:660,spot:DATES.garden.n},pond:{start:960,end:1020,spot:DATES.pond.n}};
 
 /* ---------------- residents ---------------- */

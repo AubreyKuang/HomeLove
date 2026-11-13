@@ -291,6 +291,7 @@ function npcMenu(n,back){
   homeOptions(n).forEach(o=>opts.push(o));
   const duty=villageDuty(n);
   if(canShareLunch(n))opts.unshift({label:tr('boxShare',LUNCH_SHARE),fn:()=>shareLunch(n)});
+  if(n.id==='gy')opts.unshift(...lunchReturnOption(n));
   if(n.id==='gy'&&VillageWeekend.coffee(state.weekend,state.day,state.time)&&Math.hypot(n.x-14*16-8,n.y-22*16-12)<32){
     opts.unshift({label:tr('weekCoffeeTaste'),fn:tasteMarketCoffee});
   }

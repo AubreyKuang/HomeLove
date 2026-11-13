@@ -262,11 +262,12 @@ test('the market bench uses the same box and keeps it available two hours longer
 
 test('lunch with Gu Yan spends the same box once and must finish before the cutoff', () => {
   const cafe={hours:[750,1020],spot:[14,22]},n={id:'gy',state:'here',x:232,y:364};
+  const life={};
   const state={day:2,time:749,breakfastBoxDay:2,need:{hunger:20,mood:30}};
   let points=0;
   const runtime=game({state,busy:false,VillageMap:{places:{cafe}},P:{x:216,y:364},villageDuty:()=>cafe,rel:()=>({met:true}),
     BREAKFAST_BOX:{eatMinutes:5,outdoorUntil:840},LUNCH_SHARE:{minutes:15,hunger:22,mood:8,points:5},
-    sfx(){},busyFade(mid){mid();},advanceTime(m){state.time+=m;},clampN:n=>Math.min(100,n),updateHud(){},addPts(_,delta){points+=delta;}});
+    sfx(){},busyFade(mid){mid();},advanceTime(m){state.time+=m;},clampN:n=>Math.min(100,n),updateHud(){},lifeOf:()=>life,addPts(_,delta){points+=delta;}});
   runSection(runtime,'function breakfastBoxReady(','function eat(){');
   runSection(runtime,'function atCafeWithResident(','function cafeRequestBlock(');
   assert.equal(runtime.canShareLunch(n),false);
@@ -284,6 +285,33 @@ test('lunch with Gu Yan spends the same box once and must finish before the cuto
   assert.equal(state.time,840);
   assert.equal(state.breakfastBoxDay,null);
   assert.equal(points,5);
+  assert.equal(life.lunchReturn.day,3);
+});
+
+test('the cafe return invitation starts the next day and offers one successful redemption', () => {
+  const n={id:'gy'}, invitation={day:3};
+  const state={day:2,time:750,life:{gy:{lunchReturn:invitation}},need:{hunger:20,mood:30},inv:{cookie:0}};
+  let saved=false;
+  const runtime=game({state,busy:false,VillageMap:{places:{cafe:{hours:[750,1020]}}},LUNCH_RETURN:{minutes:20,hunger:30,mood:12},
+    atCafeWithResident:()=>true,tr:k=>k,advanceTime:m=>{state.time+=m;},clampN:n=>Math.min(100,n),
+    save:()=>saved,updateHud(){},sfx(){},D:{},nm:()=>'',talk(){}});
+  runSection(runtime,'function pendingLunchReturn(','function eat(){');
+  assert.equal(runtime.lunchReturnOption(n).length,0);
+  state.day=3;state.time=1001;
+  assert.equal(runtime.lunchReturnOption(n).length,1);
+  runtime.finishLunchReturn(n,true);
+  assert.equal(invitation.done,undefined);
+  runtime.finishLunchReturn(n,false);
+  assert.equal(state.inv.cookie,0);
+  saved=true;
+  runtime.finishLunchReturn(n,false);
+  runtime.finishLunchReturn(n,false);
+  assert.equal(state.inv.cookie,1);
+  assert.equal(runtime.lunchReturnOption(n).length,0);
+  delete invitation.done;
+  state.time=1000;
+  runtime.finishLunchReturn(n,true);
+  assert.deepEqual([state.time,state.need.hunger,state.need.mood,state.inv.cookie],[1020,50,42,1]);
 });
 
 test('garden preserves legacy crops and waters exactly one day of growth per night', () => {

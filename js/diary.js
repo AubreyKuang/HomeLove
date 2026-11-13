@@ -63,6 +63,23 @@ function renderDiary(){
     }
     b.append(section);
   }
+  const lunchInvitation=pendingLunchReturn();
+  if(lunchInvitation){
+    const section=el('section','dsec');
+    const [opens,closes]=VillageMap.places.cafe.hours;
+    section.append(el('h3',null,tr('boxReturnOpen')),el('p','rline',tr(
+      state.day<lunchInvitation.day?'boxReturnTomorrow':'boxReturnPlan',{start:fmt(opens),end:fmt(closes)})));
+    if(state.day>=lunchInvitation.day&&state.time<closes){
+      const route=el('button','pbtn',tr('requestCafeRoute'));
+      route.type='button';
+      route.onclick=()=>{
+        closeDiary();
+        walkToVillagePlace('cafe',VillageMap.places.cafe);
+      };
+      section.append(route);
+    }
+    b.append(section);
+  }
   const plan=activeDatePlan();
   if(plan){
     const section=el('section','dsec');
