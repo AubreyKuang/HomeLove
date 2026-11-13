@@ -461,6 +461,8 @@ window.HL_LANG.zh = {
     rainSketchBankSharedCard: "雨停之后，你和{name}在{place}一起画下了水岸的草和湿石。",
     rainSketchBankTogetherDone: "你把岸边的草画好了，我来给石头添一点雨后的光。这张你带回去吧。",
     rainSketchBankDone: "草尖和湿石都画好了。你把这张速写夹进了相册。",
+    rainSketchChangeSubject: "商量着改画{subject} · {minutes} 分钟 · 心情 +{mood} · 信任 +{trust} · 相册卡",
+    rainSketchChangeDone: "谢谢你愿意换个角度。我们一起画的{subject}，就由你带回去吧。",
     rainCompanionWalk: "先碰面，再一起走",
     rainCompanionDirect: "改为直接到水洼碰面",
     rainCompanionStartWalk: "一起走去水洼",

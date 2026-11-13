@@ -468,7 +468,8 @@ test('an early draft saves time together and can still be completed alone', () =
   let write=false,choices;
   const runtime=game({state,P,npcs:[n],RAIN_DATE_MEETINGS:{garden:{start:600,end:660,p:[12,12],spot:[13,12],name:'garden'}},
     RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,RAIN_DRAFT_BANK_BONUS:5,
-    RAIN_COMPANION:{minutes:25,mood:11,trust:4},VillageRiverside:{weather:()=> 'clear'},save:()=>write,
+    RAIN_COMPANION:{minutes:25,mood:11,trust:4},RAIN_DRAFT_CHANGE:{minutes:10,trust:2},
+    VillageRiverside:{weather:()=> 'clear'},save:()=>write,
     advanceTime:m=>{state.time+=m;},clampN:n=>n,B:()=>bonds,trustNpc:(_,delta)=>{bonds.trust.gy+=delta;},
     updateHud(){},D:{},talk(_who,_lines,options){choices=options;},tr:k=>k,nm:n=>n.id});
   runSection(runtime,'function rainReturnReady(','function hasSharedExperience(');
@@ -490,6 +491,14 @@ test('an early draft saves time together and can still be completed alone', () =
   const bank={...revisit,subject:'bank'};
   assert.equal(runtime.rainCompanionActivity(bank,true).minutes,25);
   assert.equal(runtime.soloRainSketch(bank).minutes,15);
+  state.rainSketches={};state.rainReturn={...bank,done:false};state.time=610;
+  const change=runtime.rainCompanionOptions(state.rainReturn,n).find(choice=>choice.label==='rainSketchChangeSubject');
+  write=false;change.fn();
+  assert.deepEqual([state.time,state.rainReturn.done,state.rainReturn.subject,bonds.trust.gy,state.rainSketches.garden],
+    [610,false,'bank',12,undefined]);
+  write=true;change.fn();change.fn();
+  assert.deepEqual([state.time,state.rainReturn.done,bonds.trust.gy,state.rainSketches.garden.subject,state.rainSketches.garden.shared],
+    [645,true,16,'reflection',true]);
   state.rainSketches={};state.rainReturn={...revisit,done:false,together:false};state.time=1535;
   runtime.finishRainReturn(state.rainReturn,true);
   assert.deepEqual([state.time,state.rainReturn.done,state.rainSketches.garden.shared],[1555,true,undefined]);

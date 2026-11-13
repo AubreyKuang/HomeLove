@@ -252,6 +252,7 @@ const RAIN_RETURN={minutes:15,mood:8};
 const RAIN_SKETCH={minutes:30,mood:4};
 const RAIN_SKETCH_DRAFT_MINUTES=10, RAIN_SHARED_DRAFT_SAVING=15;
 const RAIN_DRAFT_BANK_BONUS=5;
+const RAIN_DRAFT_CHANGE={minutes:10,trust:2};
 const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 const RAIN_COMPANION_WALK={minutes:30,mood:13,trust:6};
 const RAIN_WALK_PAUSE={minutes:10,mood:4};
@@ -337,26 +338,38 @@ function leaveRainWalkStop(revisit,n,pause){
 function canFinishRainCompanion(revisit,n){
   return !!(revisit?.together&&(!revisit.walk||revisit.walk==='walking')&&n&&rainReturnReady()===revisit&&atPlannedDate(n,rainCompanionMeeting(n)));
 }
-function rainCompanionActivity(revisit,sketch=false){
+function rainCompanionActivity(revisit,sketch=false,changeSubject=false){
   const {minutes,mood,trust}=revisit.walk==='walking'?RAIN_COMPANION_WALK:RAIN_COMPANION;
   const saving=revisit.draft?RAIN_SHARED_DRAFT_SAVING-(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
-  return sketch?{minutes:minutes+10-saving,mood:mood-4,trust:trust-2}:{minutes,mood,trust};
+  if(!sketch)return {minutes,mood,trust};
+  return {minutes:minutes+10-saving+(changeSubject?RAIN_DRAFT_CHANGE.minutes:0),
+    mood:mood-4,trust:trust-2+(changeSubject?RAIN_DRAFT_CHANGE.trust:0)};
 }
+const otherRainSketchSubject=revisit=>revisit.subject==='bank'?'reflection':'bank';
+const rainSketchSubjectLabel=subject=>tr(subject==='bank'?'rainSketchBank':'rainSketchReflection');
 function rainCompanionOptions(revisit,n){
   const choices=[{label:tr('rainCompanionAction',rainCompanionActivity(revisit)),fn:()=>finishRainCompanion(revisit,n)}];
-  if(!state.rainSketches[revisit.place])choices.push({
+  if(state.rainSketches[revisit.place])return choices;
+  choices.push({
     label:tr(revisit.draft?'rainSketchDraftTogether':'rainCompanionSketch',rainCompanionActivity(revisit,true)),
     fn:()=>finishRainCompanion(revisit,n,true)
   });
+  if(revisit.draft)choices.push({
+    label:tr('rainSketchChangeSubject',{...rainCompanionActivity(revisit,true,true),
+      subject:rainSketchSubjectLabel(otherRainSketchSubject(revisit))}),
+    fn:()=>finishRainCompanion(revisit,n,true,true)
+  });
   return choices;
 }
-function finishRainCompanion(revisit,n,sketch=false){
+function finishRainCompanion(revisit,n,sketch=false,changeSubject=false){
   if(!canFinishRainCompanion(revisit,n)||(sketch&&state.rainSketches[revisit.place]))return;
-  const activity=rainCompanionActivity(revisit,sketch);
+  if(changeSubject&&(!sketch||!revisit.draft))return;
+  const subject=changeSubject?otherRainSketchSubject(revisit):revisit.subject;
+  const activity=rainCompanionActivity(revisit,sketch,changeSubject);
   const before={time:state.time,need:{...state.need}},trust=B().trust[n.id];
   revisit.done=true;
   if(sketch)state.rainSketches[revisit.place]={resident:n.id,day:state.day,shared:true,
-    ...(revisit.subject?{subject:revisit.subject}:{})};
+    ...(subject?{subject}:{})};
   advanceTime(activity.minutes);
   state.need.mood=clampN(state.need.mood+activity.mood);
   trustNpc(n,activity.trust);
@@ -365,7 +378,8 @@ function finishRainCompanion(revisit,n,sketch=false){
     revisit.done=false;B().trust[n.id]=trust;Object.assign(state,before);return;
   }
   updateHud();D.npc=n;
-  talk(nm(n),[tr(sketch?(revisit.subject==='bank'?'rainSketchBankTogetherDone':'rainCompanionSketchDone'):'rainCompanionDone')]);
+  const line=changeSubject?'rainSketchChangeDone':sketch?(subject==='bank'?'rainSketchBankTogetherDone':'rainCompanionSketchDone'):'rainCompanionDone';
+  talk(nm(n),[tr(line,changeSubject?{subject:rainSketchSubjectLabel(subject)}:undefined)]);
 }
 function soloRainSketch(revisit){
   const saving=revisit.draft?RAIN_SKETCH_DRAFT_MINUTES+(revisit.subject==='bank'?RAIN_DRAFT_BANK_BONUS:0):0;
@@ -398,7 +412,7 @@ function draftRainSketch(revisit,subject='reflection'){
     return;
   }
   updateHud();
-  talk(tr('you'),[tr('rainSketchSubjectSaved',{subject:tr(subject==='bank'?'rainSketchBank':'rainSketchReflection')})]);
+  talk(tr('you'),[tr('rainSketchSubjectSaved',{subject:rainSketchSubjectLabel(subject)})]);
 }
 function rainReturnMenu(revisit){
   const limit=rainSketchLimit(revisit);
@@ -415,7 +429,7 @@ function rainReturnMenu(revisit){
       const {minutes:solo}=soloRainSketch(draft);
       const {minutes:shared}=rainCompanionActivity(draft,true);
       opts.splice(0,0,{label:tr('rainSketchSubjectAction',{
-        subject:tr(subject==='bank'?'rainSketchBank':'rainSketchReflection'),minutes:RAIN_SKETCH_DRAFT_MINUTES,solo,shared
+        subject:rainSketchSubjectLabel(subject),minutes:RAIN_SKETCH_DRAFT_MINUTES,solo,shared
       }),fn:()=>draftRainSketch(revisit,subject)});
     }
   }
