@@ -4407,10 +4407,13 @@ function drawArrow(g,x,y){x=Math.round(x);y=Math.round(y);const F=(a,b,w,h,c)=>{
 function drawBang(g,x,y,col){x=Math.round(x);y=Math.round(y);g.fillStyle='#2a1e24';g.fillRect(x-2,y-1,5,9);g.fillStyle=col||'#ffd45e';g.fillRect(x-1,y,3,4);g.fillRect(x-1,y+5,3,2);}
 function drawHeart(g,x,y,a){g.globalAlpha=a;x=Math.round(x);y=Math.round(y);g.fillStyle='#2a1e24';g.fillRect(x-3,y-1,7,4);g.fillRect(x-2,y+3,5,1);g.fillRect(x-1,y+4,3,1);
   g.fillStyle='#ff6b8a';g.fillRect(x-2,y,2,1);g.fillRect(x+1,y,2,1);g.fillRect(x-2,y+1,5,2);g.fillRect(x-1,y+3,3,1);g.fillStyle='#ffc2d0';g.fillRect(x-2,y,1,1);g.globalAlpha=1;}
-function drawWindows(g,night){
+function drawWindows(g,night,blackout){
   [6,9,14].forEach(x=>{const px=x*16+2,py=36,F=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(px+a,py+b,w,h);};
-    F(-1,-1,14,12,'#7d4b2d');F(0,0,12,10,night?'#2c3f78':'#bfe6f5');
-    if(night){F(8,2,1,1,'#fff3a0');F(3,6,1,1,'#fff3a0');F(9,7,1,1,'#c9d4ff');}else{F(1,1,4,1,'#eaf8fd');F(1,2,2,1,'#eaf8fd');F(7,6,3,1,'#ffffff');}
+    F(-1,-1,14,12,'#7d4b2d');F(0,0,12,10,blackout?'#53647b':night?'#2c3f78':'#bfe6f5');
+    if(!blackout){
+      if(night){F(8,2,1,1,'#fff3a0');F(3,6,1,1,'#fff3a0');F(9,7,1,1,'#c9d4ff');}
+      else{F(1,1,4,1,'#eaf8fd');F(1,2,2,1,'#eaf8fd');F(7,6,3,1,'#ffffff');}
+    }
     F(5,0,2,10,'#7d4b2d');F(0,4,12,1,'#7d4b2d');F(-3,-1,3,11,'#f29ac0');F(12,-1,3,11,'#f29ac0');F(-3,-1,3,1,'#d9709a');F(12,-1,3,1,'#d9709a');});
 }
 function glow(g,x,y,r,col){const gr=g.createRadialGradient(x,y,0,x,y,r);gr.addColorStop(0,col);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect(x-r,y-r,r*2,r*2);}
@@ -4503,14 +4506,17 @@ function drawLantern(g,x,y){
 function drawBlackoutLight(g,cx,cy,w,h,time){
   const [dx,dy]=DV[P.dir];
   const x=Math.round(P.x+dx*6+(dx===0?7:0)),y=Math.round(P.y-8+dy*4);
-  const radius=79+(reducedMotion?0:Math.sin(time*2.2)*2);
+  const radius=94+(reducedMotion?0:Math.sin(time*2.2)*1.5);
+  drawLanternLighting(g,x,y,radius,cx,cy,w,h);
+}
+function drawLanternLighting(g,x,y,radius,cx,cy,w,h){
   const mask=g.createRadialGradient(x,y,0,x,y,radius);
-  mask.addColorStop(0,'rgba(17,18,38,.04)');
-  mask.addColorStop(.37,'rgba(18,19,42,.12)');
-  mask.addColorStop(.73,'rgba(19,20,44,.66)');
-  mask.addColorStop(1,'rgba(16,17,34,.96)');
+  mask.addColorStop(0,'rgba(34,44,72,.06)');
+  mask.addColorStop(.35,'rgba(35,46,73,.15)');
+  mask.addColorStop(.72,'rgba(38,51,79,.40)');
+  mask.addColorStop(1,'rgba(39,53,82,.57)');
   g.fillStyle=mask;g.fillRect(cx,cy,w,h);
-  glow(g,x,y,radius*.76,'rgba(250,181,90,.21)');
+  glow(g,x,y,radius*.82,'rgba(255,193,103,.29)');
   drawLantern(g,x,y);
 }
 function drawBlackoutGathering(g,record){
@@ -4532,10 +4538,7 @@ function drawBlackoutGathering(g,record){
   }
 }
 function drawBlackoutLightForCard(g){
-  const shade=g.createRadialGradient(53,37,0,53,37,43);
-  shade.addColorStop(0,'rgba(20,22,44,.03)');shade.addColorStop(1,'rgba(20,22,44,.92)');
-  g.fillStyle=shade;g.fillRect(0,0,96,60);
-  glow(g,53,37,32,'rgba(248,179,99,.25)');drawLantern(g,53,37);
+  drawLanternLighting(g,53,37,47,0,0,96,60);
 }
 function render(time){
   updateMiniMap();
@@ -4561,7 +4564,7 @@ function render(time){
   for(const [kind,[x,y]] of visibleRiverClues()){
     drawRiverClue(ctx,kind,x*16+8,y*16+10,reducedMotion?0:time);
   }
-  drawWindows(ctx,dark>0.5||blackout);
+  drawWindows(ctx,dark>0.5,blackout);
   state.garden.forEach((plot,i)=>{
     if(!plot)return;
     const x=(17+i%6)*16,y=(13+Math.floor(i/6))*16;
