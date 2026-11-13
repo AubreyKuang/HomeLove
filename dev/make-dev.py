@@ -89,7 +89,8 @@ PANEL = r'''
     previewBlackout(next=false){
       if(!canPreview())return;
       let day=state.day+Number(next||state.blackout.last?.day===state.day);
-      while(!VillageBlackout.night(day))day++;
+      while(!VillageBlackout.saturday(day))day++;
+      blackoutPreviewDay=day;
       if(day!==state.day){state.day=day-1;newDay(VillageBlackout.start-1);}
       A.time(18);
       state.time=VillageBlackout.start-0.15;
