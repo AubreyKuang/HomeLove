@@ -1344,3 +1344,16 @@ Object.assign(window.HL_LANG.zh.ui, {
 
 window.HL_LANG.zh.objects.computer = {"name": "书桌电脑", "verb": "使用电脑"};
 window.HL_LANG.zh.ui.computerIntro = "你打开书桌上的电脑。想去网购商店看看吗？";
+
+Object.assign(window.HL_LANG.zh.ui, {
+  "frameChoose": "挑一张卡挂起来",
+  "frameHang": "挂到小屋墙上",
+  "frameRemove": "取下墙上的卡",
+  "frameSaveFailed": "这次没能保存相框。",
+  "frameRecognizePostcard": "原来你把我寄来的那张挂起来了。",
+  "frameRecognize_gy": "你把那天留在家里了啊。我进门的时候就看见了。",
+  "frameRecognize_xy": "是那天啊。我还记得我们走回来的那条路。",
+  "frameRecognize_jy": "你把那天挂在这儿了。我差点又想起当时的声音。",
+  "frameRecognize_by": "在画册里翻到它，和进门就看见它，感觉还真不一样。",
+  "frameRecognize_xm": "原来你一直留着这个。我以为只有我还记得那天。"
+});

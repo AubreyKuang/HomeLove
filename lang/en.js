@@ -1344,3 +1344,16 @@ Object.assign(window.HL_LANG.en.ui, {
 
 window.HL_LANG.en.objects.computer = {"name": "Desk computer", "verb": "Use the computer"};
 window.HL_LANG.en.ui.computerIntro = "You turn on the computer. Want to browse the online shop?";
+
+Object.assign(window.HL_LANG.en.ui, {
+  "frameChoose": "Choose a card to frame",
+  "frameHang": "Hang in the cottage",
+  "frameRemove": "Take down the framed card",
+  "frameSaveFailed": "The frame could not be saved.",
+  "frameRecognizePostcard": "You hung up the card I sent you.",
+  "frameRecognize_gy": "You kept a little piece of that day here. I spotted it as soon as I came in.",
+  "frameRecognize_xy": "Oh, that day. I still remember the way we took home.",
+  "frameRecognize_jy": "You hung that one up. I can almost hear what it sounded like that day.",
+  "frameRecognize_by": "Seeing it when I walk in feels different from finding it in an album.",
+  "frameRecognize_xm": "You kept this all this time. I thought I was the only one who still remembered."
+});

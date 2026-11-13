@@ -1,6 +1,14 @@
 const MemoryAlbum = (() => {
   const kinds=['firstDate','birthday','visitSick','rareDate','neighborRequest','firstGift','sharedFishing'];
   const postcardKey=card=>`postcard:${card.resident}:${card.variant}`;
+  function loadFrame(saved,residents,day){
+    if(typeof saved?.key!=='string'||saved.key.length<1||saved.key.length>100||
+      !Number.isInteger(saved.day)||saved.day<1||saved.day>day||
+      typeof saved.image!=='string'||saved.image.length>4096||
+      !/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(saved.image))return null;
+    const resident=residents.includes(saved.resident)?saved.resident:null;
+    return {key:saved.key,day:saved.day,image:saved.image,resident,postcard:saved.postcard===true,noticed:saved.noticed===true};
+  }
   function load(saved,residents,day){
     const postcards=[],keys=new Set();
     for(const card of Array.isArray(saved?.postcards)?saved.postcards:[]){
@@ -11,7 +19,8 @@ const MemoryAlbum = (() => {
       keys.add(key);
       postcards.push({resident:card.resident,variant:card.variant,day:card.day});
     }
-    return {postcards,seen:Array.isArray(saved?.seen)?[...new Set(saved.seen.filter(key=>typeof key==='string'))]:[]};
+    return {postcards,seen:Array.isArray(saved?.seen)?[...new Set(saved.seen.filter(key=>typeof key==='string'))]:[],
+      framed:loadFrame(saved?.framed,residents,day)};
   }
   function nextPostcard(day,residents,album){
     if(day%3!==0||album.postcards.some(card=>card.day===day))return null;
