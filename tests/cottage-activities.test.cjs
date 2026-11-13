@@ -461,6 +461,35 @@ test('companion revisits require the appointment and both people at the puddle',
   assert.deepEqual([state.time,state.need.mood,revisit.done,bonds.trust.gy],[655,84,true,26]);
 });
 
+test('an early draft saves time together and can still be completed alone', () => {
+  const revisit={resident:'gy',place:'garden',day:4,done:false,together:true};
+  const state={day:4,time:600,rainReturn:revisit,rainSketches:{},need:{mood:40}};
+  const n={id:'gy',state:'away',x:216,y:204},P={x:200,y:204},bonds={trust:{gy:10}};
+  let write=false,choices;
+  const runtime=game({state,P,npcs:[n],RAIN_DATE_MEETINGS:{garden:{start:600,end:660,p:[12,12],spot:[13,12],name:'garden'}},
+    RAIN_RETURN:{minutes:15,mood:8},RAIN_SKETCH:{minutes:30,mood:4},RAIN_SKETCH_DRAFT_MINUTES:10,RAIN_SHARED_DRAFT_SAVING:15,
+    RAIN_COMPANION:{minutes:25,mood:11,trust:4},VillageRiverside:{weather:()=> 'clear'},save:()=>write,
+    advanceTime:m=>{state.time+=m;},clampN:n=>n,B:()=>bonds,trustNpc:(_,delta)=>{bonds.trust.gy+=delta;},
+    updateHud(){},D:{},talk(_who,_lines,options){choices=options;},tr:k=>k,nm:n=>n.id});
+  runSection(runtime,'function rainReturnReady(','function hasSharedExperience(');
+  runSection(runtime,'function atPlannedDate(','function datePlanPlace(');
+  runtime.rainReturnMenu(revisit);
+  assert.equal(choices[0].label,'rainSketchDraftAction');
+  choices[0].fn();
+  assert.deepEqual([state.time,revisit.draft],[600,undefined]);
+  write=true;state.time=650;runtime.draftRainSketch(revisit);
+  assert.equal(revisit.draft,undefined);
+  state.time=590;n.state='here';runtime.draftRainSketch(revisit);
+  assert.equal(revisit.draft,undefined);
+  state.time=600;n.state='away';runtime.draftRainSketch(revisit);runtime.draftRainSketch(revisit);
+  assert.deepEqual([state.time,revisit.draft,revisit.done,state.rainSketches],[610,true,false,{}]);
+  n.state='here';runtime.finishRainCompanion(revisit,n,true);
+  assert.deepEqual([state.time,revisit.done,bonds.trust.gy,state.rainSketches.garden.shared],[630,true,12,true]);
+  state.rainSketches={};state.rainReturn={...revisit,done:false,together:false};state.time=1535;
+  runtime.finishRainReturn(state.rainReturn,true);
+  assert.deepEqual([state.time,state.rainReturn.done,state.rainSketches.garden.shared],[1555,true,undefined]);
+});
+
 test('rain sketches use the revisit, save once per place, and roll back on write failure', () => {
   const revisit={resident:'gy',place:'garden',day:4,done:false};
   const state={day:4,time:1530,rainReturn:revisit,rainSketches:{},need:{mood:40}};

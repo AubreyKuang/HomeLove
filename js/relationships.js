@@ -250,6 +250,7 @@ const UMBRELLA_DATE={minutes:25,points:6,mood:10};
 const RAIN_DETOUR_DATE={minutes:35,points:8,mood:13};
 const RAIN_RETURN={minutes:15,mood:8};
 const RAIN_SKETCH={minutes:30,mood:4};
+const RAIN_SKETCH_DRAFT_MINUTES=10, RAIN_SHARED_DRAFT_SAVING=15;
 const RAIN_COMPANION={minutes:25,mood:11,trust:4};
 const RAIN_COMPANION_WALK={minutes:30,mood:13,trust:6};
 const RAIN_WALK_PAUSE={minutes:10,mood:4};
@@ -337,12 +338,13 @@ function canFinishRainCompanion(revisit,n){
 }
 function rainCompanionActivity(revisit,sketch=false){
   const {minutes,mood,trust}=revisit.walk==='walking'?RAIN_COMPANION_WALK:RAIN_COMPANION;
-  return sketch?{minutes:minutes+10,mood:mood-4,trust:trust-2}:{minutes,mood,trust};
+  return sketch?{minutes:minutes+10-(revisit.draft?RAIN_SHARED_DRAFT_SAVING:0),mood:mood-4,trust:trust-2}:{minutes,mood,trust};
 }
 function rainCompanionOptions(revisit,n){
   const choices=[{label:tr('rainCompanionAction',rainCompanionActivity(revisit)),fn:()=>finishRainCompanion(revisit,n)}];
   if(!state.rainSketches[revisit.place])choices.push({
-    label:tr('rainCompanionSketch',rainCompanionActivity(revisit,true)),fn:()=>finishRainCompanion(revisit,n,true)
+    label:tr(revisit.draft?'rainSketchDraftTogether':'rainCompanionSketch',rainCompanionActivity(revisit,true)),
+    fn:()=>finishRainCompanion(revisit,n,true)
   });
   return choices;
 }
@@ -362,26 +364,54 @@ function finishRainCompanion(revisit,n,sketch=false){
   updateHud();D.npc=n;
   talk(nm(n),[tr(sketch?'rainCompanionSketchDone':'rainCompanionDone')]);
 }
+function soloRainSketch(revisit){
+  return {...RAIN_SKETCH,minutes:RAIN_SKETCH.minutes-(revisit.draft?RAIN_SKETCH_DRAFT_MINUTES:0)};
+}
 function rainSketchLimit(revisit){
   if(state.rainSketches[revisit.place])return 'dateRainSketchCollected';
-  if(state.time+RAIN_SKETCH.minutes>=26*60)return 'dateRainSketchLate';
+  if(state.time+soloRainSketch(revisit).minutes>=26*60)return 'dateRainSketchLate';
   return '';
+}
+function canDraftRainSketch(revisit,n){
+  const meeting=RAIN_DATE_MEETINGS[revisit.place];
+  const [x,y]=meeting.spot;
+  const companionArrived=n?.state==='here'&&!n.leaving&&Math.hypot(n.x-x*16-8,n.y-y*16-12)<16;
+  return rainReturnReady()===revisit&&atRainReturn(revisit)&&revisit.together&&
+    (!revisit.walk||revisit.walk==='walking')&&!revisit.draft&&!state.rainSketches[revisit.place]&&
+    state.time+RAIN_SKETCH_DRAFT_MINUTES<meeting.end&&!companionArrived;
+}
+function draftRainSketch(revisit){
+  const n=npcs.find(n=>n.id===revisit.resident);
+  if(!canDraftRainSketch(revisit,n))return;
+  const before={time:state.time,need:{...state.need}};
+  revisit.draft=true;
+  advanceTime(RAIN_SKETCH_DRAFT_MINUTES);
+  if(!save()){
+    delete revisit.draft;
+    Object.assign(state,before);
+    return;
+  }
+  updateHud();
+  talk(tr('you'),[tr('rainSketchDraftDone')]);
 }
 function rainReturnMenu(revisit){
   const limit=rainSketchLimit(revisit);
   const opts=[
     {label:tr('dateRainReturnLook',RAIN_RETURN),fn:()=>finishRainReturn(revisit)},
-    {label:tr('dateRainSketch',RAIN_SKETCH),disabled:!!limit,fn:()=>finishRainReturn(revisit,true)},
+    {label:tr(revisit.draft?'rainSketchDraftFinish':'dateRainSketch',soloRainSketch(revisit)),disabled:!!limit,fn:()=>finishRainReturn(revisit,true)},
     {label:tr('never')}
   ];
   const n=revisit.together&&npcs.find(n=>n.id===revisit.resident);
   if(canFinishRainCompanion(revisit,n))opts.unshift(...rainCompanionOptions(revisit,n));
-  talk(tr('you'),[tr(limit||'dateRainReturnPrompt')],opts);
+  else if(revisit.together&&canDraftRainSketch(revisit,n))opts.unshift({
+    label:tr('rainSketchDraftAction',{minutes:RAIN_SKETCH_DRAFT_MINUTES}),fn:()=>draftRainSketch(revisit)
+  });
+  talk(tr('you'),[tr(limit||(revisit.draft?'rainSketchDraftPrompt':'dateRainReturnPrompt'))],opts);
 }
 function finishRainReturn(revisit,sketch=false){
   if(!revisit||rainReturnReady()!==revisit||!atRainReturn(revisit))return;
   if(sketch&&rainSketchLimit(revisit))return;
-  const activity=sketch?RAIN_SKETCH:RAIN_RETURN;
+  const activity=sketch?soloRainSketch(revisit):RAIN_RETURN;
   const before={time:state.time,need:{...state.need}};
   revisit.done=true;
   if(sketch)state.rainSketches[revisit.place]={resident:revisit.resident,day:state.day};
