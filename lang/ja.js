@@ -463,6 +463,8 @@ window.HL_LANG.ja = {
     rainSketchBankDone: "草と濡れた石を描き終え、スケッチをアルバムに挟んだ。",
     rainSketchChangeSubject: "相談して{subject}を描く · {minutes}分 · 気分 +{mood} · 信頼 +{trust} · アルバムカード",
     rainSketchChangeDone: "違う景色も一緒に描いてくれてありがとう。二人で描いた{subject}、持って帰ってね。",
+    rainDraftRebook: "下描きを残し、明日{start}～{end}に水たまりで再集合 · 一度だけ",
+    rainDraftRebookHint: "再集合を選ぶと下描きと再訪は明日に持ち越す。今日仕上げるなら水たまりへ。",
     rainCompanionWalk: "待ち合わせてから一緒に歩く",
     rainCompanionDirect: "水たまりで直接会う",
     rainCompanionStartWalk: "一緒に水たまりへ歩く",

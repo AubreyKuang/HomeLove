@@ -463,6 +463,8 @@ window.HL_LANG.en = {
     rainSketchBankDone: "The grass and wet stones are finished. You slip the sketch into your album.",
     rainSketchChangeSubject: "Talk it over and sketch {subject} · {minutes} min · mood +{mood} · trust +{trust} · album card",
     rainSketchChangeDone: "Thanks for trying a different angle with me. Take our sketch of {subject} home with you.",
+    rainDraftRebook: "Keep the draft and meet at the puddle tomorrow, {start}–{end} · once only",
+    rainDraftRebookHint: "Rescheduling moves the draft and the revisit to tomorrow. To finish today, head to the puddle as planned.",
     rainCompanionWalk: "Meet first and walk together",
     rainCompanionDirect: "Meet directly at the puddle",
     rainCompanionStartWalk: "Walk to the puddle together",

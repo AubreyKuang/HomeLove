@@ -285,6 +285,20 @@ function rainCompanionStop(revisit){
 function rainCompanionConflict(revisit,plan=activeDatePlan()){
   return !!(plan&&revisit&&plan.day===revisit.day&&plan.resident===revisit.resident&&plan.place===revisit.place);
 }
+function canRebookRainDraft(revisit){
+  if(!revisit?.draft||!revisit.together||revisit.rebooked||rainReturnReady()!==revisit||
+    state.rainSketches[revisit.place]||state.time<RAIN_DATE_MEETINGS[revisit.place].end)return false;
+  const tomorrow=state.day+1;
+  return VillageRiverside.weather(tomorrow)!=='rain'&&!rainCompanionConflict({...revisit,day:tomorrow});
+}
+function rebookRainDraft(revisit){
+  if(!canRebookRainDraft(revisit))return false;
+  const {walk,...plan}=revisit;
+  state.rainReturn={...plan,day:state.day+1,rebooked:true};
+  if(save())return true;
+  state.rainReturn=revisit;
+  return false;
+}
 function setRainCompanion(revisit){
   const meeting=RAIN_DATE_MEETINGS[revisit.place];
   if(state.rainReturn!==revisit||revisit.done||VillageRiverside.weather(revisit.day)==='rain'||
@@ -299,7 +313,7 @@ function setRainCompanion(revisit){
   return false;
 }
 function setRainCompanionWalk(revisit){
-  if(state.rainReturn!==revisit||!revisit.together||revisit.done||(revisit.walk&&revisit.walk!=='meet')||
+  if(state.rainReturn!==revisit||!revisit.together||revisit.done||revisit.rebooked||(revisit.walk&&revisit.walk!=='meet')||
     !(revisit.day===state.day+1||(revisit.day===state.day&&state.time<RAIN_DATE_MEETINGS[revisit.place].start)))return false;
   const previous=revisit.walk;
   if(previous==='meet')delete revisit.walk;else revisit.walk='meet';
