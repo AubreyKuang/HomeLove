@@ -2,7 +2,7 @@
 
 const keys=new Set(),touchKeys=new Set();
 const has=(...ks)=>ks.some(k=>keys.has(k)||touchKeys.has(k));
-$('#fishCancel').onclick=()=>{cancelFishing();cv.focus({preventScroll:true});};
+$('#fishCancel').onclick=()=>{cancelFishing();updateVillageGuide();cv.focus({preventScroll:true});};
 addEventListener('keydown',e=>{
   if(e.code==='Escape'&&cottageMenu.open){e.preventDefault();cottageMenu.open=false;cottageMenu.querySelector('summary').focus();return;}
   if(['Enter','Space'].includes(e.code)&&e.target instanceof Element&&e.target.closest('#hud button,#hudR button,#villageGuide button,#fishCancel,#cottageMenu>summary'))return;
@@ -48,6 +48,7 @@ $('#abtn').addEventListener('pointerdown',e=>{e.preventDefault();interact();});
 $('#btnWardrobe').addEventListener('click',()=>openDress());
 $('#btnAlbum').addEventListener('click',()=>openAlbum());
 $('#btnDiary').addEventListener('click',()=>openDiary());
+$('#btnPlans').addEventListener('click',()=>openDiary());
 $('#btnLang').addEventListener('click',()=>{cycleLang();cv.focus({preventScroll:true});});
 $('#btnSound').addEventListener('click',()=>{setSound(!sndOn);cv.focus({preventScroll:true});});
 $('#btnSound').textContent=sndOn?'🔊':'🔇';

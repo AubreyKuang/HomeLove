@@ -1698,7 +1698,11 @@ Object.assign(window.HL_LANG.en.ui, {
   "villageHere": "Here now: {names}",
   "nameSeparator": ", ",
   "upcomingPlans": "Upcoming plans",
-  "sharedFishingPlan": "{name} · {day}, {start}–{end} · They will find you, then you can go to the pond together.",
+  "plansToday": "Today",
+  "plansTomorrow": "Tomorrow",
+  "datePlanTitle": "Date",
+  "fishingWindowClosed": "The fishing window has closed",
+  "sharedFishingPlan": "{name} · {day}, {start}–{end} · Wait in the yard, then walk to the pond together.",
   "fishingEnergyNeeded": "Fishing together requires at least 5 energy",
   "confessMoodNeeded": "Confessing requires 40 mood (currently {mood})",
   "fishCancel": "Put away the rod"

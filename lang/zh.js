@@ -1698,7 +1698,11 @@ Object.assign(window.HL_LANG.zh.ui, {
   "villageHere": "正在这里：{names}",
   "nameSeparator": "、",
   "upcomingPlans": "接下来的安排",
-  "sharedFishingPlan": "{name} · {day} {start}–{end} · 对方会来找你，再一起去池塘",
+  "plansToday": "今天",
+  "plansTomorrow": "明天",
+  "datePlanTitle": "约会",
+  "fishingWindowClosed": "已过同钓时间",
+  "sharedFishingPlan": "{name} · {day} {start}–{end} · 在院子里等对方，再一起去池塘。",
   "fishingEnergyNeeded": "同钓需要至少 5 点精力",
   "confessMoodNeeded": "告白需要心情达到 40（当前 {mood}）",
   "fishCancel": "收起鱼竿"
