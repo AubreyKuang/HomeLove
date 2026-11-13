@@ -1098,6 +1098,14 @@ Object.assign(window.HL_LANG.en.ui, {
   "vehicleReceived": "You picked up your {name}. It is ready to use outdoors.",
   "vehicleParked": "{name} parked",
   "vehicleCollect": "Collect {name}",
+  "vehicle_umbrella": "Umbrella",
+  "umbrellaOrder": "Buy umbrella ({cost} shells)",
+  "umbrellaReceived": "Your pink umbrella arrived. Press U or tap Open umbrella when walking in the rain.",
+  "umbrellaOpen": "Open umbrella",
+  "umbrellaClose": "Close umbrella",
+  "umbrellaOpened": "You opened your umbrella.",
+  "umbrellaClosed": "You put your umbrella away.",
+  "umbrellaReady": "Your umbrella will open when you walk outside in the rain.",
   "vehiclePackage": "A package has arrived.",
   "miniMapLabel": "Minimap, open village map"
 });
