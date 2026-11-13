@@ -144,6 +144,8 @@ function applySave(s){
     if(ALBUM_RESIDENTS.includes(sketch?.resident)&&Number.isInteger(sketch.day)&&sketch.day>0&&sketch.day<=state.day){
       state.rainSketches[place]={resident:sketch.resident,day:sketch.day,
         ...(['bank','reflection'].includes(sketch.subject)||sketch.subject==='paired'&&sketch.shared===true?{subject:sketch.subject}:{}),
+        ...(sketch.subject==='paired'&&sketch.shared===true&&sketch.given===true&&Object.hasOwn(RAIN_DATE_MEETINGS,sketch.dedication)
+          ?{dedication:sketch.dedication}:{}),
         ...(sketch.shared===true?{shared:true}:{}),...(sketch.given===true?{given:true}:{})};
     }
   }

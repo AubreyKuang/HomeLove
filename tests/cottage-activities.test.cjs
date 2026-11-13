@@ -642,6 +642,17 @@ test('a rain sketch gift requires its companion and rolls back before a successf
   runtime.giveRainSketch(resident,'garden');
   assert.equal(state.time,605);
   assert.equal(runtime.rainSketchGifts(resident).length,0);
+  const paired={resident:'gy',day:5,subject:'paired',shared:true};
+  state.rainSketches.garden=paired;state.album.framed=frame;
+  state.time=1545;
+  runtime.giveRainSketch(resident,'garden','garden');
+  assert.equal(paired.given,undefined);
+  state.time=600;write=false;
+  runtime.giveRainSketch(resident,'garden','garden');
+  assert.deepEqual([state.time,paired.given,paired.dedication,bonds.trust.gy,state.album.framed],[600,undefined,undefined,12,frame]);
+  write=true;
+  runtime.giveRainSketch(resident,'garden','garden');
+  assert.deepEqual([state.time,paired.given,paired.dedication,bonds.trust.gy,state.album.framed],[615,true,'garden',23,null]);
 });
 
 test('sharing an umbrella requires an outdoor meeting and an active umbrella', () => {
