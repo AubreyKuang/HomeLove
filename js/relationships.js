@@ -205,7 +205,7 @@ function renderBadges(body){
     const art=badgeArt(a,open),pic=mk(48,48),pg=pic.getContext('2d');pg.imageSmoothingEnabled=false;pg.drawImage(art,0,0,48,48);
     item.append(pic,el('strong',null,open||!a.rare?(a.rare?'★ ':'')+tr('badge_'+a.key):tr('badgeLocked')),
       el('small',null,open?tr('badgeDay',{d:day}):a.rare?tr('badgeLockedText'):tr('badgeText_'+a.key)));
-    if(open){const save=el('button','pbtn',tr('badgeSave'));save.type='button';
+    if(open&&canDownload()){const save=el('button','pbtn',tr('badgeSave'));save.type='button';
       save.onclick=()=>downloadCanvas(keepsakeCard(tr('badge_'+a.key),tr('badgeDay',{d:day}),tr('badgeText_'+a.key),art,a.color),'HomeLove-'+a.key+'.png');item.append(save);}
     grid.append(item);
   }

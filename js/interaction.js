@@ -473,7 +473,7 @@ function viewVillageSketch(n,light){
     {label:tr('projectArtHang'),disabled:state.projects.hung===light,fn:()=>{
       saveVillageProject(n,{hung:light},[tr('projectArtHung')]);
     }},
-    {label:tr('projectArtSave'),fn:()=>{downloadCanvas(canvas,'HomeLove-river-'+light+'.png');viewVillageSketch(n,light);}}
+    ...(canDownload()?[{label:tr('projectArtSave'),fn:()=>{downloadCanvas(canvas,'HomeLove-river-'+light+'.png');viewVillageSketch(n,light);}}]:[])
   ],canvas);
 }
 function drawVillageSketch(g,light,draft){

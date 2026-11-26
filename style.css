@@ -1,4 +1,10 @@
 /* Layout: full-screen pixel world; wooden-frame UI panels float on top (HUD, dialogue with choices, wardrobe, diary). */
+/* Pixel fonts ship with the game (SIL OFL 1.1, licences in fonts/); the CJK ones are cut down to the
+   characters the game shows by scripts/subset-fonts.py. Nothing is fetched from a font server. */
+@font-face{font-family:"ZCOOL KuaiLe";src:url("fonts/ZCOOLKuaiLe-subset.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"DotGothic16";src:url("fonts/DotGothic16-subset.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"Pixelify Sans";src:url("fonts/PixelifySans.woff2") format("woff2");font-weight:400 700;font-display:swap}
+@font-face{font-family:"Silkscreen";src:url("fonts/Silkscreen.woff2") format("woff2");font-display:swap}
 :root{
   --bg:#2a2230;
   --panel:#fff6e6;

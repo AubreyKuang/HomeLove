@@ -316,7 +316,7 @@ function renderAlbum(){
         if(!available&&!booked)page.append(el('p',null,tr(visit?'rainDedicationVisitOther':'rainDedicationVisitUnavailable')));
       }
     }
-    page.append(keep);
+    if(canDownload())page.append(keep);
     if(!selected.given)page.append(display);
     if(selected.event==='project_stage'){
       const play=el('button','pbtn',tr('projectMusicPlay'));

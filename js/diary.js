@@ -442,7 +442,8 @@ function renderQuietSettings(body){
     const link=el('a');link.href=url;link.download='HomeLove-day-'+state.day+'.json';link.click();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
-  section.append(el('p','rline',tr('offlineHint')),clock,backup);
+  section.append(el('p','rline',tr('offlineHint')),clock);
+  if(canDownload())section.append(backup);
   const restore=el('button','pbtn',tr('saveImport'));restore.type='button';
   const file=el('input');file.type='file';file.accept='.json,application/json';file.hidden=true;
   restore.onclick=()=>file.click();

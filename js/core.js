@@ -29,8 +29,10 @@ function spr(w,h,fn,ol){const c=mk(w,h),g=c.getContext('2d');const R=(x,y,ww,hh,
 const PACKS=window.HL_LANG||{};
 const LANG_ORDER=['zh','en','ja'].filter(c=>PACKS[c]);
 const LANG_KEY='homelove-lang';
+// The TapTap WebView has no download folder: buttons that save a file are left out there.
+const canDownload=()=>typeof TapTapHost==='undefined'||!TapTapHost.inHost;
 function detectLang(){
-  try{const s=localStorage.getItem(LANG_KEY);if(s&&PACKS[s])return s;}catch(e){}
+  try{const s=SaveManager.getStorage().getItem(LANG_KEY);if(s&&PACKS[s])return s;}catch(e){}
   const nav=(navigator.languages&&navigator.languages[0]||navigator.language||'').toLowerCase();
   if(nav.startsWith('zh')&&PACKS.zh)return 'zh';if(nav.startsWith('ja')&&PACKS.ja)return 'ja';if(PACKS.en)return 'en';return LANG_ORDER[0]||'zh';
 }

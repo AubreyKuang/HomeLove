@@ -141,7 +141,7 @@
       const r=rel(n);r.met=true;r.pts=Math.max(r.pts,chapter.hearts*10);
       openResidentStory(n,history.length);
     },
-    wipe(){try{localStorage.removeItem(LS);localStorage.removeItem(LS+':backup');}catch(e){}location.reload();},
+    wipe(){try{const s=SaveManager.getStorage();s.removeItem(LS);s.removeItem(LS+':backup');}catch(e){}location.reload();},
   };
   setInterval(()=>{if(dev.lock){fillNeeds();}if(!document.title.startsWith('[DEV]'))document.title='[DEV] '+document.title;},250);
   const box=document.createElement('div');

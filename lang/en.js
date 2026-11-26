@@ -1576,6 +1576,7 @@ Object.assign(window.HL_LANG.en.ui, {
   "offlineOff": "Offline time: paused",
   "offlineHint": "Time pauses while you are away by default. You can enable offline progress, capped at four game hours per return.",
   "saveExport": "Export save",
+  "storageUnavailable": "Saving isn’t available here. Play on!",
   "saveImport": "Import save",
   "saveConflict": "Another tab updated this save. Saving is paused here. Download a backup or reload to continue from the latest save.",
   "saveNewer": "A newer version of the game saved this progress. Open the newer version to continue.",

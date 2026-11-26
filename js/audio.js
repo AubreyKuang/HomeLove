@@ -3,7 +3,7 @@
 /* ---------------- audio ---------------- */
 /* Everything is synthesized with Web Audio: a soft music-box tune over warm pads, plus small sound effects. */
 const SND_KEY='homelove-sound';
-let sndOn=(()=>{try{return localStorage.getItem(SND_KEY)!=='off';}catch(e){return true;}})();
+let sndOn=(()=>{try{return SaveManager.getStorage().getItem(SND_KEY)!=='off';}catch(e){return true;}})();
 let AC=null,master=null,musicBus=null,sfxBus=null,musicTimer=0,NB=null;
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 function audioInit(){
@@ -114,7 +114,7 @@ const SFX={
 };
 function sfx(name,o){if(!AC||!sndOn||AC.state!=='running'||!SFX[name])return;try{SFX[name](AC.currentTime+0.01,o);}catch(e){}}
 function setSound(on){
-  sndOn=on;try{localStorage.setItem(SND_KEY,on?'on':'off');}catch(e){}
+  sndOn=on;try{SaveManager.getStorage().setItem(SND_KEY,on?'on':'off');}catch(e){}
   if(on){audioInit();if(AC)AC.resume();}
   if(master)master.gain.setTargetAtTime(on?1:0,AC.currentTime,0.05);
   $('#btnSound').textContent=on?'🔊':'🔇';notify(tr(on?'soundOn':'soundOff'));
