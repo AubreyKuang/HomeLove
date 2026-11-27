@@ -5,7 +5,9 @@ const SaveManager = (() => {
   const SNAPSHOTS = 4;
   const observed = new Map();
 
+  // CottageStorage (cottage-storage.js) picks tap storage, localStorage or memory after a probe.
   function getStorage() {
+    if (typeof CottageStorage !== 'undefined') return CottageStorage.store;
     try { return globalThis.localStorage; } catch { return null; }
   }
 

@@ -70,5 +70,5 @@ function applyLang(){
   if(diaryOpen)renderDiary();
   if(albumOpen)renderAlbum();
 }
-function setLang(code){if(!PACKS[code])return;LANG=code;try{localStorage.setItem(LANG_KEY,code);}catch(e){}applyLang();}
+function setLang(code){if(!PACKS[code])return;LANG=code;try{SaveManager.getStorage().setItem(LANG_KEY,code);}catch(e){}applyLang();}
 function cycleLang(){const i=LANG_ORDER.indexOf(LANG);setLang(LANG_ORDER[(i+1)%LANG_ORDER.length]);}

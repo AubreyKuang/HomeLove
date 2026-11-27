@@ -60,7 +60,9 @@ $('#btnHelp').addEventListener('click',()=>{if(D.modal||busy||dressOpen||diaryOp
 {const box=$('#langPick');LANG_ORDER.forEach(c=>{const b=el('button','pbtn',PACKS[c].meta.label);b.type='button';b.dataset.lang=c;b.lang=PACKS[c].meta.htmlLang;b.onclick=()=>setLang(c);box.append(b);});}
 let helloShown=false;
 function begin(){audioInit();if(AC&&sndOn)AC.resume().then(()=>sfx('start')).catch(()=>{});startOpen=false;state.seen=true;save();$('#start').classList.add('hidden');cv.focus({preventScroll:true});
-  if(!helloShown){helloShown=true;if(state.day!==1||state.rel.gy.met)setTimeout(()=>say(tr('home'),tr('welcomeBack')),300);
+  if(!helloShown){helloShown=true;
+    if(typeof CottageStorage!=='undefined'&&!CottageStorage.persistent)setTimeout(()=>notify(tr('storageUnavailable')),1600);
+    if(state.day!==1||state.rel.gy.met)setTimeout(()=>say(tr('home'),tr('welcomeBack')),300);
     let rewound=null;try{rewound=sessionStorage.getItem('homelove-rewound');sessionStorage.removeItem('homelove-rewound');}catch(e){}
     if(rewound)setTimeout(()=>notify(tr('rewindDone',{d:rewound})),1600);
     else if(offlineMinutes>=60)setTimeout(()=>notify(tr('offlineBack',{h:Math.round(offlineMinutes/60)})),1600);}}

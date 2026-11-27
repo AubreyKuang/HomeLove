@@ -299,13 +299,16 @@ Open `index.html` in a browser; it works offline (the pixel fonts load when onli
 HomeLove/
 ├── index.html                正式版页面结构与脚本加载顺序
 ├── dev.html                  测试版入口；由 dev/make-dev.py 生成
-├── style.css                 场景 HUD、对话、衣橱、日记与移动端布局
+├── style.css                 场景 HUD、对话、衣橱、日记与移动端布局；本地像素字体
+├── privacy.html              隐私政策（TapTap 上架用）
+├── fonts/                    ZCOOL KuaiLe、DotGothic16、Pixelify Sans、Silkscreen（SIL OFL 1.1，附授权文件）
 ├── js/                       游戏运行时：世界、渲染、输入、界面、音频和存档
 │   ├── world-map.js          瓦片布局、地图碰撞和可交互家具
 │   ├── world-art.js          场景贴图与四季地面
 │   ├── render.js             相机、灯光、天气和场景绘制
 │   ├── input.js              键盘、触屏和场景点击
 │   ├── state.js              游戏状态、存档读取与迁移
+│   ├── taptap.js             TapTap H5 宿主检测（不登录、不联网）
 │   └── main.js               会话初始化与游戏循环
 ├── cottage-activities.js     四季、种植、温棚、钓鱼与邻里委托规则
 ├── cottage-bonds.js          信任、醋意、传闻、突然来访、成就与每日回顾
@@ -319,6 +322,7 @@ HomeLove/
 ├── resident-stories.js       四位男主章节、天气偶遇、选择记忆与像素纪念物
 ├── memory-album.js           像素纪念卡、明信片、收藏进度与小屋相框
 ├── npc-memory.js             NPC 事件记忆的写入、检索与长期归纳
+├── cottage-storage.js        存档位置：tap.setStorageSync → localStorage → 仅本次游玩
 ├── save-manager.js           浏览器存档、版本兼容、快照与回退
 ├── lang/
 │   ├── zh.js                 简体中文文本、物品名与剧情（源语言）
@@ -329,9 +333,11 @@ HomeLove/
 │   └── panel.js              测试版专用面板与剧情预览
 ├── tools/
 │   └── check-lang.js         检查翻译键、占位符和数组结构
-├── tests/                    活动、事件、剧情、关系、记忆、存档和画册的回归测试
+├── scripts/                  TapTap 打包、字体子集、商店截图 / 宣传图 / 录屏
+├── tests/                    活动、事件、剧情、关系、记忆、存档、存储回退和画册的回归测试
 └── docs/
-    └── screenshots/          游戏截图
+    ├── screenshots/          游戏截图
+    └── taptap/               TapTap H5 上架材料与说明
 ```
 
 正式版通过 `index.html` 加载规则模块、语言包和 `js/` 中的运行时脚本。测试版共用这些文件，并额外加载 `dev/panel.js`。章节台词放在 `lang/`，章节解锁和选项记录放在 `resident-stories.js`。只改共用的 JS 或 CSS 时，两个入口都会读取更新。修改 HTML 或调整脚本列表后，用 `python3 dev/make-dev.py` 同步生成测试版。

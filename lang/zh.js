@@ -1576,6 +1576,7 @@ Object.assign(window.HL_LANG.zh.ui, {
   "offlineOff": "离线时间流逝：暂停",
   "offlineHint": "默认会在你离开时暂停时间。可自行开启离线流逝，每次最多经过四个游戏小时。",
   "saveExport": "导出存档",
+  "storageUnavailable": "当前环境无法存档，本次仍可游玩",
   "saveImport": "导入存档",
   "saveConflict": "另一标签页更新了进度。本页已暂停保存，可下载备份，或刷新读取最新进度。",
   "saveNewer": "此进度由新版游戏保存。请打开新版继续。",

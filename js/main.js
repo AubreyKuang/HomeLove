@@ -60,6 +60,7 @@ document.addEventListener('visibilitychange',()=>{
   last=performance.now();keys.clear();touchKeys.clear();
   savedOnHide=document.hidden&&save(true);
 });
+if(typeof TapTapHost!=='undefined')TapTapHost.onHide(()=>save(true));
 function loop(t){const dt=Math.min(.05,(t-last)/1000);last=t;update(dt);render(t/1000);requestAnimationFrame(loop);}
 // Start of session: yesterday's baseline, today's possible visitor, and the hours that passed while the page was closed.
 if(!B().dayStart)CottageBonds.startDay(B(),state.day,ptsMap());
