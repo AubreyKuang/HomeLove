@@ -30,7 +30,7 @@ FONTS = {
     'Silkscreen.woff2': ('Silkscreen-Regular.ttf', 'c845473330b94c2079ce9af01c51ac8ba2d99c24f4d14c039843bbb8e642ebd8'),
 }
 # Store names drawn on the TapTap promo art, in case they ever differ from the game text.
-EXTRA = '像素小屋·心动日常 Pixel Cottage ピクセル小屋'
+EXTRA = '心动小屋物语 Pixel Cottage ピクセル小屋'
 
 
 def game_text():

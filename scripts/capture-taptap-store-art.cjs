@@ -8,7 +8,7 @@
                                      yard, interface hidden; square corners, opaque
    docs/taptap/banner-1920x1080.jpg  16:9 promo image: the yard on a spring morning
                                      under the game's start card, showing only the store
-                                     name 「像素小屋·心动日常」 and the English name
+                                     name 「心动小屋物语」 and the English name
                                      「Pixel Cottage」, in the game's own pixel fonts
    docs/taptap/banner-1440x1440.jpg  1:1 promo image, the same scene
 
@@ -18,7 +18,7 @@ const fs=require("node:fs"),path=require("node:path");
 const {execFileSync}=require("node:child_process");
 const {root,sleep,gameSession}=require("./lib/taptap-chrome.cjs");
 const out=path.join(root,"docs/taptap");
-const TITLE="像素小屋·心动日常",ENGLISH="Pixel Cottage";
+const TITLE="心动小屋物语",ENGLISH="Pixel Cottage";
 const CHINESE=`Object.defineProperty(navigator,"languages",{get:()=>["zh-CN"]});`;
 const NO_UI=`const style=document.createElement("style");
   style.textContent="#hud,#hudR,#pad,#abtn,#prompt,#toast,#villageGuide,#lanternReaction,#fishCancel{visibility:hidden!important}";document.head.append(style);`;
